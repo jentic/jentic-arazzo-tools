@@ -12,7 +12,8 @@ import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http
 import ParseError from './errors/ParseError.ts';
 
 /**
- * Options for parsing Arazzo documents.
+ * Options for parsing Arazzo Documents.
+ * @public
  */
 export interface ParseOptions {
   /**
@@ -28,16 +29,20 @@ export interface ParseOptions {
   readonly sourceMap?: boolean;
   /**
    * Additional options passed to the underlying parsers.
-   * @defaultValue {}
+   * @defaultValue \{\}
    */
   readonly parserOpts?: Record<string, unknown>;
   /**
    * Additional options passed to the underlying resolvers.
-   * @defaultValue {}
+   * @defaultValue \{\}
    */
   readonly resolverOpts?: Record<string, unknown>;
 }
 
+/**
+ * Default options for parsing Arazzo Documents.
+ * @public
+ */
 export const defaultParseOptions: Required<ParseOptions> = {
   strict: true,
   sourceMap: false,
@@ -50,43 +55,45 @@ parser.use(jsonParserAdapter);
 parser.use(yamlParserAdapter);
 
 /**
- * Parses an Arazzo document from an object.
- * @param source - The Arazzo document as a plain object
+ * Parses an Arazzo Document from an object.
+ * @param source - The Arazzo Document as a plain object
  * @param options - Parsing options
- * @returns A promise that resolves to the parsed Arazzo document as ApiDOM data model
+ * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
+ * @public
  */
 export async function parse(
   source: Record<string, unknown>,
   options?: ParseOptions,
 ): Promise<ParseResultElement>;
 /**
- * Parses an Arazzo document from a string or URI.
- * @param source - The Arazzo document as string content, or a file system path / HTTP(S) URL
+ * Parses an Arazzo Document from a string or URI.
+ * @param source - The Arazzo Document as string content, or a file system path / HTTP(S) URL
  * @param options - Parsing options
- * @returns A promise that resolves to the parsed Arazzo document as ApiDOM data model
- * @throws {ParseError} When parsing fails for any reason. The original error is available via the `cause` property.
+ * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
+ * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
+ * @public
  */
 export async function parse(source: string, options?: ParseOptions): Promise<ParseResultElement>;
 /**
- * Parses an Arazzo document from a string, object, or URI.
+ * Parses an Arazzo Document from a string, object, or URI.
  *
  * The function handles three types of input:
  * 1. Object - directly refracts the object into an Arazzo specification element
- * 2. String content - attempts to parse as an inline Arazzo document (JSON or YAML)
+ * 2. String content - attempts to parse as an inline Arazzo Document (JSON or YAML)
  * 3. URI string - treats as a file system path or HTTP(S) URL and resolves the document
  *
- * @param source - The Arazzo document as an object, string content, or a file system path / HTTP(S) URL
+ * @param source - The Arazzo Document as an object, string content, or a file system path / HTTP(S) URL
  * @param options - Parsing options
- * @returns A promise that resolves to the parsed Arazzo document as ApiDOM data model
- * @throws {ParseError} When parsing fails for any reason. The original error is available via the `cause` property.
+ * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
+ * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
  *
  * @example
  * // Parse from object
- * const result = await parse({ arazzo: '1.0.1', info: {...} });
+ * const result = await parse(\{ arazzo: '1.0.1', info: \{...\} \});
  *
  * @example
  * // Parse inline JSON
- * const result = await parse('{"arazzo": "1.0.1", "info": {...}}');
+ * const result = await parse('\{"arazzo": "1.0.1", "info": \{...\}\}');
  *
  * @example
  * // Parse from file
@@ -95,6 +102,7 @@ export async function parse(source: string, options?: ParseOptions): Promise<Par
  * @example
  * // Parse from URL
  * const result = await parse('https://example.com/arazzo.yaml');
+ * @public
  */
 export async function parse(
   source: string | Record<string, unknown>,
