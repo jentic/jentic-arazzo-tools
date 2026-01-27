@@ -122,7 +122,7 @@ export async function parse(
 
   // next try to parse the source assuming it contains Arazzo Document
   try {
-    return await parser.parse(source, { strict });
+    return await parser.parse(source, { sourceMap, strict });
   } catch (error: unknown) {
     if (
       error instanceof ParserError &&

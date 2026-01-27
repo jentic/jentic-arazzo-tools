@@ -13,11 +13,10 @@ const fixturesPath = path.join(__dirname, 'fixtures');
 
 describe('parse', function () {
   context('given HTTP URL', function () {
-    const httpPort = 8123;
     let httpServer: ServerTerminable;
 
-    beforeEach(function () {
-      httpServer = createHTTPServer({ port: httpPort, cwd: fixturesPath });
+    beforeEach(async function () {
+      httpServer = await createHTTPServer({ cwd: fixturesPath });
     });
 
     afterEach(async function () {
@@ -25,13 +24,13 @@ describe('parse', function () {
     });
 
     specify('should return ParseResultElement', async function () {
-      const result = await parse(`http://localhost:${httpPort}/arazzo.json`);
+      const result = await parse(`http://localhost:${httpServer.port}/arazzo.json`);
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should contain ArazzoSpecification1Element as api', async function () {
-      const result = await parse(`http://localhost:${httpPort}/arazzo.json`);
+      const result = await parse(`http://localhost:${httpServer.port}/arazzo.json`);
 
       assert.isTrue(isArazzoSpecification1Element(result.api));
     });

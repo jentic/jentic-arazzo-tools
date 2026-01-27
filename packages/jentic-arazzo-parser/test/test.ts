@@ -141,7 +141,8 @@ describe('parse', function () {
     });
 
     specify('should respect sourceMap option', async function () {
-      const result = await parse(arazzoJson, { sourceMap: true });
+      // sourceMap requires strict: false since strict mode uses native parsers without source map support
+      const result = await parse(arazzoJson, { sourceMap: true, strict: false });
 
       assert.isTrue(isParseResultElement(result));
     });
