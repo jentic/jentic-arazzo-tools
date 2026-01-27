@@ -1,0 +1,25 @@
+[isomorphic-production]
+last 3 chrome versions
+last 3 edge version
+last 3 firefox versions
+last 3 safari versions
+opera >= 90
+node 16.14
+
+[isomorphic-development]
+last 1 Chrome versions
+last 1 FireFox versions
+last 1 Safari versions
+node 24.10.0
+
+[browser-production]
+last 3 chrome versions
+last 3 edge version
+last 3 firefox versions
+last 3 safari versions
+opera >= 90
+
+[browser-development]
+last 1 Chrome versions
+last 1 FireFox versions
+last 1 Safari versions

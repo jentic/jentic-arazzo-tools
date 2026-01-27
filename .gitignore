@@ -1,0 +1,8 @@
+node_modules/
+/lerna-debug.log
+.idea/
+*.iml
+.vscode/settings.json
+isolate-*.log
+.log*
+.claude/
