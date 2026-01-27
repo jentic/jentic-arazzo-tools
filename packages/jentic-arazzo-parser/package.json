@@ -45,7 +45,8 @@
     "@speclynx/apidom-parser": "^2.3.0",
     "@speclynx/apidom-parser-adapter-arazzo-json-1": "^2.3.0",
     "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "^2.3.0",
-    "@speclynx/apidom-reference": "^2.3.0"
+    "@speclynx/apidom-reference": "^2.3.0",
+    "ramda-adjunct": "^6.0.0"
   },
   "files": [
     "src/**/*.mjs",

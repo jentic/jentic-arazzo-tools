@@ -87,4 +87,28 @@ describe('parse', function () {
       }
     });
   });
+
+  context('given array', function () {
+    specify('should throw ParseError', async function () {
+      try {
+        // @ts-expect-error testing invalid input
+        await parse([]);
+        assert.fail('Expected ParseError to be thrown');
+      } catch (error) {
+        assert.instanceOf(error, ParseError);
+      }
+    });
+  });
+
+  context('given class instance', function () {
+    specify('should throw ParseError', async function () {
+      try {
+        // @ts-expect-error testing invalid input
+        await parse(new Date());
+        assert.fail('Expected ParseError to be thrown');
+      } catch (error) {
+        assert.instanceOf(error, ParseError);
+      }
+    });
+  });
 });

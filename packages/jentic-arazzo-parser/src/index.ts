@@ -8,6 +8,7 @@ import ArazzoJSON1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-j
 import ArazzoYAML1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-yaml-1';
 import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
 import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
+import { isPlainObject } from 'ramda-adjunct';
 
 import ParseError from './errors/ParseError.ts';
 
@@ -111,8 +112,8 @@ export async function parse(
   const mergedOptions = { ...defaultParseOptions, ...options };
   const { strict, sourceMap, parserOpts, resolverOpts } = mergedOptions;
 
-  // attempt to parse source as object
-  if (typeof source === 'object' && source !== null) {
+  // attempt to parse source as plain object
+  if (isPlainObject(source)) {
     const parseResult = new ParseResultElement();
     const element = refractArazzoSpecification1(source);
     element.classes.push('result');
