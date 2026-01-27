@@ -1,0 +1,47 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`parse given inline Arazzo JSON document should match snapshot 1`] = `
+(ArazzoSpecification1Element
+  (MemberElement
+    (StringElement)
+    (ArazzoElement))
+  (MemberElement
+    (StringElement)
+    (InfoElement
+      (MemberElement
+        (StringElement)
+        (StringElement))
+      (MemberElement
+        (StringElement)
+        (StringElement))))
+  (MemberElement
+    (StringElement)
+    (ArrayElement
+      (SourceDescriptionElement
+        (MemberElement
+          (StringElement)
+          (StringElement))
+        (MemberElement
+          (StringElement)
+          (StringElement))
+        (MemberElement
+          (StringElement)
+          (StringElement)))))
+  (MemberElement
+    (StringElement)
+    (ArrayElement
+      (WorkflowElement
+        (MemberElement
+          (StringElement)
+          (StringElement))
+        (MemberElement
+          (StringElement)
+          (ArrayElement
+            (StepElement
+              (MemberElement
+                (StringElement)
+                (StringElement))
+              (MemberElement
+                (StringElement)
+                (StringElement)))))))))
+`;
