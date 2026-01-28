@@ -17,6 +17,11 @@ const browser = {
   },
   resolve: {
     extensions: ['.ts', '.mjs', '.js', '.json'],
+    fallback: {
+      fs: false,
+      path: false,
+      module: false,
+    },
   },
   module: {
     rules: [
@@ -48,6 +53,11 @@ const browserMin = {
   },
   resolve: {
     extensions: ['.ts', '.mjs', '.js', '.json'],
+    fallback: {
+      fs: false,
+      path: false,
+      module: false,
+    },
   },
   module: {
     rules: [
