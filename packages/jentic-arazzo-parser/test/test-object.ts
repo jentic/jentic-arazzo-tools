@@ -111,4 +111,25 @@ describe('parse', function () {
       }
     });
   });
+
+  context('given object with sourceMap option', function () {
+    const arazzoObject = {
+      arazzo: '1.0.1',
+      info: { title: 'Test', version: '1.0.0' },
+      sourceDescriptions: [
+        { name: 'test', type: 'openapi', url: 'https://example.com/openapi.json' },
+      ],
+      workflows: [],
+    };
+
+    specify('should throw ParseError when sourceMap is true', async function () {
+      try {
+        await parse(arazzoObject, { sourceMap: true });
+        assert.fail('Expected ParseError to be thrown');
+      } catch (error) {
+        assert.instanceOf(error, ParseError);
+        assert.include((error as ParseError).message, 'sourceMap option is not supported');
+      }
+    });
+  });
 });
