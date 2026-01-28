@@ -5,18 +5,19 @@
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org",
-    "provenance": true
+    "provenance": true,
+    "tag": "latest"
   },
   "type": "module",
   "sideEffects": false,
   "unpkg": "./dist/jentic-arazzo-parser.browser.min.js",
   "main": "./src/index.cjs",
   "exports": {
-    "types": "./types/jentic-arazzo-parser.d.ts",
+    "types": "./types/arazzo-parser.d.ts",
     "import": "./src/index.mjs",
     "require": "./src/index.cjs"
   },
-  "types": "./types/jentic-arazzo-parser.d.ts",
+  "types": "./types/arazzo-parser.d.ts",
   "scripts": {
     "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:es build:cjs build:umd:browser",
     "build:es": "cross-env BABEL_ENV=es babel src --out-dir src --extensions '.ts' --out-file-extension '.mjs' --root-mode 'upward'",
@@ -52,13 +53,10 @@
     "src/**/*.mjs",
     "src/**/*.cjs",
     "dist/",
-    "types/jentic-arazzo-parser.d.ts",
+    "types/arazzo-parser.d.ts",
     "LICENSE",
     "NOTICE",
     "README.md",
     "CHANGELOG.md"
-  ],
-  "devDependencies": {
-    "@types/emscripten": "^1.41.5"
-  }
+  ]
 }
