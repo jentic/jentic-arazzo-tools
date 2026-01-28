@@ -95,12 +95,12 @@ const parseResult = await parse(source, {
 
 ### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `strict` | `boolean` | `true` | Whether to enforce strict parsing mode. Strict mode uses native JSON and YAML parsers without error recovery. |
-| `sourceMap` | `boolean` | `false` | Whether to include source maps in the parsed result. |
-| `parserOpts` | `Record<string, unknown>` | `{}` | Additional options passed to the underlying parsers. |
-| `resolverOpts` | `Record<string, unknown>` | `{}` | Additional options passed to the underlying resolvers. |
+| Option | Type | Default | Description                                                                                                                                          |
+|--------|------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `strict` | `boolean` | `true` | Whether to enforce strict parsing mode. Strict mode uses native JSON and YAML parsers without error recovery.                                        |
+| `sourceMap` | `boolean` | `false` | Whether to include [source maps](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#source-maps) in the parsed result. |
+| `parserOpts` | `Record<string, unknown>` | `{}` | Additional options passed to the underlying parsers.                                                                                                 |
+| `resolverOpts` | `Record<string, unknown>` | `{}` | Additional options passed to the underlying resolvers.                                                                                               |
 
 ### Default options
 
@@ -130,7 +130,7 @@ try {
 
 ## Working with the result
 
-The `parse` function returns a `ParseResultElement` from SpecLynx ApiDOM:
+The `parse` function returns a [ParseResultElement](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#parseresultelement) representing the result of the parsing operation.
 
 ```js
 import { parse } from '@jentic/arazzo-parser';
