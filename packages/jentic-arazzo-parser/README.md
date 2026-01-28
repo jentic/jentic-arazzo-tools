@@ -1,7 +1,7 @@
 # @jentic/arazzo-parser
 
 `@jentic/arazzo-parser` is a parser for [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) documents.
-It produces [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data model as output.
+It produces [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data model using the [Arazzo 1.x namespace](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1#readme).
 
 ## Installation
 
