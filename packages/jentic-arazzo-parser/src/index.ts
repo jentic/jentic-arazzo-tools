@@ -114,6 +114,11 @@ export async function parse(
 
   // attempt to parse source as plain object
   if (isPlainObject(source)) {
+    if (sourceMap) {
+      throw new ParseError(
+        'sourceMap option is not supported when parsing from object: source maps cannot be inferred from plain objects',
+      );
+    }
     const parseResult = new ParseResultElement();
     const element = refractArazzoSpecification1(source);
     element.classes.push('result');
