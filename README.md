@@ -20,7 +20,7 @@ This monorepo contains the following packages:
 
 ## Parser
 
-The Parser component parses Arazzo Documents from various sources and produces a [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data model.
+The Parser parses Arazzo Documents from various sources and produces a [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data model using the [Arazzo 1.x namespace](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1#readme).
 
 ```sh
 npm install @jentic/arazzo-parser
