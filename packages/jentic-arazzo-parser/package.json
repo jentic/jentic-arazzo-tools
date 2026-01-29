@@ -2,6 +2,14 @@
   "name": "@jentic/arazzo-parser",
   "version": "1.0.0-alpha.2",
   "description": "Parser for Arazzo Documents producing SpecLynx ApiDOM data model.",
+  "keywords": [
+    "arazzo",
+    "arazzo-specification",
+    "parser",
+    "datamodel",
+    "workflow",
+    "workflows"
+  ],
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org",
