@@ -65,6 +65,7 @@ npm run lint       # Lint code
 - ESLint for linting
 - Prettier for formatting
 - Commit messages follow Conventional Commits
+- Comments should start with lowercase letters
 
 ## Key Dependencies
 

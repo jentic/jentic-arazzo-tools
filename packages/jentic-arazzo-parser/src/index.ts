@@ -78,24 +78,34 @@ export async function parse(source: string, options?: Options): Promise<ParseRes
  * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
  *
  * @example
- * // Parse from object
- * const result = await parse(\{ arazzo: '1.0.1', info: \{...\} \});
+ * Parse from object
+ * ```typescript
+ * const result = await parse({ arazzo: '1.0.1', info: {...} });
+ * ```
  *
  * @example
- * // Parse inline JSON
- * const result = await parse('\{"arazzo": "1.0.1", "info": \{...\}\}');
+ * Parse inline JSON
+ * ```typescript
+ * const result = await parse('{"arazzo": "1.0.1", "info": {...}}');
+ * ```
  *
  * @example
- * // Parse from file
+ * Parse from file
+ * ```typescript
  * const result = await parse('/path/to/arazzo.json');
+ * ```
  *
  * @example
- * // Parse from URL
+ * Parse from URL
+ * ```typescript
  * const result = await parse('https://example.com/arazzo.yaml');
+ * ```
  *
  * @example
- * // Parse with custom options
+ * Parse with custom options
+ * ```typescript
  * const result = await parse('/path/to/arazzo.json', customOptions);
+ * ```
  * @public
  */
 export async function parse(

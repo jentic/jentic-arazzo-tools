@@ -1,10 +1,12 @@
-import type { Element, ParseResultElement } from '@speclynx/apidom-datamodel';
+import { Element, isParseResultElement, ParseResultElement } from '@speclynx/apidom-datamodel';
 import {
   dereference as dereferenceURI,
   dereferenceApiDOM as dereferenceApiDOMElement,
   mergeOptions,
+  ReferenceSet,
+  Reference,
 } from '@speclynx/apidom-reference/configuration/empty';
-import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
+import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference/configuration/empty';
 import Arazzo1DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/arazzo-1';
 import OpenAPI2DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-2';
 import OpenAPI3_0DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-0';
@@ -17,6 +19,7 @@ import BinaryParser from '@speclynx/apidom-reference/parse/parsers/binary';
 import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
 import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
 import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
+import { toValue } from '@speclynx/apidom-core';
 
 import DereferenceError from './errors/DereferenceError.ts';
 
@@ -32,7 +35,6 @@ type Options = PartialDeep<ApiDOMReferenceOptions>;
  */
 export const defaultOptions: Options = {
   resolve: {
-    baseURI: 'https://jentic.com',
     resolvers: [
       new FileResolver({ fileAllowList: ['*.json', '*.yaml', '*.yml'] }),
       new HTTPResolverAxios({ timeout: 5000, redirects: 5, withCredentials: false }),
@@ -55,6 +57,7 @@ export const defaultOptions: Options = {
       new OpenAPI3_0DereferenceStrategy(),
       new OpenAPI3_1DereferenceStrategy(),
     ],
+    strategyOpts: {},
   },
 };
 
@@ -99,27 +102,48 @@ export async function dereference(uri: string, options: Options = {}): Promise<P
 /**
  * Dereferences an ApiDOM element representing an Arazzo Document.
  *
- * This function resolves all JSON References ($ref) in the Arazzo Document element
- * and its referenced OpenAPI/AsyncAPI source descriptions.
+ * This function resolves all JSON References ($ref) and Reusable Object references
+ * ($components.*) in the Arazzo Document element.
  *
- * Use this function when you have already parsed an Arazzo Document using `@jentic/arazzo-parser`
- * and want to dereference the resulting ApiDOM element.
+ * Supported scenarios:
+ * - ParseResultElement with retrievalURI metadata: baseURI derived automatically
+ * - ParseResultElement without retrievalURI: requires `options.resolve.baseURI`
+ * - Child element (e.g., WorkflowElement) with parseResult in strategyOpts:
+ *   requires `options.dereference.strategyOpts.parseResult` for component resolution,
+ *   and `options.resolve.baseURI` if parseResult lacks retrievalURI metadata
  *
- * @param element - An ApiDOM element (e.g., ParseResultElement from `@jentic/arazzo-parser`)
+ * @param element - An ApiDOM element (ParseResultElement or child element like WorkflowElement)
  * @param options - Reference options (uses defaultOptions when not provided)
- * @returns A promise that resolves to the dereferenced Arazzo Document as ApiDOM element
- * @throws DereferenceError - When dereferencing fails for any reason. The original error is available via the `cause` property.
+ * @returns A promise that resolves to the dereferenced element
+ * @throws DereferenceError - When baseURI is required but not provided, or when dereferencing fails
  *
  * @example
- * // Parse and then dereference
- * import \{ parse \} from '@jentic/arazzo-parser';
+ * Dereference ParseResultElement with retrievalURI (from file parsing)
+ * ```typescript
+ * import { parse } from '@jentic/arazzo-parser';
  *
  * const parseResult = await parse('/path/to/arazzo.json');
  * const dereferenced = await dereferenceApiDOM(parseResult);
+ * ```
  *
  * @example
- * // Dereference with custom options
- * const dereferenced = await dereferenceApiDOM(parseResult, customReferenceOptions);
+ * Dereference ParseResultElement without retrievalURI (from inline parsing)
+ * ```typescript
+ * const parseResult = await parse({ arazzo: '1.0.1', ... });
+ * const dereferenced = await dereferenceApiDOM(parseResult, {
+ *   resolve: { baseURI: 'https://example.com/arazzo.json' },
+ * });
+ * ```
+ *
+ * @example
+ * Dereference child element (e.g., WorkflowElement)
+ * ```typescript
+ * const parseResult = await parse('/path/to/arazzo.json');
+ * const workflow = parseResult.api.workflows.get(0);
+ * const dereferenced = await dereferenceApiDOM(workflow, {
+ *   dereference: { strategyOpts: { parseResult } },
+ * });
+ * ```
  * @public
  */
 export async function dereferenceApiDOM<T extends Element>(
@@ -127,9 +151,54 @@ export async function dereferenceApiDOM<T extends Element>(
   options: Options = {},
 ): Promise<T> {
   const mergedOptions = mergeOptions(defaultOptions as ApiDOMReferenceOptions, options);
+  const refSet = mergedOptions.dereference?.refSet ?? new ReferenceSet();
+  let baseURI = mergedOptions.resolve?.baseURI;
+
+  if (refSet.size === 0) {
+    if (isParseResultElement(element)) {
+      if (element.hasMetaProperty('retrievalURI')) {
+        baseURI = toValue(element.meta.get('retrievalURI')) as string;
+      } else if (!baseURI) {
+        throw new DereferenceError(
+          'baseURI option is required when dereferencing a ParseResultElement without retrievalURI metadata',
+        );
+      }
+    } else if (isParseResultElement(mergedOptions.dereference?.strategyOpts?.parseResult)) {
+      // dereferencing child element requires refSet for component resolution
+      const { parseResult } = mergedOptions.dereference.strategyOpts;
+      let rootURI: string;
+
+      if (parseResult.hasMetaProperty('retrievalURI')) {
+        rootURI = toValue(parseResult.meta.get('retrievalURI')) as string;
+      } else if (baseURI) {
+        rootURI = baseURI;
+      } else {
+        throw new DereferenceError(
+          'baseURI option is required when dereferencing a child element without retrievalURI metadata',
+        );
+      }
+
+      const elementReference = new Reference({
+        uri: `${rootURI}#fragment`,
+        value: new ParseResultElement([element]),
+      });
+      const rootReference = new Reference({ uri: rootURI, value: parseResult });
+
+      refSet.add(elementReference).add(rootReference);
+      baseURI = rootURI;
+    }
+  }
 
   try {
-    return await dereferenceApiDOMElement(element, mergedOptions);
+    return await dereferenceApiDOMElement(
+      element,
+      mergeOptions(mergedOptions, {
+        resolve: {
+          baseURI,
+        },
+        dereference: { refSet },
+      }),
+    );
   } catch (error: unknown) {
     throw new DereferenceError('Failed to dereference Arazzo Document', { cause: error });
   }
