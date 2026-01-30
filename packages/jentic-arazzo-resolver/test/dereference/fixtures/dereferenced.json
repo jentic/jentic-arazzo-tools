@@ -1,0 +1,63 @@
+[
+  {
+    "arazzo": "1.0.1",
+    "info": {
+      "title": "Fixture API Workflow",
+      "version": "1.0.0"
+    },
+    "sourceDescriptions": [
+      {
+        "name": "fixtureApi",
+        "type": "openapi",
+        "url": "https://example.com/openapi.json"
+      }
+    ],
+    "workflows": [
+      {
+        "workflowId": "fixture-workflow",
+        "inputs": {
+          "type": "object",
+          "properties": {
+            "resourceId": {
+              "type": "string",
+              "description": "The resource identifier"
+            }
+          }
+        },
+        "steps": [
+          {
+            "stepId": "step1",
+            "operationId": "getResource",
+            "parameters": [
+              {
+                "name": "resourceId",
+                "in": "path",
+                "value": "$inputs.resourceId"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "components": {
+      "inputs": {
+        "WorkflowInputs": {
+          "type": "object",
+          "properties": {
+            "resourceId": {
+              "type": "string",
+              "description": "The resource identifier"
+            }
+          }
+        }
+      },
+      "parameters": {
+        "ResourceId": {
+          "name": "resourceId",
+          "in": "path",
+          "value": "$inputs.resourceId"
+        }
+      }
+    }
+  }
+]
