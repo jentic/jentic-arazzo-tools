@@ -19,8 +19,10 @@ jentic-arazzo-tools/
 
 ## Common Commands
 
+**Important:** Always run `nvm use` before any npm commands to ensure the correct Node.js version is used.
+
 ```sh
-# Use correct Node.js version
+# Use correct Node.js version (run this first!)
 nvm use
 
 # Install dependencies

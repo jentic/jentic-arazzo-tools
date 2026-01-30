@@ -80,37 +80,42 @@ const parseResult = await parse('https://example.com/arazzo.yaml');
 
 ## Parse options
 
-The `parse` function accepts an optional second argument with parsing options:
+The `parse` function accepts an optional second argument with reference options compatible with [SpecLynx ApiDOM Reference Options](https://github.com/speclynx/apidom/blob/main/packages/apidom-reference/src/options/index.ts):
 
 ```js
 import { parse } from '@jentic/arazzo-parser';
 
 const parseResult = await parse(source, {
-  strict: true,      // Use strict parsing mode (default: true)
-  sourceMap: false,  // Include source maps (default: false)
-  parserOpts: {},    // Additional parser options (default: {})
-  resolverOpts: {},  // Additional resolver options (default: {})
+  parse: {
+    parserOpts: {
+      strict: true,      // Use strict parsing mode (default: true)
+      sourceMap: false,  // Include source maps (default: false)
+    },
+  },
+  resolve: {
+    resolverOpts: {},    // Additional resolver options
+  },
 });
 ```
-
-### Options
-
-| Option | Type | Default | Description                                                                                                                                          |
-|--------|------|---------|------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `strict` | `boolean` | `true` | Whether to enforce strict parsing mode. Strict mode uses native JSON and YAML parsers without error recovery.                                        |
-| `sourceMap` | `boolean` | `false` | Whether to include [source maps](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#source-maps) in the parsed result. |
-| `parserOpts` | `Record<string, unknown>` | `{}` | Additional options passed to the underlying parsers.                                                                                                 |
-| `resolverOpts` | `Record<string, unknown>` | `{}` | Additional options passed to the underlying resolvers.                                                                                               |
 
 ### Default options
 
 You can import the default options:
 
 ```js
-import { defaultParseOptions } from '@jentic/arazzo-parser';
+import { defaultOptions } from '@jentic/arazzo-parser';
 
-console.log(defaultParseOptions);
-// { strict: true, sourceMap: false, parserOpts: {}, resolverOpts: {} }
+console.log(defaultOptions);
+// {
+//   parse: {
+//     parsers: [...],
+//     parserOpts: {},
+//   },
+//   resolve: {
+//     resolvers: [...],
+//     resolverOpts: {},
+//   },
+// }
 ```
 
 ## Error handling
@@ -146,6 +151,23 @@ const hasErrors = parseResult.errors.length > 0;
 // Check if parseResult is empty
 const isEmpty = parseResult.isEmpty;
 ```
+
+### Retrieval URI metadata
+
+When parsing from a file system path or HTTP(S) URL, the `retrievalURI` metadata is set on the parse result:
+
+```js
+import { parse } from '@jentic/arazzo-parser';
+import { toValue } from '@speclynx/apidom-core';
+
+const parseResult = await parse('/path/to/arazzo.json');
+
+// Get the URI from which the document was retrieved
+const uri = toValue(parseResult.meta.get('retrievalURI'));
+// '/path/to/arazzo.json'
+```
+
+Note: `retrievalURI` is not set when parsing from inline content (string) or plain objects.
 
 ## SpecLynx ApiDOM tooling
 

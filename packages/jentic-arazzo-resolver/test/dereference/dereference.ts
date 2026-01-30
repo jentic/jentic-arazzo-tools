@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { assert } from 'chai';
 import { isParseResultElement } from '@speclynx/apidom-datamodel';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
+import { toValue } from '@speclynx/apidom-core';
 
 import { dereference, DereferenceError } from '../../src/index.ts';
 import { createHTTPServer, loadJsonFile, type ServerTerminable } from '../helpers.ts';
@@ -31,7 +32,7 @@ describe('dereference', function () {
       const actual = await dereference(rootFilePath);
       const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
 
-      assert.deepEqual(actual.toValue(), expected);
+      assert.deepEqual(toValue(actual), expected);
     });
   });
 
@@ -62,7 +63,7 @@ describe('dereference', function () {
       const actual = await dereference(`http://localhost:${server.port}/root.json`);
       const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
 
-      assert.deepEqual(actual.toValue(), expected);
+      assert.deepEqual(toValue(actual), expected);
     });
   });
 

@@ -3,7 +3,8 @@ import { refractArazzoSpecification1 } from '@speclynx/apidom-ns-arazzo-1';
 import ApiDOMParser, { ParserError } from '@speclynx/apidom-parser';
 import * as jsonParserAdapter from '@speclynx/apidom-parser-adapter-arazzo-json-1';
 import * as yamlParserAdapter from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
-import { parse as parseURI } from '@speclynx/apidom-reference/configuration/empty';
+import { parse as parseURI, mergeOptions } from '@speclynx/apidom-reference/configuration/empty';
+import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
 import ArazzoJSON1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-json-1';
 import ArazzoYAML1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-yaml-1';
 import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
@@ -12,43 +13,31 @@ import { isPlainObject } from 'ramda-adjunct';
 
 import ParseError from './errors/ParseError.ts';
 
-/**
- * Options for parsing Arazzo Documents.
- * @public
- */
-export interface ParseOptions {
-  /**
-   * Whether to enforce strict parsing mode.
-   * Strict parsing mode is using native JSON and YAML parsers without source maps and error recovery.
-   * @defaultValue true
-   */
-  readonly strict?: boolean;
-  /**
-   * Whether to include source maps in the parsed result.
-   * @defaultValue false
-   */
-  readonly sourceMap?: boolean;
-  /**
-   * Additional options passed to the underlying parsers.
-   * @defaultValue \{\}
-   */
-  readonly parserOpts?: Record<string, unknown>;
-  /**
-   * Additional options passed to the underlying resolvers.
-   * @defaultValue \{\}
-   */
-  readonly resolverOpts?: Record<string, unknown>;
-}
+type PartialDeep<T> = {
+  [P in keyof T]?: T[P] extends object ? PartialDeep<T[P]> : T[P];
+};
+
+type Options = PartialDeep<ApiDOMReferenceOptions>;
 
 /**
- * Default options for parsing Arazzo Documents.
+ * Default reference options for parsing Arazzo Documents.
  * @public
  */
-export const defaultParseOptions: Required<ParseOptions> = {
-  strict: true,
-  sourceMap: false,
-  parserOpts: {},
-  resolverOpts: {},
+export const defaultOptions: Options = {
+  parse: {
+    parsers: [
+      new ArazzoJSON1Parser({ allowEmpty: false, sourceMap: false }),
+      new ArazzoYAML1Parser({ allowEmpty: false, sourceMap: false }),
+    ],
+    parserOpts: {},
+  },
+  resolve: {
+    resolvers: [
+      new FileResolver({ fileAllowList: ['*.json', '*.yaml', '*.yml'] }),
+      new HTTPResolverAxios({ timeout: 5000, redirects: 5, withCredentials: false }),
+    ],
+    resolverOpts: {},
+  },
 };
 
 const parser = new ApiDOMParser();
@@ -58,23 +47,23 @@ parser.use(yamlParserAdapter);
 /**
  * Parses an Arazzo Document from an object.
  * @param source - The Arazzo Document as a plain object
- * @param options - Parsing options
+ * @param options - Reference options (uses defaultOptions when not provided)
  * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
  * @public
  */
 export async function parse(
   source: Record<string, unknown>,
-  options?: ParseOptions,
+  options?: Options,
 ): Promise<ParseResultElement>;
 /**
  * Parses an Arazzo Document from a string or URI.
  * @param source - The Arazzo Document as string content, or a file system path / HTTP(S) URL
- * @param options - Parsing options
+ * @param options - Reference options (uses defaultOptions when not provided)
  * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
  * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
  * @public
  */
-export async function parse(source: string, options?: ParseOptions): Promise<ParseResultElement>;
+export async function parse(source: string, options?: Options): Promise<ParseResultElement>;
 /**
  * Parses an Arazzo Document from a string, object, or URI.
  *
@@ -84,7 +73,7 @@ export async function parse(source: string, options?: ParseOptions): Promise<Par
  * 3. URI string - treats as a file system path or HTTP(S) URL and resolves the document
  *
  * @param source - The Arazzo Document as an object, string content, or a file system path / HTTP(S) URL
- * @param options - Parsing options
+ * @param options - Reference options (uses defaultOptions when not provided)
  * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
  * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
  *
@@ -103,18 +92,21 @@ export async function parse(source: string, options?: ParseOptions): Promise<Par
  * @example
  * // Parse from URL
  * const result = await parse('https://example.com/arazzo.yaml');
+ *
+ * @example
+ * // Parse with custom options
+ * const result = await parse('/path/to/arazzo.json', customOptions);
  * @public
  */
 export async function parse(
   source: string | Record<string, unknown>,
-  options: ParseOptions = {},
+  options: Options = {},
 ): Promise<ParseResultElement> {
-  const mergedOptions = { ...defaultParseOptions, ...options };
-  const { strict, sourceMap, parserOpts, resolverOpts } = mergedOptions;
+  const mergedOptions = mergeOptions(defaultOptions as ApiDOMReferenceOptions, options);
 
   // attempt to parse source as plain object
   if (isPlainObject(source)) {
-    if (sourceMap) {
+    if (mergedOptions.parse?.parserOpts?.sourceMap) {
       throw new ParseError(
         'sourceMap option is not supported when parsing from object: source maps cannot be inferred from plain objects',
       );
@@ -128,7 +120,10 @@ export async function parse(
 
   // next try to parse the source assuming it contains Arazzo Document
   try {
-    return await parser.parse(source, { sourceMap, strict });
+    return await parser.parse(source, {
+      sourceMap: mergedOptions.parse?.parserOpts?.sourceMap,
+      strict: mergedOptions.parse?.parserOpts?.strict,
+    });
   } catch (error: unknown) {
     if (
       error instanceof ParserError &&
@@ -140,23 +135,10 @@ export async function parse(
 
   // next we assume that source is either file system URI or HTTP(S) URL
   try {
-    return await parseURI(source, {
-      parse: {
-        parsers: [
-          new ArazzoJSON1Parser({ allowEmpty: false, sourceMap, strict }),
-          new ArazzoYAML1Parser({ allowEmpty: false, sourceMap, strict }),
-        ],
-        parserOpts,
-      },
-      resolve: {
-        resolvers: [
-          new FileResolver({ fileAllowList: ['*.json', '*.yaml', '*.yml'] }),
-          new HTTPResolverAxios({ timeout: 5000, redirects: 5, withCredentials: false }),
-        ],
-        resolverOpts,
-      },
-    });
+    const parseResult = await parseURI(source, mergedOptions);
+    parseResult.meta.set('retrievalURI', source);
+    return parseResult;
   } catch (error: unknown) {
-    throw new ParseError('Failed to parse Arazzo Document from URI', { cause: error });
+    throw new ParseError(`Failed to parse Arazzo Document from "${source}"`, { cause: error });
   }
 }

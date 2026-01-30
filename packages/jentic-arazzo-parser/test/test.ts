@@ -1,8 +1,11 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import { assert, expect } from 'chai';
 import dedent from 'dedent';
 import { isParseResultElement } from '@speclynx/apidom-datamodel';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
-import { sexprs } from '@speclynx/apidom-core';
+import { sexprs, toValue } from '@speclynx/apidom-core';
 
 import { parse } from '../src/index.ts';
 import ParseError from '../src/errors/ParseError.ts';
@@ -117,6 +120,29 @@ describe('parse', function () {
     });
   });
 
+  context('given file system path', function () {
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const fixturePath = path.join(__dirname, 'fixtures', 'arazzo.json');
+
+    specify('should return ParseResultElement', async function () {
+      const result = await parse(fixturePath);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain ArazzoSpecification1Element as api', async function () {
+      const result = await parse(fixturePath);
+
+      assert.isTrue(isArazzoSpecification1Element(result.api));
+    });
+
+    specify('should set retrievalURI metadata to file path', async function () {
+      const result = await parse(fixturePath);
+
+      assert.strictEqual(toValue(result.meta.get('retrievalURI')), fixturePath);
+    });
+  });
+
   context('given options', function () {
     const arazzoJson = JSON.stringify({
       arazzo: '1.0.1',
@@ -135,14 +161,16 @@ describe('parse', function () {
     });
 
     specify('should respect strict option', async function () {
-      const result = await parse(arazzoJson, { strict: false });
+      const result = await parse(arazzoJson, { parse: { parserOpts: { strict: false } } });
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should respect sourceMap option', async function () {
       // sourceMap requires strict: false since strict mode uses native parsers without source map support
-      const result = await parse(arazzoJson, { sourceMap: true, strict: false });
+      const result = await parse(arazzoJson, {
+        parse: { parserOpts: { sourceMap: true, strict: false } },
+      });
 
       assert.isTrue(isParseResultElement(result));
     });
