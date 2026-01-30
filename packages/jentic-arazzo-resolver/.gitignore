@@ -1,0 +1,5 @@
+src/**/*.mjs
+src/**/*.cjs
+test/**/*.mjs
+dist/
+types/
