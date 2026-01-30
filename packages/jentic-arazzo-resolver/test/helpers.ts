@@ -26,7 +26,10 @@ export const createHTTPServer = ({
       }
 
       const data = fs.readFileSync(filePath).toString();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      const ext = path.extname(filePath).toLowerCase();
+      const contentType =
+        ext === '.yaml' || ext === '.yml' ? 'application/yaml' : 'application/json';
+      res.writeHead(200, { 'Content-Type': contentType });
       res.end(data);
     }) as ServerTerminable;
 
