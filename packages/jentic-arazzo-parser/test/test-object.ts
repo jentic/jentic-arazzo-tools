@@ -124,7 +124,7 @@ describe('parse', function () {
 
     specify('should throw ParseError when sourceMap is true', async function () {
       try {
-        await parse(arazzoObject, { sourceMap: true });
+        await parse(arazzoObject, { parse: { parserOpts: { sourceMap: true } } });
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
