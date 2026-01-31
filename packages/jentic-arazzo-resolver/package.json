@@ -53,7 +53,8 @@
     "@speclynx/apidom-datamodel": "2.5.0",
     "@speclynx/apidom-error": "2.5.0",
     "@speclynx/apidom-ns-arazzo-1": "2.5.0",
-    "@speclynx/apidom-reference": "2.5.0"
+    "@speclynx/apidom-reference": "2.5.0",
+    "type-fest": "^5.4.3"
   },
   "files": [
     "src/**/*.mjs",
