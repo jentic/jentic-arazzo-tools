@@ -23,11 +23,15 @@ import { toValue } from '@speclynx/apidom-core';
 
 import DereferenceError from './errors/DereferenceError.ts';
 
-type PartialDeep<T> = {
-  [P in keyof T]?: T[P] extends object ? PartialDeep<T[P]> : T[P];
+/**
+ * Options for dereferencing Arazzo Documents.
+ * @public
+ */
+export type Options = {
+  [P in keyof ApiDOMReferenceOptions]?: ApiDOMReferenceOptions[P] extends object
+    ? { [K in keyof ApiDOMReferenceOptions[P]]?: ApiDOMReferenceOptions[P][K] }
+    : ApiDOMReferenceOptions[P];
 };
-
-type Options = PartialDeep<ApiDOMReferenceOptions>;
 
 /**
  * Default reference options for dereferencing Arazzo Documents.
@@ -123,14 +127,14 @@ export async function dereference(uri: string, options: Options = {}): Promise<P
  * import { parse } from '@jentic/arazzo-parser';
  *
  * const parseResult = await parse('/path/to/arazzo.json');
- * const dereferenced = await dereferenceApiDOM(parseResult);
+ * const dereferenced = await dereferenceElement(parseResult);
  * ```
  *
  * @example
  * Dereference ParseResultElement without retrievalURI (from inline parsing)
  * ```typescript
  * const parseResult = await parse({ arazzo: '1.0.1', ... });
- * const dereferenced = await dereferenceApiDOM(parseResult, {
+ * const dereferenced = await dereferenceElement(parseResult, {
  *   resolve: { baseURI: 'https://example.com/arazzo.json' },
  * });
  * ```
@@ -140,13 +144,13 @@ export async function dereference(uri: string, options: Options = {}): Promise<P
  * ```typescript
  * const parseResult = await parse('/path/to/arazzo.json');
  * const workflow = parseResult.api.workflows.get(0);
- * const dereferenced = await dereferenceApiDOM(workflow, {
+ * const dereferenced = await dereferenceElement(workflow, {
  *   dereference: { strategyOpts: { parseResult } },
  * });
  * ```
  * @public
  */
-export async function dereferenceApiDOM<T extends Element>(
+export async function dereferenceElement<T extends Element>(
   element: T,
   options: Options = {},
 ): Promise<T> {
