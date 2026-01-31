@@ -66,5 +66,8 @@
     "NOTICE",
     "README.md",
     "CHANGELOG.md"
-  ]
+  ],
+  "devDependencies": {
+    "null-loader": "^4.0.1"
+  }
 }
