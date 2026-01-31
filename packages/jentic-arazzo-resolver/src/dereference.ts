@@ -20,6 +20,7 @@ import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
 import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
 import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import { toValue } from '@speclynx/apidom-core';
+import type { PartialDeep } from 'type-fest';
 
 import DereferenceError from './errors/DereferenceError.ts';
 
@@ -27,11 +28,7 @@ import DereferenceError from './errors/DereferenceError.ts';
  * Options for dereferencing Arazzo Documents.
  * @public
  */
-export type Options = {
-  [P in keyof ApiDOMReferenceOptions]?: ApiDOMReferenceOptions[P] extends object
-    ? { [K in keyof ApiDOMReferenceOptions[P]]?: ApiDOMReferenceOptions[P][K] }
-    : ApiDOMReferenceOptions[P];
-};
+export type Options = PartialDeep<ApiDOMReferenceOptions>;
 
 /**
  * Default reference options for dereferencing Arazzo Documents.
