@@ -229,7 +229,7 @@ The [@speclynx/apidom-core](https://github.com/speclynx/apidom/tree/main/package
 
 ```js
 import { parse } from '@jentic/arazzo-parser';
-import { cloneDeep, cloneShallow } from '@spelynx/apidom-datamodel';
+import { cloneDeep, cloneShallow } from '@speclynx/apidom-datamodel';
 import { toValue, toJSON, toYAML, sexprs } from '@speclynx/apidom-core';
 
 const parseResult = await parse(source);
