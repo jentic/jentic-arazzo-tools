@@ -26,6 +26,11 @@ const browser = {
   module: {
     rules: [
       {
+        test: /\.wasm$/,
+        type: 'javascript/auto',
+        use: 'null-loader',
+      },
+      {
         test: /\.(ts|js)?$/,
         exclude: /node_modules/,
         use: {
@@ -61,6 +66,11 @@ const browserMin = {
   },
   module: {
     rules: [
+      {
+        test: /\.wasm$/,
+        type: 'javascript/auto',
+        use: 'null-loader',
+      },
       {
         test: /\.(ts|js)?$/,
         exclude: /node_modules/,
