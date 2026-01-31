@@ -26,6 +26,13 @@ const browser = {
   module: {
     rules: [
       {
+        test: /\.wasm$/,
+        type: 'asset/inline',
+        generator: {
+          dataUrl: () => '',
+        },
+      },
+      {
         test: /\.(ts|js)?$/,
         exclude: /node_modules/,
         use: {
@@ -61,6 +68,13 @@ const browserMin = {
   },
   module: {
     rules: [
+      {
+        test: /\.wasm$/,
+        type: 'asset/inline',
+        generator: {
+          dataUrl: () => '',
+        },
+      },
       {
         test: /\.(ts|js)?$/,
         exclude: /node_modules/,
