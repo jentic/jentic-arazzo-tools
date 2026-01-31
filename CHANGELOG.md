@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.5](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.4...v1.0.0-alpha.5) (2026-01-31)
+
+### Bug Fixes
+
+- **resolver:** provide documentation in README ([74cabc1](https://github.com/jentic/jentic-arazzo-tools/commit/74cabc102c56eb3cc2640500a513449a64ca52ad))
+
 # [1.0.0-alpha.4](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.3...v1.0.0-alpha.4) (2026-01-31)
 
 ### Features
