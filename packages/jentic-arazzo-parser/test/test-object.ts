@@ -122,14 +122,16 @@ describe('parse', function () {
       workflows: [],
     };
 
-    specify('should throw ParseError when sourceMap is true', async function () {
-      try {
-        await parse(arazzoObject, { parse: { parserOpts: { sourceMap: true } } });
-        assert.fail('Expected ParseError to be thrown');
-      } catch (error) {
-        assert.instanceOf(error, ParseError);
-        assert.include((error as ParseError).message, 'sourceMap option is not supported');
-      }
+    specify('should include source maps when sourceMap is true', async function () {
+      const result = await parse(arazzoObject, {
+        parse: { parserOpts: { sourceMap: true, strict: false } },
+      });
+
+      assert.isTrue(isParseResultElement(result));
+      assert.isDefined(result.api!.startLine);
+      assert.isDefined(result.api!.startCharacter);
+      assert.isDefined(result.api!.endLine);
+      assert.isDefined(result.api!.endCharacter);
     });
   });
 });

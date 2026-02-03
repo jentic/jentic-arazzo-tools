@@ -50,12 +50,11 @@
     "@babel/runtime-corejs3": "^7.28.4",
     "@speclynx/apidom-datamodel": "2.5.1",
     "@speclynx/apidom-error": "2.5.1",
-    "@speclynx/apidom-ns-arazzo-1": "2.5.1",
-    "@speclynx/apidom-parser": "2.5.1",
     "@speclynx/apidom-parser-adapter-arazzo-json-1": "2.5.1",
     "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "2.5.1",
     "@speclynx/apidom-reference": "2.5.1",
-    "ramda-adjunct": "^6.0.0"
+    "ramda-adjunct": "^6.0.0",
+    "type-fest": "^5.4.3"
   },
   "files": [
     "src/**/*.mjs",
