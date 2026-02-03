@@ -15,8 +15,8 @@ npm install @jentic/arazzo-parser
 
 `@jentic/arazzo-parser` provides a unified `parse` function that accepts multiple input types:
 
-1. **Plain JavaScript object** - directly refracts into ApiDOM
-2. **String content** - parses inline JSON or YAML Arazzo Documents
+1. **Plain JavaScript object** - converts to JSON and parses (source maps supported with `strict: false`)
+2. **String content** - detects Arazzo content and parses inline JSON or YAML
 3. **File system path** - resolves and parses local Arazzo Documents
 4. **HTTP(S) URL** - fetches and parses remote Arazzo Documents
 
@@ -106,7 +106,7 @@ console.log(defaultOptions);
 // {
 //   parse: {
 //     parsers: [...],
-//     parserOpts: {},
+//     parserOpts: { sourceMap: false, strict: true },
 //   },
 //   resolve: {
 //     resolvers: [...],
@@ -170,7 +170,8 @@ Note: `retrievalURI` is not set when parsing from inline content (string) or pla
 
 Source maps allow you to track the original position (line, column) of each element in the parsed document. This is useful for error reporting, IDE integrations, linting, and any tooling that needs to show precise locations in the original source.
 
-To enable source maps, set `sourceMap: true` in the parser options:
+
+To enable source maps, set `sourceMap: true` and `strict: false` in the parser options:
 
 ```js
 import { parse } from '@jentic/arazzo-parser';
@@ -179,6 +180,7 @@ const parseResult = await parse('/path/to/arazzo.yaml', {
   parse: {
     parserOpts: {
       sourceMap: true,
+      strict: false,
     },
   },
 });
@@ -190,7 +192,7 @@ When source maps are enabled, each element in the parsed result contains positio
 import { parse } from '@jentic/arazzo-parser';
 
 const parseResult = await parse('/path/to/arazzo.yaml', {
-  parse: { parserOpts: { sourceMap: true } },
+  parse: { parserOpts: { sourceMap: true, strict: false } },
 });
 
 const arazzoSpec = parseResult.api;
@@ -210,12 +212,12 @@ console.log(`Workflow starts at line ${workflow.startLine}, column ${workflow.st
 
 For more details about source maps, see the [SpecLynx ApiDOM Data Model documentation](https://github.com/speclynx/apidom/tree/main/packages/apidom-datamodel#source-maps).
 
-**Note:** Source maps are only available when parsing from string content, file paths, or URLs. When parsing from a plain JavaScript object, source maps cannot be generated and attempting to enable them will throw a `ParseError`:
+**Note:** Source maps require `strict: false` to be set. When parsing from objects, they are converted to JSON strings internally, so source maps are fully supported:
 
 ```js
-// This will throw ParseError
+// Source maps with objects (requires strict: false)
 await parse({ arazzo: '1.0.1', ... }, {
-  parse: { parserOpts: { sourceMap: true } },
+  parse: { parserOpts: { sourceMap: true, strict: false } },
 });
 ```
 
