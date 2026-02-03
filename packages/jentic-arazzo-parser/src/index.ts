@@ -5,7 +5,10 @@ import ArazzoJSON1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-j
 import ArazzoYAML1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-yaml-1';
 import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
 import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
-import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
+import {
+  detect as detectArazzoJSON,
+  mediaTypes,
+} from '@speclynx/apidom-parser-adapter-arazzo-json-1';
 import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
 import { isPlainObject } from 'ramda-adjunct';
 import type { PartialDeep } from 'type-fest';
@@ -25,19 +28,23 @@ export type Options = PartialDeep<ApiDOMReferenceOptions>;
  */
 export const defaultOptions: Options = {
   parse: {
+    mediaType: mediaTypes.latest('generic'),
     parsers: [
       new ArazzoJSON1Parser({
         allowEmpty: false,
         fileExtensions: ['.json'],
+        parseFn: parseURI,
       }),
       new ArazzoYAML1Parser({
         allowEmpty: false,
         fileExtensions: ['.yaml', '.yml'],
+        parseFn: parseURI,
       }),
     ],
     parserOpts: {
       sourceMap: false,
       strict: true,
+      sourceDescriptions: false,
     },
   },
   resolve: {

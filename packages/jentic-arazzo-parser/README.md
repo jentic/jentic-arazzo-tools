@@ -106,7 +106,7 @@ console.log(defaultOptions);
 // {
 //   parse: {
 //     parsers: [...],
-//     parserOpts: { sourceMap: false, strict: true },
+//     parserOpts: { sourceMap: false, strict: true, sourceDescriptions: false },
 //   },
 //   resolve: {
 //     resolvers: [...],
@@ -220,6 +220,170 @@ For more details about source maps, see the [SpecLynx ApiDOM Data Model document
 await parse({ arazzo: '1.0.1', ... }, {
   parse: { parserOpts: { sourceMap: true, strict: false } },
 });
+```
+
+## Parsing source descriptions
+
+Arazzo documents can reference external API specifications (OpenAPI, Arazzo) through [Source Descriptions](https://spec.openapis.org/arazzo/latest.html#source-description-object). The parser can automatically fetch and parse these referenced documents.
+
+**Note:** Source descriptions parsing is disabled by default for performance reasons. Enable it explicitly when you need to resolve and parse referenced API specifications.
+
+### Enabling source descriptions parsing
+
+To parse source descriptions, enable the `sourceDescriptions` option in `parserOpts`:
+
+```js
+import { parse } from '@jentic/arazzo-parser';
+
+const parseResult = await parse('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      sourceDescriptions: true,
+    },
+  },
+});
+```
+
+Alternatively, you can configure it per parser for more granular control:
+
+```js
+const parseResult = await parse('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      'arazzo-json-1': { sourceDescriptions: true },
+      'arazzo-yaml-1': { sourceDescriptions: true },
+    },
+  },
+});
+```
+
+### Selective parsing
+
+You can selectively parse only specific source descriptions by providing an array of names:
+
+```js
+const parseResult = await parse('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      sourceDescriptions: ['petStoreApi', 'paymentApi'],
+    },
+  },
+});
+```
+
+### Result structure
+
+When source descriptions are parsed, each parsed document is added to the main `ParseResultElement` as an additional element. The first element is always the main Arazzo document, and subsequent elements are the parsed source descriptions:
+
+```js
+import { parse } from '@jentic/arazzo-parser';
+
+const parseResult = await parse('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      sourceDescriptions: true,
+    },
+  },
+});
+
+// Main Arazzo document
+const arazzoSpec = parseResult.api;
+
+// Number of elements (1 main + N source descriptions)
+console.log(parseResult.length);
+
+// Access parsed source descriptions (filter by 'source-description' class)
+for (let i = 0; i < parseResult.length; i++) {
+  const element = parseResult.get(i);
+
+  if (element.classes.includes('source-description')) {
+    // Source description metadata
+    const name = element.meta.get('name')?.toValue();
+    const type = element.meta.get('type')?.toValue();
+
+    console.log(`Source description "${name}" (${type})`);
+
+    // The parsed API document
+    const api = element.api;
+  }
+}
+```
+
+### Recursive parsing
+
+When a source description is of type `arazzo`, the parser recursively parses that document's source descriptions as well. This allows you to parse entire dependency trees of Arazzo documents.
+
+### Limiting recursion depth
+
+To prevent excessive recursion or handle deeply nested documents, use the `sourceDescriptionsMaxDepth` option:
+
+```js
+const parseResult = await parse('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      sourceDescriptions: true,
+      sourceDescriptionsMaxDepth: 2, // Only parse 2 levels deep
+    },
+  },
+});
+```
+
+The default value is `+Infinity` (no limit). Setting it to `0` will create error annotations instead of parsing any source descriptions.
+
+### Cycle detection
+
+The parser automatically detects circular references between Arazzo documents. When a cycle is detected, a warning annotation is added instead of causing infinite recursion:
+
+```js
+// arazzo-a.json references arazzo-b.json
+// arazzo-b.json references arazzo-a.json (cycle!)
+
+const parseResult = await parse('/path/to/arazzo-a.json', {
+  parse: {
+    parserOpts: {
+      sourceDescriptions: true,
+    },
+  },
+});
+
+// The cycle is handled gracefully - check for warning annotations
+```
+
+### Error and warning handling
+
+When issues occur during source description parsing, the parser does not throw errors. Instead, it adds annotation elements to the source description's parse result:
+
+- **`error`** class - Parsing failed (e.g., file not found, invalid document, max depth exceeded)
+- **`warning`** class - Non-fatal issues (e.g., cycle detected, type mismatch between declared and actual)
+
+This allows partial parsing to succeed even if some source descriptions have issues:
+
+```js
+const parseResult = await parse('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      sourceDescriptions: true,
+    },
+  },
+});
+
+// Check each source description for errors and warnings
+for (let i = 0; i < parseResult.length; i++) {
+  const element = parseResult.get(i);
+
+  if (element.classes.includes('source-description')) {
+    const name = element.meta.get('name')?.toValue();
+
+    // Use built-in accessors for errors and warnings
+    element.errors.forEach((error) => {
+      console.error(`Error in "${name}": ${error.toValue()}`);
+    });
+
+    element.warnings.forEach((warning) => {
+      console.warn(`Warning in "${name}": ${warning.toValue()}`);
+    });
+  }
+}
 ```
 
 ## SpecLynx ApiDOM tooling

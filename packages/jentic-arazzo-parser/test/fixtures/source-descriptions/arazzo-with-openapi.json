@@ -1,0 +1,25 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Pet Store Workflow",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "petStore",
+      "type": "openapi",
+      "url": "./openapi.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "list-pets",
+      "steps": [
+        {
+          "stepId": "getPets",
+          "operationId": "$sourceDescriptions.petStore#/paths/~1pets/get"
+        }
+      ]
+    }
+  ]
+}
