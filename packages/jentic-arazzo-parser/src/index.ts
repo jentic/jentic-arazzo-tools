@@ -8,15 +8,16 @@ import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http
 import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
 import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
 import { isPlainObject } from 'ramda-adjunct';
+import type { PartialDeep } from 'type-fest';
 
 import ParseError from './errors/ParseError.ts';
 import MemoryResolver from './resolve/resolvers/memory/index.ts';
 
-type PartialDeep<T> = {
-  [P in keyof T]?: T[P] extends object ? PartialDeep<T[P]> : T[P];
-};
-
-type Options = PartialDeep<ApiDOMReferenceOptions>;
+/**
+ * Options for parsing Arazzo Documents.
+ * @public
+ */
+export type Options = PartialDeep<ApiDOMReferenceOptions>;
 
 /**
  * Default reference options for parsing Arazzo Documents.
