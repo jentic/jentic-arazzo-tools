@@ -122,16 +122,16 @@ describe('parse', function () {
       workflows: [],
     };
 
-    -specify('should include source maps when sourceMap is true', async function () {
+    specify('should include source maps when sourceMap is true', async function () {
       const result = await parse(arazzoObject, {
         parse: { parserOpts: { sourceMap: true, strict: false } },
       });
 
       assert.isTrue(isParseResultElement(result));
-      assert.isDefined(result.api.startLine);
-      assert.isDefined(result.api.startCharacter);
-      assert.isDefined(result.api.endLine);
-      assert.isDefined(result.api.endCharacter);
+      assert.isDefined(result.api!.startLine);
+      assert.isDefined(result.api!.startCharacter);
+      assert.isDefined(result.api!.endLine);
+      assert.isDefined(result.api!.endCharacter);
     });
   });
 });

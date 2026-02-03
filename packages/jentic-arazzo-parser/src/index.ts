@@ -120,6 +120,8 @@ export async function parse(
   options: Options = {},
 ): Promise<ParseResultElement> {
   let mergedOptions = mergeOptions(defaultOptions as ApiDOMReferenceOptions, options);
+  const strict = mergedOptions.parse?.parserOpts?.strict ?? true;
+  let sourceProvenance: string;
 
   if (isPlainObject(source)) {
     const arazzoDocument = JSON.stringify(source, null, 2);
@@ -127,16 +129,21 @@ export async function parse(
       resolve: { resolverOpts: { arazzoDocument } },
     });
     source = 'memory://arazzo.json';
-  } else if (await detectArazzoJSON(source, { strict: mergedOptions.parse.parserOpts.strict })) {
+    sourceProvenance = '[object]';
+  } else if (await detectArazzoJSON(source, { strict })) {
     mergedOptions = mergeOptions(mergedOptions, {
       resolve: { resolverOpts: { arazzoDocument: source } },
     });
     source = 'memory://arazzo.json';
-  } else if (await detectArazzoYAML(source, { strict: mergedOptions.parse.parserOpts.strict })) {
+    sourceProvenance = '[inline JSON]';
+  } else if (await detectArazzoYAML(source, { strict })) {
     mergedOptions = mergeOptions(mergedOptions, {
       resolve: { resolverOpts: { arazzoDocument: source } },
     });
     source = 'memory://arazzo.yaml';
+    sourceProvenance = '[inline YAML]';
+  } else {
+    sourceProvenance = source;
   }
 
   // next we assume that source is either file system URI or HTTP(S) URL
@@ -147,6 +154,8 @@ export async function parse(
     }
     return parseResult;
   } catch (error: unknown) {
-    throw new ParseError(`Failed to parse Arazzo Document from "${source}"`, { cause: error });
+    throw new ParseError(`Failed to parse Arazzo Document from "${sourceProvenance}"`, {
+      cause: error,
+    });
   }
 }

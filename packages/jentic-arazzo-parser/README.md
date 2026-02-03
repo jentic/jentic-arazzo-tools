@@ -212,10 +212,11 @@ console.log(`Workflow starts at line ${workflow.startLine}, column ${workflow.st
 
 For more details about source maps, see the [SpecLynx ApiDOM Data Model documentation](https://github.com/speclynx/apidom/tree/main/packages/apidom-datamodel#source-maps).
 
-**Note:** Source maps require `strict: false` to be set. When parsing from objects, they are converted to JSON strings internally, so source maps are fully supported:
+**Note:** Source maps require `strict: false` to be set. When parsing from objects, they are converted to pretty-printed JSON strings internally (2-space indentation), so source map positions refer to this generated JSON representation, not the original object structure:
 
 ```js
 // Source maps with objects (requires strict: false)
+// Positions will reference the internally generated JSON string
 await parse({ arazzo: '1.0.1', ... }, {
   parse: { parserOpts: { sourceMap: true, strict: false } },
 });
