@@ -144,21 +144,21 @@ export async function parse(
   let sourceProvenance: string;
 
   if (isPlainObject(source)) {
-    const arazzoDocument = JSON.stringify(source, null, 2);
+    const document = JSON.stringify(source, null, 2);
     mergedOptions = mergeOptions(mergedOptions, {
-      resolve: { resolverOpts: { arazzoDocument } },
+      resolve: { resolverOpts: { document } },
     });
     source = 'memory://arazzo.json';
     sourceProvenance = '[object]';
   } else if (await detectArazzoJSON(source, { strict })) {
     mergedOptions = mergeOptions(mergedOptions, {
-      resolve: { resolverOpts: { arazzoDocument: source } },
+      resolve: { resolverOpts: { document: source } },
     });
     source = 'memory://arazzo.json';
     sourceProvenance = '[inline JSON]';
   } else if (await detectArazzoYAML(source, { strict })) {
     mergedOptions = mergeOptions(mergedOptions, {
-      resolve: { resolverOpts: { arazzoDocument: source } },
+      resolve: { resolverOpts: { document: source } },
     });
     source = 'memory://arazzo.yaml';
     sourceProvenance = '[inline YAML]';
