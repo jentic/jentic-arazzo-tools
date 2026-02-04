@@ -104,31 +104,31 @@ export async function parse(source: string, options?: Options): Promise<ParseRes
  * @example
  * Parse from object
  * ```typescript
- * const result = await parse({ arazzo: '1.0.1', info: {...} });
+ * const result = await parseArazzo({ arazzo: '1.0.1', info: {...} });
  * ```
  *
  * @example
  * Parse inline JSON
  * ```typescript
- * const result = await parse('{"arazzo": "1.0.1", "info": {...}}');
+ * const result = await parseArazzo('{"arazzo": "1.0.1", "info": {...}}');
  * ```
  *
  * @example
  * Parse from file
  * ```typescript
- * const result = await parse('/path/to/arazzo.json');
+ * const result = await parseArazzo('/path/to/arazzo.json');
  * ```
  *
  * @example
  * Parse from URL
  * ```typescript
- * const result = await parse('https://example.com/arazzo.yaml');
+ * const result = await parseArazzo('https://example.com/arazzo.yaml');
  * ```
  *
  * @example
  * Parse with custom options
  * ```typescript
- * const result = await parse('/path/to/arazzo.json', customOptions);
+ * const result = await parseArazzo('/path/to/arazzo.json', customOptions);
  * ```
  * @public
  */
