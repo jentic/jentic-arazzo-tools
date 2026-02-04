@@ -2,7 +2,7 @@ import { assert } from 'chai';
 import { isParseResultElement } from '@speclynx/apidom-datamodel';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
 
-import { parse } from '../src/index.ts';
+import { parseArazzo } from '../src/index.ts';
 import ParseError from '../src/errors/ParseError.ts';
 
 describe('parse', function () {
@@ -34,19 +34,19 @@ describe('parse', function () {
     };
 
     specify('should return ParseResultElement', async function () {
-      const result = await parse(arazzoObject);
+      const result = await parseArazzo(arazzoObject);
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should contain ArazzoSpecification1Element as api', async function () {
-      const result = await parse(arazzoObject);
+      const result = await parseArazzo(arazzoObject);
 
       assert.isTrue(isArazzoSpecification1Element(result.api));
     });
 
     specify('should not be empty', async function () {
-      const result = await parse(arazzoObject);
+      const result = await parseArazzo(arazzoObject);
 
       assert.isFalse(result.isEmpty);
     });
@@ -56,7 +56,7 @@ describe('parse', function () {
     specify('should throw ParseError', async function () {
       try {
         // @ts-expect-error testing invalid input
-        await parse(null);
+        await parseArazzo(null);
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
@@ -68,7 +68,7 @@ describe('parse', function () {
     specify('should throw ParseError', async function () {
       try {
         // @ts-expect-error testing invalid input
-        await parse(undefined);
+        await parseArazzo(undefined);
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
@@ -80,7 +80,7 @@ describe('parse', function () {
     specify('should throw ParseError', async function () {
       try {
         // @ts-expect-error testing invalid input
-        await parse(42);
+        await parseArazzo(42);
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
@@ -92,7 +92,7 @@ describe('parse', function () {
     specify('should throw ParseError', async function () {
       try {
         // @ts-expect-error testing invalid input
-        await parse([]);
+        await parseArazzo([]);
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
@@ -104,7 +104,7 @@ describe('parse', function () {
     specify('should throw ParseError', async function () {
       try {
         // @ts-expect-error testing invalid input
-        await parse(new Date());
+        await parseArazzo(new Date());
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
@@ -123,7 +123,7 @@ describe('parse', function () {
     };
 
     specify('should include source maps when sourceMap is true', async function () {
-      const result = await parse(arazzoObject, {
+      const result = await parseArazzo(arazzoObject, {
         parse: { parserOpts: { sourceMap: true, strict: false } },
       });
 

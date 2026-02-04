@@ -5,7 +5,7 @@ import { assert } from 'chai';
 import { isParseResultElement } from '@speclynx/apidom-datamodel';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
 
-import { parse } from '../src/index.ts';
+import { parseArazzo } from '../src/index.ts';
 import { createHTTPServer, type ServerTerminable } from './helpers.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -24,13 +24,13 @@ describe('parse', function () {
     });
 
     specify('should return ParseResultElement', async function () {
-      const result = await parse(`http://localhost:${httpServer.port}/arazzo.json`);
+      const result = await parseArazzo(`http://localhost:${httpServer.port}/arazzo.json`);
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should contain ArazzoSpecification1Element as api', async function () {
-      const result = await parse(`http://localhost:${httpServer.port}/arazzo.json`);
+      const result = await parseArazzo(`http://localhost:${httpServer.port}/arazzo.json`);
 
       assert.isTrue(isArazzoSpecification1Element(result.api));
     });

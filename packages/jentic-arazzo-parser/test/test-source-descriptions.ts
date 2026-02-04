@@ -4,8 +4,9 @@ import { fileURLToPath } from 'node:url';
 import { assert } from 'chai';
 import { isParseResultElement, ParseResultElement } from '@speclynx/apidom-datamodel';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
+import { isOpenApi3_1Element } from '@speclynx/apidom-ns-openapi-3-1';
 
-import { parse } from '../src/index.ts';
+import { parseArazzo } from '../src/index.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturesPath = path.join(__dirname, 'fixtures', 'source-descriptions');
@@ -16,7 +17,7 @@ describe('parse', function () {
       const fixturePath = path.join(fixturesPath, 'arazzo-with-openapi.json');
 
       specify('should not parse source descriptions', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: false },
@@ -35,7 +36,7 @@ describe('parse', function () {
       const fixturePath = path.join(fixturesPath, 'arazzo-with-openapi.json');
 
       specify('should parse all source descriptions', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: true },
@@ -54,7 +55,7 @@ describe('parse', function () {
       });
 
       specify('should include source description metadata', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: true },
@@ -66,13 +67,33 @@ describe('parse', function () {
         assert.strictEqual(sdParseResult.meta.get('name')!.toValue(), 'petStore');
         assert.strictEqual(sdParseResult.meta.get('type')!.toValue(), 'openapi');
       });
+
+      specify('should work with global parserOpts flag', async function () {
+        const result = await parseArazzo(fixturePath, {
+          parse: {
+            parserOpts: {
+              sourceDescriptions: true,
+            },
+          },
+        });
+
+        assert.isTrue(isParseResultElement(result));
+        assert.isTrue(isArazzoSpecification1Element(result.api));
+        // main arazzo document + 1 source description
+        assert.strictEqual(result.length, 2);
+
+        const sdParseResult = result.get(1) as ParseResultElement;
+        assert.isTrue(isParseResultElement(sdParseResult));
+        assert.isTrue(sdParseResult.classes.includes('source-description'));
+        assert.strictEqual(sdParseResult.meta.get('name')!.toValue(), 'petStore');
+      });
     });
 
     context('when sourceDescriptions is array of names', function () {
       const fixturePath = path.join(fixturesPath, 'arazzo-multiple-sources.json');
 
       specify('should parse only named source descriptions', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: ['petStore'] },
@@ -93,7 +114,7 @@ describe('parse', function () {
       const fixturePath = path.join(fixturesPath, 'arazzo-with-arazzo.json');
 
       specify('should recursively parse arazzo source descriptions', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: true },
@@ -103,14 +124,26 @@ describe('parse', function () {
         });
 
         assert.isTrue(isParseResultElement(result));
-        // main arazzo + child arazzo + child's openapi = 3
-        assert.isAtLeast(result.length, 2);
+        // main arazzo + child arazzo
+        assert.strictEqual(result.length, 2);
 
+        // verify child arazzo was parsed
         const childArazzo = result.get(1) as ParseResultElement;
         assert.isTrue(isParseResultElement(childArazzo));
         assert.strictEqual(childArazzo.meta.get('name')!.toValue(), 'childWorkflows');
         assert.strictEqual(childArazzo.meta.get('type')!.toValue(), 'arazzo');
         assert.isTrue(isArazzoSpecification1Element(childArazzo.api));
+
+        // verify child's openapi source description was recursively parsed (nested under childArazzo)
+        assert.strictEqual(childArazzo.length, 2); // arazzo api + nested openapi
+        const nestedOpenApi = childArazzo.get(1) as ParseResultElement;
+        assert.isTrue(isParseResultElement(nestedOpenApi));
+        assert.isTrue(nestedOpenApi.classes.includes('source-description'));
+        assert.strictEqual(nestedOpenApi.meta.get('name')!.toValue(), 'childApi');
+        assert.strictEqual(nestedOpenApi.meta.get('type')!.toValue(), 'openapi');
+        // openapi was successfully parsed (no errors, api is OpenAPI 3.1 element)
+        assert.strictEqual(nestedOpenApi.errors.length, 0);
+        assert.isTrue(isOpenApi3_1Element(nestedOpenApi.api));
       });
     });
 
@@ -118,7 +151,7 @@ describe('parse', function () {
       const fixturePath = path.join(fixturesPath, 'cycle-a.json');
 
       specify('should detect cycles and add warning annotation', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: true },
@@ -152,7 +185,7 @@ describe('parse', function () {
       const fixturePath = path.join(fixturesPath, 'arazzo-with-arazzo.json');
 
       specify('should limit recursion depth', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: true, sourceDescriptionsMaxDepth: 1 },
@@ -170,7 +203,7 @@ describe('parse', function () {
       });
 
       specify('should not parse any source descriptions when maxDepth is 0', async function () {
-        const result = await parse(fixturePath, {
+        const result = await parseArazzo(fixturePath, {
           parse: {
             parserOpts: {
               'arazzo-json-1': { sourceDescriptions: true, sourceDescriptionsMaxDepth: 0 },
