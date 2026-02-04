@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.7](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2026-02-04)
+
+### Features
+
+- **parser:** add support for parsing OpenAPI Documents ([#35](https://github.com/jentic/jentic-arazzo-tools/issues/35)) ([4c2615e](https://github.com/jentic/jentic-arazzo-tools/commit/4c2615e07c3b74ea7fe74b91b977c8c7123a2188))
+
 # [1.0.0-alpha.6](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.5...v1.0.0-alpha.6) (2026-02-04)
 
 ### Features
