@@ -1,0 +1,25 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Child Arazzo Workflow",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "childApi",
+      "type": "openapi",
+      "url": "./openapi.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "child-workflow",
+      "steps": [
+        {
+          "stepId": "childStep",
+          "operationId": "$sourceDescriptions.childApi#/paths/~1pets/get"
+        }
+      ]
+    }
+  ]
+}

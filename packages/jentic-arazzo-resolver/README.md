@@ -51,11 +51,11 @@ const parseResult = await dereference('https://example.com/arazzo.yaml');
 When you already have a parsed Arazzo Document (e.g., from `@jentic/arazzo-parser`), you can dereference the element directly:
 
 ```js
-import { parse } from '@jentic/arazzo-parser';
+import { parseArazzo } from '@jentic/arazzo-parser';
 import { dereferenceElement } from '@jentic/arazzo-resolver';
 
 // Parse first, then dereference
-const parseResult = await parse('/path/to/arazzo.json');
+const parseResult = await parseArazzo('/path/to/arazzo.json');
 const dereferenced = await dereferenceElement(parseResult);
 ```
 
@@ -64,10 +64,10 @@ const dereferenced = await dereferenceElement(parseResult);
 When dereferencing a ParseResultElement that was parsed from inline content (string or object), you must provide a `baseURI`:
 
 ```js
-import { parse } from '@jentic/arazzo-parser';
+import { parseArazzo } from '@jentic/arazzo-parser';
 import { dereferenceElement } from '@jentic/arazzo-resolver';
 
-const parseResult = await parse({ arazzo: '1.0.1', ... });
+const parseResult = await parseArazzo({ arazzo: '1.0.1', ... });
 const dereferenced = await dereferenceElement(parseResult, {
   resolve: { baseURI: 'https://example.com/arazzo.json' },
 });
@@ -78,10 +78,10 @@ const dereferenced = await dereferenceElement(parseResult, {
 You can dereference individual child elements (e.g., a specific workflow) by providing the parent parseResult in options:
 
 ```js
-import { parse } from '@jentic/arazzo-parser';
+import { parseArazzo } from '@jentic/arazzo-parser';
 import { dereferenceElement } from '@jentic/arazzo-resolver';
 
-const parseResult = await parse('/path/to/arazzo.json');
+const parseResult = await parseArazzo('/path/to/arazzo.json');
 const workflow = parseResult.api.workflows.get(0);
 
 const dereferencedWorkflow = await dereferenceElement(workflow, {

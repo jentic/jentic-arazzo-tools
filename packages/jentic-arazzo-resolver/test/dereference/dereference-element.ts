@@ -10,7 +10,7 @@ import {
   WorkflowElement,
 } from '@speclynx/apidom-ns-arazzo-1';
 import { toValue } from '@speclynx/apidom-core';
-import { parse } from '@jentic/arazzo-parser';
+import { parseArazzo } from '@jentic/arazzo-parser';
 
 import { dereferenceElement, DereferenceError } from '../../src/index.ts';
 import { loadJsonFile } from '../helpers.ts';
@@ -35,21 +35,21 @@ describe('dereferenceElement', function () {
     const rootFilePath = path.join(fixturesPath, 'root.json');
 
     specify('should return ParseResultElement', async function () {
-      const parseResult = await parse(rootFilePath);
+      const parseResult = await parseArazzo(rootFilePath);
       const result = await dereferenceElement(parseResult);
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should contain ArazzoSpecification1Element as api', async function () {
-      const parseResult = await parse(rootFilePath);
+      const parseResult = await parseArazzo(rootFilePath);
       const result = await dereferenceElement(parseResult);
 
       assert.isTrue(isArazzoSpecification1Element(result.api));
     });
 
     specify('should dereference reusable objects', async function () {
-      const parseResult = await parse(rootFilePath);
+      const parseResult = await parseArazzo(rootFilePath);
       const actual = await dereferenceElement(parseResult);
       const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
 
@@ -61,7 +61,7 @@ describe('dereferenceElement', function () {
     const rootFilePath = path.join(fixturesPath, 'root.json');
 
     specify('should dereference reusable objects in child element', async function () {
-      const parseResult = await parse(rootFilePath);
+      const parseResult = await parseArazzo(rootFilePath);
       const api = parseResult.api as ArazzoSpecification1Element;
       const workflow = api.workflows!.get(0) as WorkflowElement;
 
@@ -127,7 +127,7 @@ describe('dereferenceElement', function () {
     };
 
     specify('should throw DereferenceError when baseURI not provided', async function () {
-      const parseResult = await parse(arazzoObject);
+      const parseResult = await parseArazzo(arazzoObject);
       const api = parseResult.api as ArazzoSpecification1Element;
       const workflow = api.workflows!.get(0) as WorkflowElement;
 
@@ -143,7 +143,7 @@ describe('dereferenceElement', function () {
     });
 
     specify('should dereference reusable objects when baseURI provided', async function () {
-      const parseResult = await parse(arazzoObject);
+      const parseResult = await parseArazzo(arazzoObject);
       const api = parseResult.api as ArazzoSpecification1Element;
       const workflow = api.workflows!.get(0) as WorkflowElement;
 
@@ -207,7 +207,7 @@ describe('dereferenceElement', function () {
     };
 
     specify('should throw DereferenceError when baseURI not provided', async function () {
-      const parseResult = await parse(arazzoObject);
+      const parseResult = await parseArazzo(arazzoObject);
 
       try {
         await dereferenceElement(parseResult);
@@ -219,7 +219,7 @@ describe('dereferenceElement', function () {
     });
 
     specify('should dereference reusable objects when baseURI provided', async function () {
-      const parseResult = await parse(arazzoObject);
+      const parseResult = await parseArazzo(arazzoObject);
       const result = await dereferenceElement(parseResult, {
         resolve: { baseURI: 'https://example.com/arazzo.json' },
       });

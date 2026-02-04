@@ -121,16 +121,16 @@ export async function dereference(uri: string, options: Options = {}): Promise<P
  * @example
  * Dereference ParseResultElement with retrievalURI (from file parsing)
  * ```typescript
- * import { parse } from '@jentic/arazzo-parser';
+ * import { parseArazzo } from '@jentic/arazzo-parser';
  *
- * const parseResult = await parse('/path/to/arazzo.json');
+ * const parseResult = await parseArazzo('/path/to/arazzo.json');
  * const dereferenced = await dereferenceElement(parseResult);
  * ```
  *
  * @example
  * Dereference ParseResultElement without retrievalURI (from inline parsing)
  * ```typescript
- * const parseResult = await parse({ arazzo: '1.0.1', ... });
+ * const parseResult = await parseArazzo({ arazzo: '1.0.1', ... });
  * const dereferenced = await dereferenceElement(parseResult, {
  *   resolve: { baseURI: 'https://example.com/arazzo.json' },
  * });
@@ -139,7 +139,7 @@ export async function dereference(uri: string, options: Options = {}): Promise<P
  * @example
  * Dereference child element (e.g., WorkflowElement)
  * ```typescript
- * const parseResult = await parse('/path/to/arazzo.json');
+ * const parseResult = await parseArazzo('/path/to/arazzo.json');
  * const workflow = parseResult.api.workflows.get(0);
  * const dereferenced = await dereferenceElement(workflow, {
  *   dereference: { strategyOpts: { parseResult } },

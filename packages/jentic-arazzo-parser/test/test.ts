@@ -7,7 +7,7 @@ import { isParseResultElement } from '@speclynx/apidom-datamodel';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
 import { sexprs, toValue } from '@speclynx/apidom-core';
 
-import { parse } from '../src/index.ts';
+import { parseArazzo } from '../src/index.ts';
 import ParseError from '../src/errors/ParseError.ts';
 
 describe('parse', function () {
@@ -39,31 +39,31 @@ describe('parse', function () {
     });
 
     specify('should return ParseResultElement', async function () {
-      const result = await parse(arazzoJson);
+      const result = await parseArazzo(arazzoJson);
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should not be empty', async function () {
-      const result = await parse(arazzoJson);
+      const result = await parseArazzo(arazzoJson);
 
       assert.isFalse(result.isEmpty);
     });
 
     specify('should contain ArazzoSpecification1Element as api', async function () {
-      const result = await parse(arazzoJson);
+      const result = await parseArazzo(arazzoJson);
 
       assert.isTrue(isArazzoSpecification1Element(result.api));
     });
 
     specify('should have no errors', async function () {
-      const result = await parse(arazzoJson);
+      const result = await parseArazzo(arazzoJson);
 
       assert.strictEqual(result.errors.length, 0);
     });
 
     specify('should match snapshot', async function () {
-      const result = await parse(arazzoJson);
+      const result = await parseArazzo(arazzoJson);
 
       expect(sexprs(result.api!)).toMatchSnapshot();
     });
@@ -87,13 +87,13 @@ describe('parse', function () {
     `;
 
     specify('should return ParseResultElement', async function () {
-      const result = await parse(arazzoYaml);
+      const result = await parseArazzo(arazzoYaml);
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should contain ArazzoSpecification1Element as api', async function () {
-      const result = await parse(arazzoYaml);
+      const result = await parseArazzo(arazzoYaml);
 
       assert.isTrue(isArazzoSpecification1Element(result.api));
     });
@@ -102,7 +102,7 @@ describe('parse', function () {
   context('given invalid Arazzo document', function () {
     specify('should throw ParseError', async function () {
       try {
-        await parse('{ invalid json }');
+        await parseArazzo('{ invalid json }');
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
@@ -111,7 +111,7 @@ describe('parse', function () {
 
     specify('should include original error as cause', async function () {
       try {
-        await parse('{ invalid json }');
+        await parseArazzo('{ invalid json }');
         assert.fail('Expected ParseError to be thrown');
       } catch (error) {
         assert.instanceOf(error, ParseError);
@@ -120,24 +120,52 @@ describe('parse', function () {
     });
   });
 
+  context('given non-Arazzo document', function () {
+    const openApiDoc = {
+      openapi: '3.1.0',
+      info: { title: 'Test', version: '1.0.0' },
+      paths: {},
+    };
+
+    specify('should return ParseResultElement with error annotation', async function () {
+      const result = await parseArazzo(openApiDoc);
+
+      assert.isTrue(isParseResultElement(result));
+      assert.strictEqual(result.errors.length, 1);
+    });
+
+    specify('should have undefined api', async function () {
+      const result = await parseArazzo(openApiDoc);
+
+      assert.isUndefined(result.api);
+    });
+
+    specify('should have descriptive error message', async function () {
+      const result = await parseArazzo(openApiDoc);
+
+      const errorMessage = result.errors.get(0)!.toValue();
+      assert.include(errorMessage, 'not a valid Arazzo specification');
+    });
+  });
+
   context('given file system path', function () {
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const fixturePath = path.join(__dirname, 'fixtures', 'arazzo.json');
 
     specify('should return ParseResultElement', async function () {
-      const result = await parse(fixturePath);
+      const result = await parseArazzo(fixturePath);
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should contain ArazzoSpecification1Element as api', async function () {
-      const result = await parse(fixturePath);
+      const result = await parseArazzo(fixturePath);
 
       assert.isTrue(isArazzoSpecification1Element(result.api));
     });
 
     specify('should set retrievalURI metadata to file path', async function () {
-      const result = await parse(fixturePath);
+      const result = await parseArazzo(fixturePath);
 
       assert.strictEqual(toValue(result.meta.get('retrievalURI')), fixturePath);
     });
@@ -161,14 +189,14 @@ describe('parse', function () {
     });
 
     specify('should respect strict option', async function () {
-      const result = await parse(arazzoJson, { parse: { parserOpts: { strict: false } } });
+      const result = await parseArazzo(arazzoJson, { parse: { parserOpts: { strict: false } } });
 
       assert.isTrue(isParseResultElement(result));
     });
 
     specify('should respect sourceMap option', async function () {
       // sourceMap requires strict: false since strict mode uses native parsers without source map support
-      const result = await parse(arazzoJson, {
+      const result = await parseArazzo(arazzoJson, {
         parse: { parserOpts: { sourceMap: true, strict: false } },
       });
 
