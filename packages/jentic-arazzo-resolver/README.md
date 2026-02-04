@@ -26,24 +26,24 @@ npm install @jentic/arazzo-resolver
 
 `@jentic/arazzo-resolver` provides two main functions for dereferencing Arazzo Documents:
 
-1. **`dereference(uri)`** - Dereferences from a file system path or HTTP(S) URL
-2. **`dereferenceElement(element)`** - Dereferences an ApiDOM element
+1. **`dereferenceArazzo(uri)`** - Dereferences from a file system path or HTTP(S) URL
+2. **`dereferenceArazzoElement(element)`** - Dereferences an ApiDOM element
 
 ### Dereferencing from file
 
 ```js
-import { dereference } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
 
-const parseResult = await dereference('/path/to/arazzo.json');
+const parseResult = await dereferenceArazzo('/path/to/arazzo.json');
 // parseResult is ParseResultElement with all references resolved
 ```
 
 ### Dereferencing from URL
 
 ```js
-import { dereference } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
 
-const parseResult = await dereference('https://example.com/arazzo.yaml');
+const parseResult = await dereferenceArazzo('https://example.com/arazzo.yaml');
 ```
 
 ### Dereferencing an ApiDOM element
@@ -52,11 +52,11 @@ When you already have a parsed Arazzo Document (e.g., from `@jentic/arazzo-parse
 
 ```js
 import { parseArazzo } from '@jentic/arazzo-parser';
-import { dereferenceElement } from '@jentic/arazzo-resolver';
+import { dereferenceArazzoElement } from '@jentic/arazzo-resolver';
 
 // Parse first, then dereference
 const parseResult = await parseArazzo('/path/to/arazzo.json');
-const dereferenced = await dereferenceElement(parseResult);
+const dereferenced = await dereferenceArazzoElement(parseResult);
 ```
 
 #### Dereferencing elements without retrievalURI
@@ -65,10 +65,10 @@ When dereferencing a ParseResultElement that was parsed from inline content (str
 
 ```js
 import { parseArazzo } from '@jentic/arazzo-parser';
-import { dereferenceElement } from '@jentic/arazzo-resolver';
+import { dereferenceArazzoElement } from '@jentic/arazzo-resolver';
 
 const parseResult = await parseArazzo({ arazzo: '1.0.1', ... });
-const dereferenced = await dereferenceElement(parseResult, {
+const dereferenced = await dereferenceArazzoElement(parseResult, {
   resolve: { baseURI: 'https://example.com/arazzo.json' },
 });
 ```
@@ -79,24 +79,24 @@ You can dereference individual child elements (e.g., a specific workflow) by pro
 
 ```js
 import { parseArazzo } from '@jentic/arazzo-parser';
-import { dereferenceElement } from '@jentic/arazzo-resolver';
+import { dereferenceArazzoElement } from '@jentic/arazzo-resolver';
 
 const parseResult = await parseArazzo('/path/to/arazzo.json');
 const workflow = parseResult.api.workflows.get(0);
 
-const dereferencedWorkflow = await dereferenceElement(workflow, {
+const dereferencedWorkflow = await dereferenceArazzoElement(workflow, {
   dereference: { strategyOpts: { parseResult } },
 });
 ```
 
 ## Dereference options
 
-Both `dereference` and `dereferenceElement` functions accept an optional options argument compatible with [SpecLynx ApiDOM Reference Options](https://github.com/speclynx/apidom/blob/main/packages/apidom-reference/src/options/index.ts):
+Both `dereferenceArazzo` and `dereferenceArazzoElement` functions accept an optional options argument compatible with [SpecLynx ApiDOM Reference Options](https://github.com/speclynx/apidom/blob/main/packages/apidom-reference/src/options/index.ts):
 
 ```js
-import { dereference } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
 
-const parseResult = await dereference('/path/to/arazzo.json', {
+const parseResult = await dereferenceArazzo('/path/to/arazzo.json', {
   resolve: {
     baseURI: 'https://example.com/',  // Base URI for relative references
   },
@@ -113,19 +113,18 @@ const parseResult = await dereference('/path/to/arazzo.json', {
 You can import and inspect the default options:
 
 ```js
-import { defaultDereferenceOptions } from '@jentic/arazzo-resolver';
+import { defaultDereferenceArazzoOptions } from '@jentic/arazzo-resolver';
 
-console.log(defaultDereferenceOptions);
+console.log(defaultDereferenceArazzoOptions);
 // {
 //   resolve: {
 //     resolvers: [FileResolver, HTTPResolverAxios],
 //   },
 //   parse: {
-//     mediaType: 'application/vnd.oai.arazzo;version=1.0.1',
 //     parsers: [ArazzoJSON1Parser, ArazzoYAML1Parser, JSONParser, YAMLParser, BinaryParser],
 //   },
 //   dereference: {
-//     strategies: [Arazzo1, OpenAPI2, OpenAPI3_0, OpenAPI3_1],
+//     strategies: [Arazzo1DereferenceStrategy],
 //   },
 // }
 ```
@@ -135,10 +134,10 @@ console.log(defaultDereferenceOptions);
 When dereferencing fails, a `DereferenceError` is thrown. The original error is available via the `cause` property:
 
 ```js
-import { dereference, DereferenceError } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo, DereferenceError } from '@jentic/arazzo-resolver';
 
 try {
-  await dereference('/path/to/arazzo.json');
+  await dereferenceArazzo('/path/to/arazzo.json');
 } catch (error) {
   if (error instanceof DereferenceError) {
     console.error(error.message);  // 'Failed to dereference Arazzo Document at "/path/to/arazzo.json"'
@@ -149,12 +148,12 @@ try {
 
 ## Working with the result
 
-The `dereference` function returns a [ParseResultElement](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#parseresultelement) with all references resolved inline.
+The `dereferenceArazzo` function returns a [ParseResultElement](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#parseresultelement) with all references resolved inline.
 
 ```js
-import { dereference } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
 
-const parseResult = await dereference('/path/to/arazzo.json');
+const parseResult = await dereferenceArazzo('/path/to/arazzo.json');
 
 // Access the main Arazzo specification element
 const arazzoSpec = parseResult.api;
@@ -172,29 +171,19 @@ const firstStep = firstWorkflow.steps.get(0);
 
 ### Retrieval URI metadata
 
-The `dereference` function automatically sets `retrievalURI` metadata on the parse result:
+The `dereferenceArazzo` function automatically sets `retrievalURI` metadata on the parse result:
 
 ```js
-import { dereference } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
 import { toValue } from '@speclynx/apidom-core';
 
-const parseResult = await dereference('https://example.com/arazzo.yaml');
+const parseResult = await dereferenceArazzo('https://example.com/arazzo.yaml');
 
 const uri = toValue(parseResult.meta.get('retrievalURI'));
 // 'https://example.com/arazzo.yaml'
 ```
 
-Note: `dereferenceElement` does not set `retrievalURI` - it preserves whatever metadata was on the original element.
-
-## Function aliases
-
-For consistency with future OpenAPI/AsyncAPI support, the following aliases are available:
-
-| Function | Alias |
-|----------|-------|
-| `dereference` | `dereferenceArazzo` |
-| `dereferenceElement` | `dereferenceArazzoElement` |
-| `defaultDereferenceOptions` | `defaultDereferenceArazzoOptions` |
+Note: `dereferenceArazzoElement` does not set `retrievalURI` - it preserves whatever metadata was on the original element.
 
 ## SpecLynx ApiDOM tooling
 
@@ -205,11 +194,11 @@ Since `@jentic/arazzo-resolver` produces a SpecLynx ApiDOM data model, you have 
 The [@speclynx/apidom-core](https://github.com/speclynx/apidom/tree/main/packages/apidom-core) package provides essential utilities for working with ApiDOM elements. Here are just a few examples:
 
 ```js
-import { dereference } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
 import { cloneDeep, cloneShallow } from '@speclynx/apidom-datamodel';
 import { toValue, toJSON, toYAML, sexprs } from '@speclynx/apidom-core';
 
-const parseResult = await dereference('/path/to/arazzo.json');
+const parseResult = await dereferenceArazzo('/path/to/arazzo.json');
 const arazzoSpec = parseResult.api;
 
 // Convert to plain JavaScript object
@@ -234,10 +223,10 @@ const sexpr = sexprs(arazzoSpec);
 The [@speclynx/apidom-traverse](https://github.com/speclynx/apidom/tree/main/packages/apidom-traverse) package provides powerful traversal capabilities. Here is a basic example:
 
 ```js
-import { dereference } from '@jentic/arazzo-resolver';
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
 import { traverse } from '@speclynx/apidom-traverse';
 
-const parseResult = await dereference('/path/to/arazzo.json');
+const parseResult = await dereferenceArazzo('/path/to/arazzo.json');
 
 // Traverse and collect steps using semantic visitor hook
 const steps = [];
