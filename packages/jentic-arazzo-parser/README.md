@@ -84,7 +84,7 @@ const parseResult = await parseArazzo('https://example.com/arazzo.yaml');
 
 ## Parse options
 
-The `parse` function accepts an optional second argument with reference options compatible with [SpecLynx ApiDOM Reference Options](https://github.com/speclynx/apidom/blob/main/packages/apidom-reference/src/options/index.ts):
+The `parseArazzo` function accepts an optional second argument with reference options compatible with [SpecLynx ApiDOM Reference Options](https://github.com/speclynx/apidom/blob/main/packages/apidom-reference/src/options/index.ts):
 
 ```js
 import { parseArazzo } from '@jentic/arazzo-parser';
@@ -109,8 +109,12 @@ import { defaultOptions } from '@jentic/arazzo-parser';
 console.log(defaultOptions);
 // {
 //   parse: {
-//     mediaType: 'application/vnd.oai.arazzo;version=1.0.1',
-//     parsers: [ArazzoJSON1Parser, ArazzoYAML1Parser],
+//     parsers: [
+//       ArazzoJSON1Parser, ArazzoYAML1Parser,
+//       OpenApiJSON2Parser, OpenApiYAML2Parser,
+//       OpenApiJSON3_0Parser, OpenApiYAML3_0Parser,
+//       OpenApiJSON3_1Parser, OpenApiYAML3_1Parser,
+//     ],
 //     parserOpts: { sourceMap: false, strict: true, sourceDescriptions: false },
 //   },
 //   resolve: {
@@ -162,7 +166,7 @@ result.errors.get(0).toValue();
 
 ## Working with the result
 
-The `parse` function returns a [ParseResultElement](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#parseresultelement) representing the result of the parsing operation.
+The `parseArazzo` function returns a [ParseResultElement](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#parseresultelement) representing the result of the parsing operation.
 
 ```js
 import { parseArazzo } from '@jentic/arazzo-parser';
