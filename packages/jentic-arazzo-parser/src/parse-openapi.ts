@@ -1,12 +1,6 @@
 import { ParseResultElement } from '@speclynx/apidom-datamodel';
-import {
-  parse as parseURI,
-  mergeOptions,
-  UnmatchedParserError,
-} from '@speclynx/apidom-reference/configuration/empty';
+import { parse as parseURI, mergeOptions } from '@speclynx/apidom-reference/configuration/empty';
 import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
-import ArazzoJSON1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-json-1';
-import ArazzoYAML1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-yaml-1';
 import OpenApiJSON2Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-2';
 import OpenApiYAML2Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-2';
 import OpenApiJSON3_0Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-0';
@@ -15,9 +9,12 @@ import OpenApiJSON3_1Parser from '@speclynx/apidom-reference/parse/parsers/opena
 import OpenApiYAML3_1Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-1';
 import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
 import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
-import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
-import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
-import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
+import { detect as detectOpenApiJSON3_1 } from '@speclynx/apidom-parser-adapter-openapi-json-3-1';
+import { detect as detectOpenApiYAML3_1 } from '@speclynx/apidom-parser-adapter-openapi-yaml-3-1';
+import { detect as detectOpenApiJSON3_0 } from '@speclynx/apidom-parser-adapter-openapi-json-3-0';
+import { detect as detectOpenApiYAML3_0 } from '@speclynx/apidom-parser-adapter-openapi-yaml-3-0';
+import { detect as detectOpenApiJSON2 } from '@speclynx/apidom-parser-adapter-openapi-json-2';
+import { detect as detectOpenApiYAML2 } from '@speclynx/apidom-parser-adapter-openapi-yaml-2';
 import { isPlainObject } from 'ramda-adjunct';
 import type { PartialDeep } from 'type-fest';
 
@@ -25,28 +22,18 @@ import ParseError from './errors/ParseError.ts';
 import MemoryResolver from './resolve/resolvers/memory/index.ts';
 
 /**
- * Options for parsing Arazzo Documents.
+ * Options for parsing OpenAPI Documents.
  * @public
  */
 export type Options = PartialDeep<ApiDOMReferenceOptions>;
 
 /**
- * Default reference options for parsing Arazzo Documents.
+ * Default reference options for parsing OpenAPI Documents.
  * @public
  */
 export const defaultOptions: Options = {
   parse: {
     parsers: [
-      new ArazzoJSON1Parser({
-        allowEmpty: false,
-        fileExtensions: ['.json'],
-        parseFn: parseURI,
-      }),
-      new ArazzoYAML1Parser({
-        allowEmpty: false,
-        fileExtensions: ['.yaml', '.yml'],
-        parseFn: parseURI,
-      }),
       new OpenApiJSON2Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
       new OpenApiYAML2Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
       new OpenApiJSON3_0Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
@@ -57,7 +44,6 @@ export const defaultOptions: Options = {
     parserOpts: {
       sourceMap: false,
       strict: true,
-      sourceDescriptions: false,
     },
   },
   resolve: {
@@ -71,10 +57,10 @@ export const defaultOptions: Options = {
 };
 
 /**
- * Parses an Arazzo Document from an object.
- * @param source - The Arazzo Document as a plain object
+ * Parses an OpenAPI Document from an object.
+ * @param source - The OpenAPI Document as a plain object
  * @param options - Reference options (uses defaultOptions when not provided)
- * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
+ * @returns A promise that resolves to the parsed OpenAPI Document as ApiDOM data model
  * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
  * @public
  */
@@ -83,55 +69,55 @@ export async function parse(
   options?: Options,
 ): Promise<ParseResultElement>;
 /**
- * Parses an Arazzo Document from a string or URI.
- * @param source - The Arazzo Document as string content, or a file system path / HTTP(S) URL
+ * Parses an OpenAPI Document from a string or URI.
+ * @param source - The OpenAPI Document as string content, or a file system path / HTTP(S) URL
  * @param options - Reference options (uses defaultOptions when not provided)
- * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
+ * @returns A promise that resolves to the parsed OpenAPI Document as ApiDOM data model
  * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
  * @public
  */
 export async function parse(source: string, options?: Options): Promise<ParseResultElement>;
 /**
- * Parses an Arazzo Document from a string, object, or URI.
+ * Parses an OpenAPI Document from a string, object, or URI.
  *
  * The function handles three types of input:
  * 1. Object - converts to JSON string and parses (source maps supported with `strict: false`)
- * 2. String content - uses Arazzo detection to identify and parse inline JSON or YAML content
- * 3. URI string - if not detected as Arazzo content, treats as file system path or HTTP(S) URL
+ * 2. String content - uses OpenAPI detection to identify and parse inline JSON or YAML content
+ * 3. URI string - if not detected as OpenAPI content, treats as file system path or HTTP(S) URL
  *
- * @param source - The Arazzo Document as an object, string content, or a file system path / HTTP(S) URL
+ * @param source - The OpenAPI Document as an object, string content, or a file system path / HTTP(S) URL
  * @param options - Reference options (uses defaultOptions when not provided)
- * @returns A promise that resolves to the parsed Arazzo Document as ApiDOM data model
+ * @returns A promise that resolves to the parsed OpenAPI Document as ApiDOM data model
  * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
  *
  * @example
  * Parse from object
  * ```typescript
- * const result = await parseArazzo({ arazzo: '1.0.1', info: {...} });
+ * const result = await parseOpenAPI({ openapi: '3.1.0', info: {...} });
  * ```
  *
  * @example
  * Parse inline JSON
  * ```typescript
- * const result = await parseArazzo('{"arazzo": "1.0.1", "info": {...}}');
+ * const result = await parseOpenAPI('{"openapi": "3.1.0", "info": {...}}');
  * ```
  *
  * @example
  * Parse from file
  * ```typescript
- * const result = await parseArazzo('/path/to/arazzo.json');
+ * const result = await parseOpenAPI('/path/to/openapi.json');
  * ```
  *
  * @example
  * Parse from URL
  * ```typescript
- * const result = await parseArazzo('https://example.com/arazzo.yaml');
+ * const result = await parseOpenAPI('https://example.com/openapi.yaml');
  * ```
  *
  * @example
  * Parse with custom options
  * ```typescript
- * const result = await parseArazzo('/path/to/arazzo.json', customOptions);
+ * const result = await parseOpenAPI('/path/to/openapi.json', customOptions);
  * ```
  * @public
  */
@@ -144,23 +130,47 @@ export async function parse(
   let sourceProvenance: string;
 
   if (isPlainObject(source)) {
-    const arazzoDocument = JSON.stringify(source, null, 2);
+    const openapiDocument = JSON.stringify(source, null, 2);
     mergedOptions = mergeOptions(mergedOptions, {
-      resolve: { resolverOpts: { arazzoDocument } },
+      resolve: { resolverOpts: { openapiDocument } },
     });
-    source = 'memory://arazzo.json';
+    source = 'memory://openapi.json';
     sourceProvenance = '[object]';
-  } else if (await detectArazzoJSON(source, { strict })) {
+  } else if (await detectOpenApiJSON2(source, { strict })) {
     mergedOptions = mergeOptions(mergedOptions, {
-      resolve: { resolverOpts: { arazzoDocument: source } },
+      resolve: { resolverOpts: { openapiDocument: source } },
     });
-    source = 'memory://arazzo.json';
+    source = 'memory://openapi.json';
     sourceProvenance = '[inline JSON]';
-  } else if (await detectArazzoYAML(source, { strict })) {
+  } else if (await detectOpenApiYAML2(source, { strict })) {
     mergedOptions = mergeOptions(mergedOptions, {
-      resolve: { resolverOpts: { arazzoDocument: source } },
+      resolve: { resolverOpts: { openapiDocument: source } },
     });
-    source = 'memory://arazzo.yaml';
+    source = 'memory://openapi.yaml';
+    sourceProvenance = '[inline YAML]';
+  } else if (await detectOpenApiJSON3_0(source, { strict })) {
+    mergedOptions = mergeOptions(mergedOptions, {
+      resolve: { resolverOpts: { openapiDocument: source } },
+    });
+    source = 'memory://openapi.json';
+    sourceProvenance = '[inline JSON]';
+  } else if (await detectOpenApiYAML3_0(source, { strict })) {
+    mergedOptions = mergeOptions(mergedOptions, {
+      resolve: { resolverOpts: { openapiDocument: source } },
+    });
+    source = 'memory://openapi.yaml';
+    sourceProvenance = '[inline YAML]';
+  } else if (await detectOpenApiJSON3_1(source, { strict })) {
+    mergedOptions = mergeOptions(mergedOptions, {
+      resolve: { resolverOpts: { openapiDocument: source } },
+    });
+    source = 'memory://openapi.json';
+    sourceProvenance = '[inline JSON]';
+  } else if (await detectOpenApiYAML3_1(source, { strict })) {
+    mergedOptions = mergeOptions(mergedOptions, {
+      resolve: { resolverOpts: { openapiDocument: source } },
+    });
+    source = 'memory://openapi.yaml';
     sourceProvenance = '[inline YAML]';
   } else {
     sourceProvenance = source;
@@ -175,16 +185,9 @@ export async function parse(
       parseResult.meta.set('retrievalURI', source);
     }
 
-    // validate that the parsed document is an Arazzo specification
-    if (!isArazzoSpecification1Element(parseResult.api)) {
-      throw new UnmatchedParserError(
-        `Could not find a parser that can parse "${sourceProvenance}" as an Arazzo specification`,
-      );
-    }
-
     return parseResult;
   } catch (error: unknown) {
-    throw new ParseError(`Failed to parse Arazzo Document from "${sourceProvenance}"`, {
+    throw new ParseError(`Failed to parse OpenAPI Document from "${sourceProvenance}"`, {
       cause: error,
     });
   }
