@@ -139,31 +139,6 @@ try {
 }
 ```
 
-### Non-Arazzo documents
-
-When a valid document is parsed but it's not an Arazzo specification (e.g., an OpenAPI document), the parser does not throw. Instead, it returns a `ParseResultElement` with:
-
-- An error annotation explaining the issue
-- `.api` returns `undefined`
-- The parsed document remains accessible in the parse result
-
-```js
-import { parseArazzo } from '@jentic/arazzo-parser';
-
-const openApiDoc = {
-  openapi: '3.1.0',
-  info: { title: 'My API', version: '1.0.0' },
-  paths: {},
-};
-
-const result = await parseArazzo(openApiDoc);
-
-result.api;              // undefined
-result.errors.length;    // 1
-result.errors.get(0).toValue();
-// 'Document is not a valid Arazzo specification...'
-```
-
 ## Working with the result
 
 The `parseArazzo` function returns a [ParseResultElement](https://github.com/speclynx/apidom/blob/main/packages/apidom-datamodel/README.md#parseresultelement) representing the result of the parsing operation.
@@ -311,10 +286,10 @@ When source descriptions are parsed, each parsed document that is a *direct* sou
 
 Source descriptions are parsed into their appropriate SpecLynx ApiDOM namespace data models based on document type:
 
-- **Arazzo** → [@speclynx/apidom-ns-arazzo-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1)
-- **OpenAPI 2.0** → [@speclynx/apidom-ns-openapi-2](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-2)
-- **OpenAPI 3.0.x** → [@speclynx/apidom-ns-openapi-3-0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0)
-- **OpenAPI 3.1.x** → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
+- [Arazzo 1.x](https://spec.openapis.org/arazzo/latest.html) → [@speclynx/apidom-ns-arazzo-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1)
+- [OpenAPI 2.0 (Swagger)](https://spec.openapis.org/oas/v2.0) → [@speclynx/apidom-ns-openapi-2](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-2)
+- [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4) → [@speclynx/apidom-ns-openapi-3-0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.1) → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
 
 ```mermaid
 graph TD
@@ -446,6 +421,44 @@ for (let i = 0; i < parseResult.length; i++) {
     });
   }
 }
+```
+
+## Parsing OpenAPI Documents
+
+The `parseOpenAPI` function provides complete control for parsing OpenAPI documents manually.
+This is useful when you need to parse source descriptions independently or implement custom source description resolution logic.
+
+The function accepts the same input types as `parseArazzo`:
+
+1. **Plain JavaScript object** - converts to JSON and parses
+2. **String content** - detects OpenAPI content and parses inline JSON or YAML
+3. **File system path** - resolves and parses local OpenAPI Documents
+4. **HTTP(S) URL** - fetches and parses remote OpenAPI Documents
+
+Documents are parsed into their appropriate SpecLynx ApiDOM namespace data models:
+
+- [OpenAPI 2.0 (Swagger)](https://spec.openapis.org/oas/v2.0) → [@speclynx/apidom-ns-openapi-2](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-2)
+- [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4) → [@speclynx/apidom-ns-openapi-3-0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.1) → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
+
+```js
+import { parseOpenAPI } from '@jentic/arazzo-parser';
+
+// From object
+const parseResult = await parseOpenAPI({
+  openapi: '3.1.0',
+  info: { title: 'My API', version: '1.0.0' },
+  paths: {},
+});
+
+// From string
+const parseResult = await parseOpenAPI('{"openapi": "3.1.0", ...}');
+
+// From file
+const parseResult = await parseOpenAPI('/path/to/openapi.json');
+
+// From URL
+const parseResult = await parseOpenAPI('https://example.com/openapi.yaml');
 ```
 
 ## SpecLynx ApiDOM tooling

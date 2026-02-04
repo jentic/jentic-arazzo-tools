@@ -127,24 +127,24 @@ describe('parse', function () {
       paths: {},
     };
 
-    specify('should return ParseResultElement with error annotation', async function () {
-      const result = await parseArazzo(openApiDoc);
-
-      assert.isTrue(isParseResultElement(result));
-      assert.strictEqual(result.errors.length, 1);
-    });
-
-    specify('should have undefined api', async function () {
-      const result = await parseArazzo(openApiDoc);
-
-      assert.isUndefined(result.api);
+    specify('should throw ParseError', async function () {
+      try {
+        await parseArazzo(openApiDoc);
+        assert.fail('Expected ParseError to be thrown');
+      } catch (error) {
+        assert.instanceOf(error, ParseError);
+      }
     });
 
     specify('should have descriptive error message', async function () {
-      const result = await parseArazzo(openApiDoc);
-
-      const errorMessage = result.errors.get(0)!.toValue();
-      assert.include(errorMessage, 'not a valid Arazzo specification');
+      try {
+        await parseArazzo(openApiDoc);
+        assert.fail('Expected ParseError to be thrown');
+      } catch (error) {
+        assert.instanceOf(error, ParseError);
+        const cause = (error as ParseError).cause as Error;
+        assert.include(cause.message, 'as an Arazzo specification');
+      }
     });
   });
 

@@ -13,20 +13,20 @@ export type { File, FileOptions };
  * @public
  */
 class MemoryResolver extends Resolver {
-  declare arazzoDocument?: string;
+  declare document?: string;
 
   constructor() {
     super({ name: 'memory' });
   }
 
   canRead(file: File): boolean {
-    return file.uri.startsWith('memory://') && typeof this.arazzoDocument === 'string';
+    return file.uri.startsWith('memory://') && this.document !== undefined;
   }
 
   async read(file: File): Promise<Buffer> {
     try {
       const encoder = new TextEncoder();
-      return encoder.encode(this.arazzoDocument) as unknown as Buffer;
+      return encoder.encode(this.document) as unknown as Buffer;
     } catch (error: unknown) {
       throw new ResolverError(`Error opening file "${file.uri}"`, { cause: error });
     }
