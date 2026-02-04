@@ -273,7 +273,14 @@ const parseResult = await parse('/path/to/arazzo.json', {
 
 ### Result structure
 
-When source descriptions are parsed, each parsed document is added to the main `ParseResultElement` as an additional element. The first element is always the main Arazzo document, and subsequent elements are the parsed source descriptions:
+When source descriptions are parsed, each parsed document is added to the main `ParseResultElement` as an additional element. The first element is always the main Arazzo document, and subsequent elements are the parsed source descriptions.
+
+Source descriptions are parsed into their appropriate SpecLynx ApiDOM namespace data models based on document type:
+
+- **Arazzo** → [@speclynx/apidom-ns-arazzo-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1)
+- **OpenAPI 2.0** → [@speclynx/apidom-ns-openapi-2](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-2)
+- **OpenAPI 3.0.x** → [@speclynx/apidom-ns-openapi-3-0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0)
+- **OpenAPI 3.1.x** → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
 
 ```js
 import { parse } from '@jentic/arazzo-parser';
