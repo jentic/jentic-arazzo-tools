@@ -53,6 +53,9 @@
     "@speclynx/apidom-datamodel": "2.6.1",
     "@speclynx/apidom-error": "2.6.1",
     "@speclynx/apidom-ns-arazzo-1": "2.6.1",
+    "@speclynx/apidom-ns-openapi-2": "2.6.1",
+    "@speclynx/apidom-ns-openapi-3-0": "2.6.1",
+    "@speclynx/apidom-ns-openapi-3-1": "2.6.1",
     "@speclynx/apidom-reference": "2.6.1",
     "type-fest": "^5.4.3"
   },
