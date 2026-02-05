@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.7...v1.0.0-alpha.8) (2026-02-05)
+
+### Features
+
+- **resolver:** add dereferencing support for OpenAPI Documents & fragments ([#42](https://github.com/jentic/jentic-arazzo-tools/issues/42)) ([7687c9e](https://github.com/jentic/jentic-arazzo-tools/commit/7687c9eecc50aab508e67ba5d639b31e25154eff))
+- **resolver:** improve API consistency and validation ([#36](https://github.com/jentic/jentic-arazzo-tools/issues/36)) ([aa095cb](https://github.com/jentic/jentic-arazzo-tools/commit/aa095cb19a1543cd675bfa94a6de1651d21a58b5))
+
 # [1.0.0-alpha.7](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2026-02-04)
 
 ### Features

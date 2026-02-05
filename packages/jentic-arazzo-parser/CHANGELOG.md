@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.8](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.7...v1.0.0-alpha.8) (2026-02-05)
+
+**Note:** Version bump only for package @jentic/arazzo-parser
+
 # [1.0.0-alpha.7](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.6...v1.0.0-alpha.7) (2026-02-04)
 
 ### Features
