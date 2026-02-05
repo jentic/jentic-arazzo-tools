@@ -35,11 +35,11 @@ After dereferencing, all references are resolved inline, making the document sel
 
 **Arazzo:**
 - **`dereferenceArazzo(uri)`** - Dereferences from a file system path or HTTP(S) URL
-- **`dereferenceArazzoElement(element)`** - Dereferences an SpecLynx ApiDOM element
+- **`dereferenceArazzoElement(element)`** - Dereferences a SpecLynx ApiDOM element
 
 **OpenAPI:**
 - **`dereferenceOpenAPI(uri)`** - Dereferences from a file system path or HTTP(S) URL
-- **`dereferenceOpenAPIElement(element)`** - Dereferences an SpecLynx ApiDOM element
+- **`dereferenceOpenAPIElement(element)`** - Dereferences a SpecLynx ApiDOM element
 
 ### Arazzo Documents
 
