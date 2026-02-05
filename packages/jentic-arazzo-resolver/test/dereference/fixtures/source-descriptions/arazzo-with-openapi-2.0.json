@@ -1,0 +1,25 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Swagger 2.0 Workflow",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "petStoreSwagger",
+      "type": "openapi",
+      "url": "./openapi-2.0.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "list-pets",
+      "steps": [
+        {
+          "stepId": "getPets",
+          "operationId": "$sourceDescriptions.petStoreSwagger#/paths/~1pets/get"
+        }
+      ]
+    }
+  ]
+}

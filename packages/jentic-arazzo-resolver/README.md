@@ -29,8 +29,6 @@ Dereferencing is the process of replacing references with the actual content the
 
 After dereferencing, all references are resolved inline, making the document self-contained and easier to process programmatically.
 
-**Current limitation:** The Arazzo resolver only processes the entry Arazzo Document. Referenced OpenAPI/Arazzo source descriptions are not resolved.
-
 ### Functions
 
 **Arazzo:**
@@ -100,6 +98,61 @@ const workflow = parseResult.api.workflows.get(0);
 
 const dereferencedWorkflow = await dereferenceArazzoElement(workflow, {
   dereference: { strategyOpts: { parseResult } },
+});
+```
+
+##### Source descriptions
+
+Source descriptions referenced in the Arazzo Document can optionally be dereferenced using strategy options.
+
+The following options can be passed via `dereference.strategyOpts` (globally) or `dereference.strategyOpts['arazzo-1']` (strategy-specific).
+Strategy-specific options take precedence over global options.
+
+- **sourceDescriptions** - Controls which external source descriptions are dereferenced and included in the result.
+  - `true` - dereference all source descriptions
+  - `string[]` - dereference only source descriptions with matching names (e.g., `['petStore', 'paymentApi']`)
+
+  Each dereferenced source description is added with a `'source-description'` class and metadata (`name`, `type`).
+  Only [OpenAPI 2.0](https://spec.openapis.org/oas/v2.0), [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4), [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2), and [Arazzo 1.x](https://spec.openapis.org/arazzo/v1.0.1) documents are accepted as source descriptions.
+- **sourceDescriptionsMaxDepth** - Maximum recursion depth for dereferencing nested Arazzo source descriptions.
+  Defaults to `+Infinity`. Circular references are automatically detected and skipped.
+
+###### Error handling
+
+The source descriptions dereferencing uses annotations instead of throwing errors, allowing dereferencing to continue
+even when individual source descriptions fail. Errors are reported as `AnnotationElement` instances
+with an `'error'` class within the result:
+
+- **Max depth exceeded** - When `sourceDescriptionsMaxDepth` is reached, an error annotation is returned
+  instead of the nested source descriptions
+- **Dereference failures** - If a source description file cannot be dereferenced (e.g., file not found, invalid syntax),
+  an error annotation is returned for that specific source description while other source descriptions
+  continue to be processed
+- **Validation warnings** - Warning annotations (with `'warning'` class) are returned when the dereferenced document
+  is not an OpenAPI or Arazzo specification
+
+```js
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
+
+// Dereference all source descriptions
+const result = await dereferenceArazzo('/path/to/arazzo.json', {
+  dereference: {
+    strategyOpts: {
+      sourceDescriptions: true,
+      sourceDescriptionsMaxDepth: 10,
+    },
+  },
+});
+
+// Dereference only specific source descriptions by name
+const resultFiltered = await dereferenceArazzo('/path/to/arazzo.json', {
+  dereference: {
+    strategyOpts: {
+      'arazzo-1': {
+        sourceDescriptions: ['petStore', 'paymentApi'],
+      },
+    },
+  },
 });
 ```
 
@@ -202,10 +255,22 @@ console.log(defaultDereferenceArazzoOptions);
 //     resolvers: [FileResolver, HTTPResolverAxios],
 //   },
 //   parse: {
-//     parsers: [ArazzoJSON1Parser, ArazzoYAML1Parser, JSONParser, YAMLParser, BinaryParser],
+//     parsers: [
+//       ArazzoJSON1Parser, ArazzoYAML1Parser,
+//       OpenApiJSON2Parser, OpenApiYAML2Parser,
+//       OpenApiJSON3_0Parser, OpenApiYAML3_0Parser,
+//       OpenApiJSON3_1Parser, OpenApiYAML3_1Parser,
+//       JSONParser, YAMLParser, BinaryParser
+//     ],
 //   },
 //   dereference: {
-//     strategies: [Arazzo1DereferenceStrategy],
+//     strategies: [
+//       Arazzo1DereferenceStrategy,
+//       OpenAPI2DereferenceStrategy, OpenAPI3_0DereferenceStrategy, OpenAPI3_1DereferenceStrategy
+//     ],
+//     strategyOpts: {
+//       sourceDescriptions: false,
+//     },
 //   },
 // }
 
@@ -295,6 +360,38 @@ const openapiUri = toValue(openapiResult.meta.get('retrievalURI'));
 ```
 
 Note: `dereferenceArazzoElement` and `dereferenceOpenAPIElement` do not set `retrievalURI` - they preserve whatever metadata was on the original element.
+
+#### Source descriptions
+
+When dereferencing with `sourceDescriptions` enabled, the result contains the entry Arazzo Document at index 0, followed by any dereferenced source descriptions.
+Each source description is a `ParseResultElement` with `'source-description'` class and metadata.
+
+```js
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
+import { toValue } from '@speclynx/apidom-core';
+
+const result = await dereferenceArazzo('/path/to/arazzo.json', {
+  dereference: { strategyOpts: { sourceDescriptions: true } },
+});
+
+// Access entry Arazzo Document
+const entryArazzo = result.api; // ArazzoSpecification1Element
+
+// Iterate over source descriptions (starting at index 1)
+for (let i = 1; i < result.length; i++) {
+  const sdParseResult = result.get(i);
+
+  // Check if it's a source description
+  if (sdParseResult.classes.includes('source-description')) {
+    const name = toValue(sdParseResult.meta.get('name'));
+    const type = toValue(sdParseResult.meta.get('type')); // 'openapi' or 'arazzo'
+
+    // Access the dereferenced API element
+    const api = sdParseResult.api; // OpenApi3_1Element, SwaggerElement, ArazzoSpecification1Element, etc.
+    console.log(`Source "${name}" (${type}):`, api?.element);
+  }
+}
+```
 
 ## SpecLynx ApiDOM tooling
 

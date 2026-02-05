@@ -49,14 +49,14 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
-    "@speclynx/apidom-core": "2.6.1",
-    "@speclynx/apidom-datamodel": "2.6.1",
-    "@speclynx/apidom-error": "2.6.1",
-    "@speclynx/apidom-ns-arazzo-1": "2.6.1",
-    "@speclynx/apidom-ns-openapi-2": "2.6.1",
-    "@speclynx/apidom-ns-openapi-3-0": "2.6.1",
-    "@speclynx/apidom-ns-openapi-3-1": "2.6.1",
-    "@speclynx/apidom-reference": "2.6.1",
+    "@speclynx/apidom-core": "2.7.0",
+    "@speclynx/apidom-datamodel": "2.7.0",
+    "@speclynx/apidom-error": "2.7.0",
+    "@speclynx/apidom-ns-arazzo-1": "2.7.0",
+    "@speclynx/apidom-ns-openapi-2": "2.7.0",
+    "@speclynx/apidom-ns-openapi-3-0": "2.7.0",
+    "@speclynx/apidom-ns-openapi-3-1": "2.7.0",
+    "@speclynx/apidom-reference": "2.7.0",
     "type-fest": "^5.4.3"
   },
   "files": [

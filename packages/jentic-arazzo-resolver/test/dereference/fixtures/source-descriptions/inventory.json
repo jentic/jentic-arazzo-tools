@@ -1,0 +1,20 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Inventory API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/inventory": {
+      "get": {
+        "operationId": "getInventory",
+        "summary": "Get inventory",
+        "responses": {
+          "200": {
+            "description": "Inventory list"
+          }
+        }
+      }
+    }
+  }
+}

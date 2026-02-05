@@ -9,8 +9,17 @@ import {
 } from '@speclynx/apidom-reference/configuration/empty';
 import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference/configuration/empty';
 import Arazzo1DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/arazzo-1';
+import OpenAPI2DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-2';
+import OpenAPI30DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-0';
+import OpenAPI31DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-1';
 import ArazzoJSON1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-json-1';
 import ArazzoYAML1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-yaml-1';
+import OpenAPIJSON20Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-2';
+import OpenAPIYAML20Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-2';
+import OpenAPIJSON30Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-0';
+import OpenAPIYAML30Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-0';
+import OpenAPIJSON31Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-1';
+import OpenAPIYAML31Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-1';
 import JSONParser from '@speclynx/apidom-reference/parse/parsers/json';
 import YAMLParser from '@speclynx/apidom-reference/parse/parsers/yaml-1-2';
 import BinaryParser from '@speclynx/apidom-reference/parse/parsers/binary';
@@ -43,14 +52,27 @@ export const defaultOptions: Options = {
     parsers: [
       new ArazzoJSON1Parser({ allowEmpty: false, sourceMap: false }),
       new ArazzoYAML1Parser({ allowEmpty: false, sourceMap: false }),
+      new OpenAPIJSON20Parser({ allowEmpty: false, sourceMap: false }),
+      new OpenAPIYAML20Parser({ allowEmpty: false, sourceMap: false }),
+      new OpenAPIJSON30Parser({ allowEmpty: false, sourceMap: false }),
+      new OpenAPIYAML30Parser({ allowEmpty: false, sourceMap: false }),
+      new OpenAPIJSON31Parser({ allowEmpty: false, sourceMap: false }),
+      new OpenAPIYAML31Parser({ allowEmpty: false, sourceMap: false }),
       new JSONParser({ allowEmpty: false, sourceMap: false }),
       new YAMLParser({ allowEmpty: false, sourceMap: false }),
       new BinaryParser({ allowEmpty: false, sourceMap: false }),
     ],
   },
   dereference: {
-    strategies: [new Arazzo1DereferenceStrategy()],
-    strategyOpts: {},
+    strategies: [
+      new Arazzo1DereferenceStrategy(),
+      new OpenAPI2DereferenceStrategy(),
+      new OpenAPI30DereferenceStrategy(),
+      new OpenAPI31DereferenceStrategy(),
+    ],
+    strategyOpts: {
+      sourceDescriptions: false,
+    },
   },
 };
 
@@ -59,6 +81,12 @@ export const defaultOptions: Options = {
  *
  * This function resolves all JSON References ($ref) and Reusable Object references
  * ($components.*) in the Arazzo Document.
+ *
+ * Source descriptions can optionally be dereferenced using strategy options:
+ * - `sourceDescriptions`: `true` (all) or `['name1', 'name2']` (specific names only)
+ * - `sourceDescriptionsMaxDepth`: Maximum recursion depth for nested Arazzo source descriptions (default: `+Infinity`)
+ *
+ * Options can be passed globally via `strategyOpts` or strategy-specific via `strategyOpts['arazzo-1']`.
  *
  * @param uri - A file system path or HTTP(S) URL to the Arazzo Document
  * @param options - Reference options (uses defaultOptions when not provided)
@@ -72,6 +100,12 @@ export const defaultOptions: Options = {
  * @example
  * // Dereference from URL
  * const result = await dereferenceArazzo('https://example.com/arazzo.yaml');
+ *
+ * @example
+ * // Dereference with source descriptions
+ * const result = await dereferenceArazzo('/path/to/arazzo.json', {
+ *   dereference: { strategyOpts: { sourceDescriptions: true } },
+ * });
  *
  * @example
  * // Dereference with custom options
@@ -113,6 +147,12 @@ export async function dereference(uri: string, options: Options = {}): Promise<P
  *   requires `options.dereference.strategyOpts.parseResult` for component resolution,
  *   and `options.resolve.baseURI` if parseResult lacks retrievalURI metadata
  *
+ * Source descriptions can optionally be dereferenced using strategy options:
+ * - `sourceDescriptions`: `true` (all) or `['name1', 'name2']` (specific names only)
+ * - `sourceDescriptionsMaxDepth`: Maximum recursion depth for nested Arazzo source descriptions (default: `+Infinity`)
+ *
+ * Options can be passed globally via `strategyOpts` or strategy-specific via `strategyOpts['arazzo-1']`.
+ *
  * @param element - An ApiDOM element (ParseResultElement or child element like WorkflowElement)
  * @param options - Reference options (uses defaultOptions when not provided)
  * @returns A promise that resolves to the dereferenced element
@@ -143,6 +183,15 @@ export async function dereference(uri: string, options: Options = {}): Promise<P
  * const workflow = parseResult.api.workflows.get(0);
  * const dereferenced = await dereferenceArazzoElement(workflow, {
  *   dereference: { strategyOpts: { parseResult } },
+ * });
+ * ```
+ *
+ * @example
+ * Dereference with source descriptions
+ * ```typescript
+ * const parseResult = await parseArazzo('/path/to/arazzo.json');
+ * const dereferenced = await dereferenceArazzoElement(parseResult, {
+ *   dereference: { strategyOpts: { sourceDescriptions: true } },
  * });
  * ```
  * @public
