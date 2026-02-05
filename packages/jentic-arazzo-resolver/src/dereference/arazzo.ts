@@ -50,18 +50,22 @@ export const defaultOptions: Options = {
   },
   parse: {
     parsers: [
-      new ArazzoJSON1Parser({ allowEmpty: false, sourceMap: false }),
-      new ArazzoYAML1Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenAPIJSON20Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenAPIYAML20Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenAPIJSON30Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenAPIYAML30Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenAPIJSON31Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenAPIYAML31Parser({ allowEmpty: false, sourceMap: false }),
-      new JSONParser({ allowEmpty: false, sourceMap: false }),
-      new YAMLParser({ allowEmpty: false, sourceMap: false }),
-      new BinaryParser({ allowEmpty: false, sourceMap: false }),
+      new ArazzoJSON1Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new ArazzoYAML1Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new OpenAPIJSON20Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new OpenAPIYAML20Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new OpenAPIJSON30Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new OpenAPIYAML30Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new OpenAPIJSON31Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new OpenAPIYAML31Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new JSONParser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new YAMLParser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new BinaryParser({ allowEmpty: false }),
     ],
+    parserOpts: {
+      sourceMap: false,
+      strict: true,
+    },
   },
   dereference: {
     strategies: [

@@ -55,16 +55,20 @@ export const defaultOptions: Options = {
   },
   parse: {
     parsers: [
-      new OpenApiJSON2Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenApiYAML2Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenApiJSON3_0Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenApiYAML3_0Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenApiJSON3_1Parser({ allowEmpty: false, sourceMap: false }),
-      new OpenApiYAML3_1Parser({ allowEmpty: false, sourceMap: false }),
-      new JSONParser({ allowEmpty: false, sourceMap: false }),
-      new YAMLParser({ allowEmpty: false, sourceMap: false }),
-      new BinaryParser({ allowEmpty: false, sourceMap: false }),
+      new OpenApiJSON2Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new OpenApiYAML2Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new OpenApiJSON3_0Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new OpenApiYAML3_0Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new OpenApiJSON3_1Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new OpenApiYAML3_1Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new JSONParser({ allowEmpty: false, fileExtensions: ['.json'] }),
+      new YAMLParser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new BinaryParser({ allowEmpty: false }),
     ],
+    parserOpts: {
+      sourceMap: false,
+      strict: true,
+    },
   },
   dereference: {
     strategies: [
