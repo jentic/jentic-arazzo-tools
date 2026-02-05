@@ -20,7 +20,7 @@ import { isArazzoSpecification1Element, mediaTypes } from '@speclynx/apidom-ns-a
 import { toValue } from '@speclynx/apidom-core';
 import type { PartialDeep } from 'type-fest';
 
-import DereferenceError from './errors/DereferenceError.ts';
+import DereferenceError from '../errors/DereferenceError.ts';
 
 /**
  * Options for dereferencing Arazzo Documents.

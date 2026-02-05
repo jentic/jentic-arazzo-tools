@@ -12,11 +12,134 @@ import {
 import { toValue } from '@speclynx/apidom-core';
 import { parseArazzo } from '@jentic/arazzo-parser';
 
-import { dereferenceArazzoElement, DereferenceError } from '../../src/index.ts';
-import { loadJsonFile } from '../helpers.ts';
+import { dereferenceArazzo, dereferenceArazzoElement, DereferenceError } from '../../src/index.ts';
+import { createHTTPServer, loadJsonFile, type ServerTerminable } from '../helpers.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const fixturesPath = path.join(__dirname, 'fixtures', 'dereference-element');
+
+describe('dereferenceArazzo', function () {
+  const fixturesPath = path.join(__dirname, 'fixtures', 'dereference');
+
+  context('given file system path to JSON file', function () {
+    const rootFilePath = path.join(fixturesPath, 'root.json');
+
+    specify('should return ParseResultElement', async function () {
+      const result = await dereferenceArazzo(rootFilePath);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain ArazzoSpecification1Element as api', async function () {
+      const result = await dereferenceArazzo(rootFilePath);
+
+      assert.isTrue(isArazzoSpecification1Element(result.api));
+    });
+
+    specify('should dereference reusable objects', async function () {
+      const actual = await dereferenceArazzo(rootFilePath);
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
+
+      assert.deepEqual(toValue(actual), expected);
+    });
+  });
+
+  context('given file system path to YAML file', function () {
+    const rootFilePath = path.join(fixturesPath, 'root.yaml');
+
+    specify('should return ParseResultElement', async function () {
+      const result = await dereferenceArazzo(rootFilePath);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain ArazzoSpecification1Element as api', async function () {
+      const result = await dereferenceArazzo(rootFilePath);
+
+      assert.isTrue(isArazzoSpecification1Element(result.api));
+    });
+
+    specify('should dereference reusable objects', async function () {
+      const actual = await dereferenceArazzo(rootFilePath);
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
+
+      assert.deepEqual(toValue(actual), expected);
+    });
+  });
+
+  context('given HTTP URL to JSON file', function () {
+    let server: ServerTerminable;
+
+    beforeEach(async function () {
+      server = await createHTTPServer({ cwd: fixturesPath });
+    });
+
+    afterEach(async function () {
+      await server.terminate();
+    });
+
+    specify('should return ParseResultElement', async function () {
+      const result = await dereferenceArazzo(`http://localhost:${server.port}/root.json`);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain ArazzoSpecification1Element as api', async function () {
+      const result = await dereferenceArazzo(`http://localhost:${server.port}/root.json`);
+
+      assert.isTrue(isArazzoSpecification1Element(result.api));
+    });
+
+    specify('should dereference reusable objects', async function () {
+      const actual = await dereferenceArazzo(`http://localhost:${server.port}/root.json`);
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
+
+      assert.deepEqual(toValue(actual), expected);
+    });
+  });
+
+  context('given HTTP URL to YAML file', function () {
+    let server: ServerTerminable;
+
+    beforeEach(async function () {
+      server = await createHTTPServer({ cwd: fixturesPath });
+    });
+
+    afterEach(async function () {
+      await server.terminate();
+    });
+
+    specify('should return ParseResultElement', async function () {
+      const result = await dereferenceArazzo(`http://localhost:${server.port}/root.yaml`);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain ArazzoSpecification1Element as api', async function () {
+      const result = await dereferenceArazzo(`http://localhost:${server.port}/root.yaml`);
+
+      assert.isTrue(isArazzoSpecification1Element(result.api));
+    });
+
+    specify('should dereference reusable objects', async function () {
+      const actual = await dereferenceArazzo(`http://localhost:${server.port}/root.yaml`);
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
+
+      assert.deepEqual(toValue(actual), expected);
+    });
+  });
+
+  context('given invalid URI', function () {
+    specify('should throw DereferenceError', async function () {
+      try {
+        await dereferenceArazzo('/non/existent/path.json');
+        assert.fail('Expected DereferenceError to be thrown');
+      } catch (error) {
+        assert.instanceOf(error, DereferenceError);
+        assert.include((error as DereferenceError).message, '/non/existent/path.json');
+      }
+    });
+  });
+});
 
 /**
  * Test cases for dereferenceArazzoElement:
@@ -31,6 +154,8 @@ const fixturesPath = path.join(__dirname, 'fixtures', 'dereference-element');
  * | 6    | Child element + parseResult - retrievalURI - baseURI  | throws DereferenceError      |
  */
 describe('dereferenceArazzoElement', function () {
+  const fixturesPath = path.join(__dirname, 'fixtures', 'dereference-element');
+
   context('given ParseResultElement with retrievalURI metadata', function () {
     const rootFilePath = path.join(fixturesPath, 'root.json');
 
