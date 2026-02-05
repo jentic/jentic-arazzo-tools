@@ -40,12 +40,10 @@ export const defaultOptions: Options = {
       new ArazzoJSON1Parser({
         allowEmpty: false,
         fileExtensions: ['.json'],
-        parseFn: parseURI,
       }),
       new ArazzoYAML1Parser({
         allowEmpty: false,
         fileExtensions: ['.yaml', '.yml'],
-        parseFn: parseURI,
       }),
       new OpenApiJSON2Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
       new OpenApiYAML2Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),

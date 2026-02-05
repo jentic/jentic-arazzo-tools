@@ -1,0 +1,25 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Cycle B",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "cycleA",
+      "type": "arazzo",
+      "url": "./cycle-a.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "cycle-b-workflow",
+      "steps": [
+        {
+          "stepId": "step1",
+          "workflowId": "$sourceDescriptions.cycleA#/workflows/cycle-a-workflow"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Parent Arazzo Workflow",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "childWorkflows",
+      "type": "arazzo",
+      "url": "./child-arazzo.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "parent-workflow",
+      "steps": [
+        {
+          "stepId": "parentStep",
+          "workflowId": "$sourceDescriptions.childWorkflows#/workflows/child-workflow"
+        }
+      ]
+    }
+  ]
+}
