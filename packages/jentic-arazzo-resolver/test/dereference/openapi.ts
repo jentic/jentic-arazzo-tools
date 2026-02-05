@@ -12,7 +12,7 @@ import {
   dereferenceOpenAPIElement,
   DereferenceError,
 } from '../../src/index.ts';
-import { loadJsonFile } from '../helpers.ts';
+import { createHTTPServer, loadJsonFile, type ServerTerminable } from '../helpers.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -46,6 +46,91 @@ describe('dereferenceOpenAPI', function () {
 
       assert.isTrue(result.hasMetaProperty('retrievalURI'));
       assert.strictEqual(toValue(result.meta.get('retrievalURI')), rootFilePath);
+    });
+  });
+
+  context('given file system path to YAML file', function () {
+    const rootFilePath = path.join(fixturesPath, 'root.yaml');
+
+    specify('should return ParseResultElement', async function () {
+      const result = await dereferenceOpenAPI(rootFilePath);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain OpenApi3_1Element as api', async function () {
+      const result = await dereferenceOpenAPI(rootFilePath);
+
+      assert.isTrue(isOpenApi3_1Element(result.api));
+    });
+
+    specify('should dereference $ref references', async function () {
+      const actual = await dereferenceOpenAPI(rootFilePath);
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
+
+      assert.deepEqual(toValue(actual.api), expected);
+    });
+  });
+
+  context('given HTTP URL to JSON file', function () {
+    let server: ServerTerminable;
+
+    beforeEach(async function () {
+      server = await createHTTPServer({ cwd: fixturesPath });
+    });
+
+    afterEach(async function () {
+      await server.terminate();
+    });
+
+    specify('should return ParseResultElement', async function () {
+      const result = await dereferenceOpenAPI(`http://localhost:${server.port}/root.json`);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain OpenApi3_1Element as api', async function () {
+      const result = await dereferenceOpenAPI(`http://localhost:${server.port}/root.json`);
+
+      assert.isTrue(isOpenApi3_1Element(result.api));
+    });
+
+    specify('should dereference $ref references', async function () {
+      const actual = await dereferenceOpenAPI(`http://localhost:${server.port}/root.json`);
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
+
+      assert.deepEqual(toValue(actual.api), expected);
+    });
+  });
+
+  context('given HTTP URL to YAML file', function () {
+    let server: ServerTerminable;
+
+    beforeEach(async function () {
+      server = await createHTTPServer({ cwd: fixturesPath });
+    });
+
+    afterEach(async function () {
+      await server.terminate();
+    });
+
+    specify('should return ParseResultElement', async function () {
+      const result = await dereferenceOpenAPI(`http://localhost:${server.port}/root.yaml`);
+
+      assert.isTrue(isParseResultElement(result));
+    });
+
+    specify('should contain OpenApi3_1Element as api', async function () {
+      const result = await dereferenceOpenAPI(`http://localhost:${server.port}/root.yaml`);
+
+      assert.isTrue(isOpenApi3_1Element(result.api));
+    });
+
+    specify('should dereference $ref references', async function () {
+      const actual = await dereferenceOpenAPI(`http://localhost:${server.port}/root.yaml`);
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
+
+      assert.deepEqual(toValue(actual.api), expected);
     });
   });
 
