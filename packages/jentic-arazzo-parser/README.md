@@ -346,6 +346,46 @@ for (let i = 0; i < parseResult.length; i++) {
 }
 ```
 
+### Accessing via SourceDescriptionElement
+
+An alternative way to access parsed source descriptions is through the `SourceDescriptionElement` metadata.
+When source descriptions are parsed, a `ParseResultElement` is attached to each `SourceDescriptionElement`'s metadata under the key `'parseResult'`.
+
+```js
+import { parseArazzo } from '@jentic/arazzo-parser';
+import { toValue } from '@speclynx/apidom-core';
+
+const parseResult = await parseArazzo('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      sourceDescriptions: true,
+    },
+  },
+});
+
+const arazzoSpec = parseResult.api;
+
+// Access parsed document via SourceDescriptionElement
+const sourceDesc = arazzoSpec.sourceDescriptions.get(0);
+const sdParseResult = sourceDesc.meta.get('parseResult');
+
+// Check for errors before using
+if (sdParseResult.errors.length === 0) {
+  // Access the parsed API
+  const api = sdParseResult.api;
+  console.log(`API type: ${api.element}`); // e.g., 'openApi3_1'
+
+  // Get the retrieval URI
+  const retrievalURI = toValue(sdParseResult.meta.get('retrievalURI'));
+  console.log(`Loaded from: ${retrievalURI}`);
+}
+```
+
+This approach is useful when you need to:
+- Access a specific source description by its position in the `sourceDescriptions` array
+- Get the `retrievalURI` metadata indicating where the document was fetched from
+- Correlate parsed documents with their source description definitions
+
 ### Recursive parsing
 
 When a source description is of type `arazzo`, the parser recursively parses that document's source descriptions as well. This allows you to parse entire dependency trees of Arazzo documents.
