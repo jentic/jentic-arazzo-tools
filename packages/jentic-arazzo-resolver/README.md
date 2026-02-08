@@ -112,7 +112,7 @@ Strategy-specific options take precedence over global options.
   - `true` - dereference all source descriptions
   - `string[]` - dereference only source descriptions with matching names (e.g., `['petStore', 'paymentApi']`)
 
-  Each dereferenced source description is added with a `'source-description'` class and metadata (`name`, `type`).
+  Each dereferenced source description is added with a `'source-description'` class and metadata (`name`, `type`, `retrievalURI`).
   Only [OpenAPI 2.0](https://spec.openapis.org/oas/v2.0), [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4), [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2), and [Arazzo 1.x](https://spec.openapis.org/arazzo/v1.0.1) documents are accepted as source descriptions.
 - **sourceDescriptionsMaxDepth** - Maximum recursion depth for dereferencing nested Arazzo source descriptions.
   Defaults to `+Infinity`. Circular references are automatically detected and skipped.
@@ -385,13 +385,52 @@ for (let i = 1; i < result.length; i++) {
   if (sdParseResult.classes.includes('source-description')) {
     const name = toValue(sdParseResult.meta.get('name'));
     const type = toValue(sdParseResult.meta.get('type')); // 'openapi' or 'arazzo'
+    const retrievalURI = toValue(sdParseResult.meta.get('retrievalURI'));
 
     // Access the dereferenced API element
     const api = sdParseResult.api; // OpenApi3_1Element, SwaggerElement, ArazzoSpecification1Element, etc.
-    console.log(`Source "${name}" (${type}):`, api?.element);
+    console.log(`Source "${name}" (${type}) from ${retrievalURI}:`, api?.element);
   }
 }
 ```
+
+##### Accessing via SourceDescriptionElement
+
+An alternative way to access dereferenced source descriptions is through the `SourceDescriptionElement` metadata.
+When source descriptions are dereferenced, a `ParseResultElement` is attached to each `SourceDescriptionElement`'s metadata under the key `'parseResult'`.
+
+```js
+import { dereferenceArazzo } from '@jentic/arazzo-resolver';
+import { toValue } from '@speclynx/apidom-core';
+
+const result = await dereferenceArazzo('/path/to/arazzo.json', {
+  dereference: { strategyOpts: { sourceDescriptions: true } },
+});
+
+const arazzoSpec = result.api;
+
+// Access dereferenced document via SourceDescriptionElement
+const sourceDesc = arazzoSpec.sourceDescriptions.get(0);
+const sdParseResult = sourceDesc.meta.get('parseResult');
+
+// Check for errors before using
+if (sdParseResult.errors.length === 0) {
+  // Access the dereferenced API
+  const api = sdParseResult.api;
+  console.log(`API type: ${api.element}`); // e.g., 'openApi3_1'
+
+  // Get the retrieval URI
+  const retrievalURI = toValue(sdParseResult.meta.get('retrievalURI'));
+  console.log(`Loaded from: ${retrievalURI}`);
+}
+```
+
+This approach is useful when you need to:
+- Access a specific source description by its position in the `sourceDescriptions` array
+- Get the `retrievalURI` metadata indicating where the document was fetched from
+- Correlate dereferenced documents with their source description definitions
+
+**Note:** When the `ParseResultElement` already contains parsed source descriptions (from parsing with `sourceDescriptions: true`), the dereferencer reuses them instead of re-fetching. This makes the parse-then-dereference workflow efficient.
 
 ## SpecLynx ApiDOM tooling
 
