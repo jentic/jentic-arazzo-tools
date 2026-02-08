@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.10](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.9...v1.0.0-alpha.10) (2026-02-08)
+
+### Bug Fixes
+
+- **parser:** add doc for accessing parse result via SourceDescription ([c23699b](https://github.com/jentic/jentic-arazzo-tools/commit/c23699bc6cf77cafbd77a9df5dd5fb355f771696))
+
 # [1.0.0-alpha.9](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.8...v1.0.0-alpha.9) (2026-02-05)
 
 ### Features
