@@ -3,6 +3,13 @@
 `@jentic/arazzo-parser` is a parser for [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) documents.
 It produces [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data model using the [Arazzo 1.x namespace](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1#readme).
 
+**Supported versions:**
+- [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
+- [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
+- [OpenAPI 2.0](https://spec.openapis.org/oas/v2.0)
+- [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.1)
+
 ## Installation
 
 You can install this package via [npm](https://npmjs.org/) CLI by running the following command:
