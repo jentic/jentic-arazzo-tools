@@ -3,12 +3,14 @@
 `@jentic/arazzo-resolver` is a resolver for [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) and [OpenAPI Specification](https://spec.openapis.org/oas/latest.html) documents.
 It produces [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models using the appropriate namespace ([Arazzo 1.x](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1#readme), [OpenAPI 2.0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-2#readme), [OpenAPI 3.0.x](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0#readme), [OpenAPI 3.1.x](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1#readme)).
 
-**Supported versions:**
+**Supported Arazzo versions:**
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
 - [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
+
+**Supported OpenAPI versions (for source descriptions):**
 - [OpenAPI 2.0](https://spec.openapis.org/oas/v2.0)
 - [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4)
-- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.1)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2)
 
 ## Installation
 

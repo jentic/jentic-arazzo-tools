@@ -12,6 +12,11 @@ A comprehensive JavaScript toolkit for parsing, resolving, validating, running a
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
 - [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
 
+**Supported OpenAPI versions (for source descriptions):**
+- [OpenAPI 2.0](https://spec.openapis.org/oas/v2.0)
+- [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2)
+
 ## Packages
 
 This monorepo contains the following packages:
