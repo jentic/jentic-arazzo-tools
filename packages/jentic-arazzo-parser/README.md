@@ -3,6 +3,15 @@
 `@jentic/arazzo-parser` is a parser for [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) documents.
 It produces [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data model using the [Arazzo 1.x namespace](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1#readme).
 
+**Supported Arazzo versions:**
+- [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
+- [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
+
+**Supported OpenAPI versions (for source descriptions):**
+- [OpenAPI 2.0](https://spec.openapis.org/oas/v2.0)
+- [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2)
+
 ## Installation
 
 You can install this package via [npm](https://npmjs.org/) CLI by running the following command:
@@ -289,7 +298,7 @@ Source descriptions are parsed into their appropriate SpecLynx ApiDOM namespace 
 - [Arazzo 1.x](https://spec.openapis.org/arazzo/latest.html) → [@speclynx/apidom-ns-arazzo-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-arazzo-1)
 - [OpenAPI 2.0 (Swagger)](https://spec.openapis.org/oas/v2.0) → [@speclynx/apidom-ns-openapi-2](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-2)
 - [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4) → [@speclynx/apidom-ns-openapi-3-0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0)
-- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.1) → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2) → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
 
 ```
 ParseResultElement
@@ -470,7 +479,7 @@ Documents are parsed into their appropriate SpecLynx ApiDOM namespace data model
 
 - [OpenAPI 2.0 (Swagger)](https://spec.openapis.org/oas/v2.0) → [@speclynx/apidom-ns-openapi-2](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-2)
 - [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4) → [@speclynx/apidom-ns-openapi-3-0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0)
-- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.1) → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
+- [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2) → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
 
 ```js
 import { parseOpenAPI } from '@jentic/arazzo-parser';
