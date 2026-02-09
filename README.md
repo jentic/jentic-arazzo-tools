@@ -64,6 +64,35 @@ For complete documentation, see the [@jentic/arazzo-parser README](./packages/je
 
 ---
 
+## Resolver
+
+The Resolver dereferences Arazzo and OpenAPI Documents, resolving all references inline to produce self-contained [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models.
+
+```sh
+npm install @jentic/arazzo-resolver
+```
+
+```js
+import { dereferenceArazzo, dereferenceOpenAPI } from '@jentic/arazzo-resolver';
+
+// Dereference Arazzo from file or URL
+const arazzoResult = await dereferenceArazzo('/path/to/arazzo.json');
+const arazzoSpec = arazzoResult.api; // All references resolved inline
+
+// Dereference with source descriptions
+const resultWithSources = await dereferenceArazzo('/path/to/arazzo.json', {
+  dereference: { strategyOpts: { sourceDescriptions: true } },
+});
+
+// Dereference OpenAPI from file or URL
+const openapiResult = await dereferenceOpenAPI('/path/to/openapi.json');
+const openapiSpec = openapiResult.api; // All $ref references resolved inline
+```
+
+For complete documentation, see the [@jentic/arazzo-resolver README](./packages/jentic-arazzo-resolver/README.md).
+
+---
+
 ## Contributing
 
 Please read our [Contributing Guide](./CONTRIBUTING.md) and [Code of Conduct](./CODE_OF_CONDUCT.md) before submitting a pull request.
