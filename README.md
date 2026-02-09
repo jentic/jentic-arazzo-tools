@@ -25,6 +25,7 @@ This monorepo contains the following packages:
 |---------|-------------|
 | [@jentic/arazzo-parser](./packages/jentic-arazzo-parser) | Parser for Arazzo Documents producing [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data model |
 | [@jentic/arazzo-resolver](./packages/jentic-arazzo-resolver) | Resolver for Arazzo Documents |
+| [@jentic/arazzo-validator](./packages/jentic-arazzo-validator) | Validator & Linter for Arazzo Documents |
 
 ---
 

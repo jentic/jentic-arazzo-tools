@@ -1,0 +1,8 @@
+/src/**/*.mjs
+/src/**/*.cjs
+/test/**/*.mjs
+/dist
+/types
+/NOTICE
+/LICENSE
+/jentic-arazzo-validator-*.tgz
