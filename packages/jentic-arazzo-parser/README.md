@@ -291,25 +291,16 @@ Source descriptions are parsed into their appropriate SpecLynx ApiDOM namespace 
 - [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4) → [@speclynx/apidom-ns-openapi-3-0](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-0)
 - [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.1) → [@speclynx/apidom-ns-openapi-3-1](https://github.com/speclynx/apidom/tree/main/packages/apidom-ns-openapi-3-1)
 
-```mermaid
-graph TD
-    PR["ParseResultElement"] --> API[".api: ArazzoSpecification1Element"]
-    PR --> SD1
-    PR --> SD2
-
-    subgraph source-descriptions [source descriptions]
-        SD1["ParseResultElement<br/>(petStoreApi)"] --> SD1_API[".api: OpenApi3_1Element"]
-        SD2["ParseResultElement<br/>(legacyApi)"] --> SD2_ERR[".errors"]
-        SD2 --> SD2_WARN[".warnings"]
-    end
-
-    style PR fill:#e7f1ff,stroke:#0366d6,stroke-width:2px
-    style SD1 fill:#f6f8fa,stroke:#586069
-    style SD2 fill:#f6f8fa,stroke:#586069
-    style API fill:#d4edda,stroke:#28a745
-    style SD1_API fill:#d4edda,stroke:#28a745
-    style SD2_ERR fill:#f8d7da,stroke:#dc3545
-    style SD2_WARN fill:#fff3cd,stroke:#ffc107
+```
+ParseResultElement
+├── .api: ArazzoSpecification1Element
+│
+├── ParseResultElement (petStoreApi)        ─┐
+│   └── .api: OpenApi3_1Element              │ source
+│                                            │ descriptions
+└── ParseResultElement (legacyApi)          ─┘
+    ├── .errors
+    └── .warnings
 ```
 
 ```js
