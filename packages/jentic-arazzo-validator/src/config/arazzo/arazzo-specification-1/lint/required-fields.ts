@@ -32,14 +32,14 @@ const requiredFieldsLint: LinterMeta = {
       {
         message: "add 'sourceDescriptions' section",
         action: 'addChild',
-        snippetYaml: 'sourceDescriptions: \n  \n',
-        snippetJson: '"sourceDescriptions": {\n  \n  },\n',
+        snippetYaml: 'sourceDescriptions:\n  - \n',
+        snippetJson: '"sourceDescriptions": [\n  \n  ],\n',
       },
       {
         message: "add 'workflows' section",
         action: 'addChild',
-        snippetYaml: 'workflows: \n  \n',
-        snippetJson: '"workflows": {\n  \n  },\n',
+        snippetYaml: 'workflows:\n  - \n',
+        snippetJson: '"workflows": [\n  \n  ],\n',
       },
     ],
   },

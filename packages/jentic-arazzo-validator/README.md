@@ -71,7 +71,7 @@ workflows:
 
 const textDocument = TextDocument.create(
   'file:///path/to/arazzo.yaml',
-  'apidom',
+  'arazzo',
   1,
   content
 );
@@ -114,6 +114,23 @@ import { validateURI } from '@jentic/arazzo-validator';
 const diagnostics = await validateURI('https://example.com/arazzo.yaml', {}, {
   resolverOpts: {
     timeout: 10000, // HTTP timeout in milliseconds
+  },
+});
+```
+
+### Security considerations
+
+By default, `fileAllowList` is set to `['*']` which allows the validator to access any file on the filesystem when resolving source descriptions. Additionally, `sourceDescriptionsResolution` is enabled by default, which means the validator will fetch and parse external documents referenced in the Arazzo document.
+
+When validating untrusted documents, consider restricting file access:
+
+```js
+const diagnostics = await validateURI('/path/to/arazzo.yaml', {
+  parseContext: {
+    fileAllowList: [],  // Disable file access
+    arazzo: {
+      sourceDescriptionsResolution: false, // Disable source description resolution
+    },
   },
 });
 ```

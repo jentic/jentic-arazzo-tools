@@ -1,4 +1,4 @@
-import { Metadata } from '@speclynx/apidom-ls';
+import type { Metadata } from '@speclynx/apidom-ls';
 import configArazzo from './arazzo/config.ts';
 
 /**

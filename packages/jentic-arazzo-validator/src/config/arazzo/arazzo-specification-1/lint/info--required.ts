@@ -7,7 +7,7 @@ import { Arazzo1 } from '../../target-specs.ts';
 const infoRequiredLint: LinterMeta = {
   code: ApilintCodes.ARAZZO1_ARAZZO_SPECIFICATION_FIELD_INFO_REQUIRED,
   source: 'apilint',
-  message: "should always have a 'info' section",
+  message: "should always have an 'info' section",
   severity: DiagnosticSeverity.Error,
   linterFunction: 'hasRequiredField',
   linterParams: ['info'],

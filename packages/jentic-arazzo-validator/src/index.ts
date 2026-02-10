@@ -13,6 +13,7 @@ import {
   type ApiDOMReferenceOptions,
 } from '@speclynx/apidom-reference/configuration/empty';
 import type { PartialDeep } from 'type-fest';
+import { mergeDeepRight } from 'ramda';
 
 import { config } from './config/config.ts';
 
@@ -68,7 +69,7 @@ export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
  * and linting.
  *
  * @param uri - The file system path or HTTP(S) URL to the Arazzo Document
- * @param context - Optional language service context override (shallow merged with defaults)
+ * @param context - Optional language service context override (deep merged with defaults)
  * @param resolveOptions - Optional resolve options for fetching the URI
  * @returns Promise resolving to an array of Diagnostic objects
  *
@@ -106,7 +107,7 @@ export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
  */
 export async function validateURI(
   uri: string,
-  context: Partial<LanguageServiceContext> = {},
+  context: PartialDeep<LanguageServiceContext> = {},
   resolveOptions: PartialDeep<ApiDOMReferenceResolveOptions> = {},
 ): Promise<Diagnostic[]> {
   const mergedOptions = mergeOptions(defaultArazzoParserOptions as ApiDOMReferenceOptions, {
@@ -114,7 +115,7 @@ export async function validateURI(
   });
   const buffer = await readFile(uri, mergedOptions);
   const content = new TextDecoder().decode(buffer);
-  const textDocument = TextDocument.create(uri, '', 1, content);
+  const textDocument = TextDocument.create(uri, 'arazzo', 1, content);
 
   return validate(textDocument, context);
 }
@@ -126,7 +127,7 @@ export async function validateURI(
  * or when you already have document content in memory.
  *
  * @param textDocument - The TextDocument containing the Arazzo Document content
- * @param context - Optional language service context override (shallow merged with defaults)
+ * @param context - Optional language service context override (deep merged with defaults)
  * @returns Promise resolving to an array of Diagnostic objects
  *
  * @example
@@ -136,7 +137,7 @@ export async function validateURI(
  *
  * const textDocument = TextDocument.create(
  *   'file:///path/to/arazzo.yaml',
- *   'yaml',
+ *   'arazzo',
  *   1,
  *   content
  * );
@@ -155,9 +156,12 @@ export async function validateURI(
  */
 export async function validate(
   textDocument: TextDocument,
-  context: Partial<LanguageServiceContext> = {},
+  context: PartialDeep<LanguageServiceContext> = {},
 ): Promise<Diagnostic[]> {
-  const mergedContext: LanguageServiceContext = { ...defaultLanguageServiceContext, ...context };
+  const mergedContext: LanguageServiceContext = mergeDeepRight(
+    defaultLanguageServiceContext,
+    context,
+  ) as LanguageServiceContext;
   const languageService = getLanguageService(mergedContext);
 
   try {
