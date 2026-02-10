@@ -55,7 +55,7 @@
     "@speclynx/apidom-ns-arazzo-1": "2.10.0",
     "@speclynx/apidom-ns-openapi-2": "2.10.0",
     "@speclynx/apidom-ns-openapi-3-0": "2.10.0",
-    "@speclynx/apidom-ns-openapi-3-1": "2.10.0",
+    "@speclynx/apidom-ns-openapi-3-1": "2.10.2",
     "@speclynx/apidom-reference": "2.10.0",
     "type-fest": "^5.4.3"
   },
