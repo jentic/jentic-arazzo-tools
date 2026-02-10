@@ -94,6 +94,34 @@ For complete documentation, see the [@jentic/arazzo-resolver README](./packages/
 
 ---
 
+## Validator
+
+The Validator validates and lints Arazzo Documents against JSON Schema and performs semantic validation using [SpecLynx ApiDOM Language Service](https://www.npmjs.com/package/@speclynx/apidom-ls). Returns diagnostics compatible with VS Code and the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/).
+
+```sh
+npm install @jentic/arazzo-validator
+```
+
+```js
+import { validateURI, DiagnosticSeverity } from '@jentic/arazzo-validator';
+
+// Validate from file or URL
+const diagnostics = await validateURI('/path/to/arazzo.yaml');
+
+// Check for errors
+const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
+if (errors.length > 0) {
+  for (const error of errors) {
+    const { start } = error.range;
+    console.error(`Error at line ${start.line + 1}: ${error.message}`);
+  }
+}
+```
+
+For complete documentation, see the [@jentic/arazzo-validator README](./packages/jentic-arazzo-validator/README.md).
+
+---
+
 ## Contributing
 
 Please read our [Contributing Guide](./CONTRIBUTING.md) and [Code of Conduct](./CODE_OF_CONDUCT.md) before submitting a pull request.

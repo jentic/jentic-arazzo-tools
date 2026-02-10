@@ -62,7 +62,7 @@
     "copyfiles": "=2.4.1",
     "core-js": "=3.48.0",
     "cross-env": "=10.1.0",
-    "dedent": "=1.7.1",
+    "dedent": "^1.7.1",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import-x": "^4.16.0",
