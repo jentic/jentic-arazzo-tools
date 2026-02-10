@@ -52,7 +52,7 @@
     "@speclynx/apidom-core": "2.10.0",
     "@speclynx/apidom-datamodel": "2.10.0",
     "@speclynx/apidom-error": "2.10.0",
-    "@speclynx/apidom-ns-arazzo-1": "2.10.0",
+    "@speclynx/apidom-ns-arazzo-1": "2.10.2",
     "@speclynx/apidom-ns-openapi-2": "2.10.0",
     "@speclynx/apidom-ns-openapi-3-0": "2.10.0",
     "@speclynx/apidom-ns-openapi-3-1": "2.10.0",
