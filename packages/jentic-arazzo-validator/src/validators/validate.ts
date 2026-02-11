@@ -1,14 +1,11 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic } from 'vscode-languageserver-types';
-import {
-  Arazzo1JsonSchemaValidationProvider,
-  getLanguageService,
-  type LanguageServiceContext,
-} from '@speclynx/apidom-ls';
+import { getLanguageService, LogLevel, type LanguageServiceContext } from '@speclynx/apidom-ls';
 import type { PartialDeep } from 'type-fest';
 import { mergeDeepRight } from 'ramda';
 
 import { config } from '../config/config.ts';
+import { Arazzo1JsonSchemaValidationProvider } from './json-schema-provider.ts';
 
 /**
  * Default language service context for validation.
@@ -20,6 +17,7 @@ import { config } from '../config/config.ts';
  */
 export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
   metadata: config(),
+  logLevel: LogLevel.NONE,
   defaultContentLanguage: {
     namespace: 'arazzo',
     version: '1.0.1',

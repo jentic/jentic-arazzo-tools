@@ -15,7 +15,84 @@ You can install this package via [npm](https://npmjs.org/) CLI by running the fo
 npm install @jentic/arazzo-validator
 ```
 
-## Usage
+## CLI
+
+Validate Arazzo documents from the command line:
+
+```sh
+npx @jentic/arazzo-validator arazzo.yaml
+```
+
+### Options
+
+| Option | Description |
+|--------|-------------|
+| `[file]` | File path or URL to validate |
+| `--stdin-retrieval-uri <uri>` | Read from stdin, use URI for reference resolution |
+| `-f, --format <format>` | Output format: `stylish` (default), `codeframe`, `json`, `github-actions` |
+| `-o, --output <file>` | Write output to file instead of stdout |
+| `--fail-severity <level>` | Exit with error if diagnostics >= level: `error` (default), `warning`, `info`, `hint` |
+| `--max-problems <n>` | Limit output to N problems |
+| `-q, --quiet` | Suppress output, only return exit code |
+| `-v, --verbose` | Show additional information |
+
+### Output formats
+
+**stylish** (default) - Compact, colored output similar to ESLint:
+```
+/path/to/arazzo.yaml
+  1:1  error  json-schema  Object must have required property "sourceDescriptions"
+  2:1  error  json-schema  "info" property must have required property "version"
+
+✖ 2 problems (2 errors, 0 warnings)
+```
+
+**codeframe** - Shows code snippets with context:
+```
+/path/to/arazzo.yaml
+  2:1  error  json-schema  "info" property must have required property "version"
+
+ 1 | arazzo: "1.0.0"
+ 2 | info:
+   | ^^^^
+ 3 |   title: Test
+
+✖ 1 problem (1 error, 0 warnings)
+```
+
+**json** - Machine-readable JSON output with diagnostics and summary.
+
+**github-actions** - GitHub Actions workflow annotations for CI integration.
+
+### Examples
+
+```sh
+# Validate a file (with options)
+npx @jentic/arazzo-validator --format json --fail-severity warning arazzo.yaml
+
+# Validate a URL
+npx @jentic/arazzo-validator https://example.com/arazzo.yaml
+
+# Read from stdin
+cat arazzo.yaml | npx @jentic/arazzo-validator --stdin-retrieval-uri file:///arazzo.yaml
+```
+
+### Exit codes
+
+| Code | Description |
+|------|-------------|
+| `0` | Success (no diagnostics at or above fail-severity level) |
+| `1` | Validation errors found |
+| `2` | CLI error (invalid arguments, file not found, etc.) |
+
+When installed, the `arazzo-validator` command is available directly:
+
+```sh
+npm install @jentic/arazzo-validator
+arazzo-validator arazzo.yaml
+```
+
+## Programmatic API
 
 `@jentic/arazzo-validator` provides two validation functions:
 

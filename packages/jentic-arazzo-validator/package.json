@@ -28,6 +28,9 @@
     "require": "./src/index.cjs"
   },
   "types": "./types/arazzo-validator.d.ts",
+  "bin": {
+    "arazzo-validator": "./bin/arazzo-validator.cjs"
+  },
   "scripts": {
     "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:es build:cjs build:umd:browser",
     "build:es": "cross-env BABEL_ENV=es babel src --out-dir src --extensions '.ts' --out-file-extension '.mjs' --root-mode 'upward'",
@@ -51,14 +54,17 @@
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
     "@jentic/arazzo-parser": "^1.0.0-alpha.12",
-    "@speclynx/apidom-ls": "^2.2.0",
+    "@speclynx/apidom-ls": "^2.2.1",
     "@speclynx/apidom-reference": "^2.10.2",
+    "chalk": "^5.6.2",
+    "commander": "^14.0.3",
     "ramda": "^0.30.1",
     "type-fest": "^5.4.3",
     "vscode-languageserver-textdocument": "^1.0.12",
     "vscode-languageserver-types": "=3.17.6-next.6"
   },
   "files": [
+    "bin/",
     "src/**/*.mjs",
     "src/**/*.cjs",
     "dist/",
