@@ -142,7 +142,7 @@ export async function main(argv: string[] = process.argv): Promise<void> {
     )
     .option('-o, --output <file>', 'Write output to file instead of stdout')
     .addOption(
-      new Option('--fail-severity <level>', 'Exit with error if diagnostics >= level')
+      new Option('--fail-severity <level>', 'Minimum severity to trigger failure')
         .choices(['error', 'warning', 'info', 'hint'])
         .default('error'),
     )

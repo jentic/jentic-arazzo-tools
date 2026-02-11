@@ -34,7 +34,7 @@ npx @jentic/arazzo-validator arazzo.yaml
 | `--stdin-retrieval-uri <uri>` | Read from stdin, use URI for reference resolution |
 | `-f, --format <format>` | Output format: `stylish` (default), `codeframe`, `json`, `github-actions` |
 | `-o, --output <file>` | Write output to file instead of stdout |
-| `--fail-severity <level>` | Exit with error if diagnostics >= level: `error` (default), `warning`, `info`, `hint` |
+| `--fail-severity <level>` | Minimum severity to trigger failure: `error` (default), `warning`, `info`, `hint` |
 | `--max-problems <n>` | Limit output to N problems |
 | `-q, --quiet` | Suppress output, only return exit code |
 | `-v, --verbose` | Show additional information |

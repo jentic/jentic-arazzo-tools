@@ -89,14 +89,22 @@ export function formatCodeframe(
   const warningCount = limitedDiagnostics.filter(
     (d) => d.severity === DiagnosticSeverity.Warning,
   ).length;
+  const infoCount = limitedDiagnostics.filter(
+    (d) => d.severity === DiagnosticSeverity.Information,
+  ).length;
+  const hintCount = limitedDiagnostics.filter((d) => d.severity === DiagnosticSeverity.Hint).length;
 
   lines.push('');
-  const errorText = errorCount === 1 ? 'error' : 'errors';
-  const warningText = warningCount === 1 ? 'warning' : 'warnings';
+  const parts: string[] = [];
+  if (errorCount > 0) parts.push(`${errorCount} ${errorCount === 1 ? 'error' : 'errors'}`);
+  if (warningCount > 0)
+    parts.push(`${warningCount} ${warningCount === 1 ? 'warning' : 'warnings'}`);
+  if (infoCount > 0) parts.push(`${infoCount} ${infoCount === 1 ? 'info' : 'infos'}`);
+  if (hintCount > 0) parts.push(`${hintCount} ${hintCount === 1 ? 'hint' : 'hints'}`);
   const symbol = errorCount > 0 ? chalk.red('✖') : chalk.yellow('⚠');
-  lines.push(
-    `${symbol} ${limitedDiagnostics.length} problems (${errorCount} ${errorText}, ${warningCount} ${warningText})`,
-  );
+  const problemText = limitedDiagnostics.length === 1 ? 'problem' : 'problems';
+  const breakdown = parts.length > 0 ? ` (${parts.join(', ')})` : '';
+  lines.push(`${symbol} ${limitedDiagnostics.length} ${problemText}${breakdown}`);
 
   if (maxProblems && diagnostics.length > maxProblems) {
     lines.push(chalk.dim(`(showing ${maxProblems} of ${diagnostics.length} problems)`));
