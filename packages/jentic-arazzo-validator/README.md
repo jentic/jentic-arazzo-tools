@@ -7,6 +7,9 @@ It performs JSON Schema validation, semantic validation, and semantic linting us
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
 - [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
 
+**Requirements:**
+- Node.js >= 20.10.0
+
 ## Installation
 
 You can install this package via [npm](https://npmjs.org/) CLI by running the following command:
@@ -39,7 +42,7 @@ npx @jentic/arazzo-validator arazzo.yaml
 ### Output formats
 
 **stylish** (default) - Compact, colored output similar to ESLint:
-```
+```text
 /path/to/arazzo.yaml
   1:1  error  json-schema  Object must have required property "sourceDescriptions"
   2:1  error  json-schema  "info" property must have required property "version"
@@ -48,7 +51,7 @@ npx @jentic/arazzo-validator arazzo.yaml
 ```
 
 **codeframe** - Shows code snippets with context:
-```
+```text
 /path/to/arazzo.yaml
   2:1  error  json-schema  "info" property must have required property "version"
 

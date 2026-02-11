@@ -20,11 +20,12 @@ export class Arazzo1JsonSchemaValidationProvider extends BaseArazzo1JsonSchemaVa
     diagnostics: Diagnostic[],
     validationContext?: ValidationContext,
   ): void {
+    const startIndex = diagnostics.length;
     super.validate(jsonDocument, originalDocument, isYaml, diagnostics, validationContext);
 
-    // assign 'json-schema' code to all diagnostics
-    for (const diagnostic of diagnostics) {
-      diagnostic.code = 'json-schema';
+    // assign 'json-schema' code only to diagnostics added by this provider
+    for (let i = startIndex; i < diagnostics.length; i++) {
+      diagnostics[i].code = 'json-schema';
     }
   }
 }

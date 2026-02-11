@@ -106,7 +106,7 @@ Validate Arazzo documents from the command line:
 npx @jentic/arazzo-validator arazzo.yaml
 ```
 
-```
+```text
 arazzo.yaml
   1:1  error  json-schema  Object must have required property "sourceDescriptions"
   2:1  error  json-schema  "info" property must have required property "version"

@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { program } from 'commander';
+import { program, Option, InvalidArgumentError } from 'commander';
 import type { Diagnostic } from 'vscode-languageserver-types';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
@@ -62,6 +62,14 @@ export function hasFailures(diagnostics: Diagnostic[], failSeverity: SeverityLev
   return diagnostics.some((d) => d.severity !== undefined && d.severity <= threshold);
 }
 
+function parseMaxProblems(value: string): number {
+  const parsed = Number.parseInt(value, 10);
+  if (Number.isNaN(parsed) || parsed < 0) {
+    throw new InvalidArgumentError('Must be a non-negative integer.');
+  }
+  return parsed;
+}
+
 async function readStdin(): Promise<string> {
   const chunks: Uint8Array[] = [];
 
@@ -119,20 +127,26 @@ export async function main(argv: string[] = process.argv): Promise<void> {
     .name('arazzo-validator')
     .description('Validate and lint Arazzo Specification documents')
     .version(pkg.default.version)
+    .exitOverride((err) => {
+      if (err.code === 'commander.invalidArgument') {
+        process.exitCode = 2;
+      }
+      throw err;
+    })
     .argument('[file]', 'File path or URL to validate')
     .option('--stdin-retrieval-uri <uri>', 'Read from stdin, use URI for reference resolution')
-    .option(
-      '-f, --format <format>',
-      'Output format: stylish, codeframe, json, github-actions',
-      'stylish',
+    .addOption(
+      new Option('-f, --format <format>', 'Output format')
+        .choices(['stylish', 'codeframe', 'json', 'github-actions'])
+        .default('stylish'),
     )
     .option('-o, --output <file>', 'Write output to file instead of stdout')
-    .option(
-      '--fail-severity <level>',
-      'Exit with error if diagnostics >= level: error, warning, info, hint',
-      'error',
+    .addOption(
+      new Option('--fail-severity <level>', 'Exit with error if diagnostics >= level')
+        .choices(['error', 'warning', 'info', 'hint'])
+        .default('error'),
     )
-    .option('--max-problems <n>', 'Limit output to N problems', parseInt)
+    .option('--max-problems <n>', 'Limit output to N problems', parseMaxProblems)
     .option('-q, --quiet', 'Suppress output, only return exit code', false)
     .option('-v, --verbose', 'Show additional information', false)
     .action(async (file: string | undefined, opts: CLIOptions) => {
@@ -194,5 +208,9 @@ export async function main(argv: string[] = process.argv): Promise<void> {
       }
     });
 
-  await program.parseAsync(argv);
+  try {
+    await program.parseAsync(argv);
+  } catch {
+    // exitOverride throws - error already handled, exit code already set
+  }
 }

@@ -4,7 +4,7 @@ import { promisify } from 'node:util';
 import path from 'node:path';
 
 const execFileAsync = promisify(execFile);
-const binPath = path.resolve(import.meta.dirname, '../../bin/arazzo-validator.cjs');
+const binPath = path.resolve(import.meta.dirname, '../../bin/arazzo-validator.mjs');
 const fixturesPath = path.resolve(
   import.meta.dirname,
   '../../../jentic-arazzo-resolver/test/dereference/fixtures/dereference',
