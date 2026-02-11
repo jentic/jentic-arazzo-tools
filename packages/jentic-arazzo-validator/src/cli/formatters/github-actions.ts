@@ -15,8 +15,17 @@ function severityToGitHub(severity: DiagnosticSeverity | undefined): string {
   }
 }
 
-function escapeMessage(message: string): string {
-  return message.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+function escapeData(data: string): string {
+  return data.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
+}
+
+function escapeProperty(value: string): string {
+  return value
+    .replace(/%/g, '%25')
+    .replace(/\r/g, '%0D')
+    .replace(/\n/g, '%0A')
+    .replace(/:/g, '%3A')
+    .replace(/,/g, '%2C');
 }
 
 export interface FormatOptions {
@@ -43,11 +52,12 @@ export function formatGitHubActions(
     const col = diagnostic.range.start.character + 1;
     const endLine = diagnostic.range.end.line + 1;
     const endCol = diagnostic.range.end.character + 1;
-    const message = escapeMessage(diagnostic.message);
-    const title = diagnostic.code ? String(diagnostic.code) : 'validation';
+    const message = escapeData(diagnostic.message);
+    const title = escapeProperty(diagnostic.code ? String(diagnostic.code) : 'validation');
+    const file = escapeProperty(filePath);
 
     lines.push(
-      `::${level} file=${filePath},line=${line},col=${col},endLine=${endLine},endColumn=${endCol},title=${title}::${message}`,
+      `::${level} file=${file},line=${line},col=${col},endLine=${endLine},endColumn=${endCol},title=${title}::${message}`,
     );
   }
 
