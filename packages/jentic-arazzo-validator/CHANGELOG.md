@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.13](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.12...v1.0.0-alpha.13) (2026-02-11)
+
+### Features
+
+- **validator:** add CLI support ([#65](https://github.com/jentic/jentic-arazzo-tools/issues/65)) ([3a86804](https://github.com/jentic/jentic-arazzo-tools/commit/3a86804b5d2839580c8a147caf5a7db3b3065547))
+
 # [1.0.0-alpha.12](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.11...v1.0.0-alpha.12) (2026-02-11)
 
 ### Features
