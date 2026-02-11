@@ -1,7 +1,7 @@
 # @jentic/arazzo-validator
 
 `@jentic/arazzo-validator` is a validator and linter for [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) documents.
-It validates documents against JSON Schema and performs semantic validation using [SpecLynx ApiDOM Language Service](https://www.npmjs.com/package/@speclynx/apidom-ls).
+It performs JSON Schema validation, semantic validation, and semantic linting using [SpecLynx ApiDOM Language Service](https://www.npmjs.com/package/@speclynx/apidom-ls).
 
 **Supported Arazzo versions:**
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
@@ -30,12 +30,6 @@ npm install @jentic/arazzo-validator
 import { validateURI, DiagnosticSeverity } from '@jentic/arazzo-validator';
 
 const diagnostics = await validateURI('/path/to/arazzo.yaml');
-
-// Check for errors
-const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-if (errors.length > 0) {
-  console.error('Validation errors:', errors);
-}
 ```
 
 ### From URL
@@ -48,10 +42,10 @@ const diagnostics = await validateURI('https://example.com/arazzo.yaml');
 
 ### From TextDocument
 
-When you already have document content in memory, use the lower-level `validate` function:
+When you already have document content in memory, use the lower-level `validate` function with `createTextDocument`:
 
 ```js
-import { validate, TextDocument } from '@jentic/arazzo-validator';
+import { validate, createTextDocument } from '@jentic/arazzo-validator';
 
 const content = `
 arazzo: '1.0.1'
@@ -69,12 +63,16 @@ workflows:
         operationId: myApi.getUsers
 `;
 
-const textDocument = TextDocument.create(
-  'file:///path/to/arazzo.yaml',
-  'arazzo',
-  1,
-  content
-);
+const textDocument = createTextDocument('file:///path/to/arazzo.yaml', content);
+const diagnostics = await validate(textDocument);
+```
+
+Alternatively, use `TextDocument.create()` directly for full control:
+
+```js
+import { validate, TextDocument } from '@jentic/arazzo-validator';
+
+const textDocument = TextDocument.create('file:///path/to/arazzo.yaml', 'apidom', 1, content);
 const diagnostics = await validate(textDocument);
 ```
 
@@ -144,37 +142,10 @@ import {
   defaultArazzoResolveOptions,
   defaultLanguageServiceContext,
 } from '@jentic/arazzo-validator';
-
-// Default resolve options (from @jentic/arazzo-parser)
-console.log(defaultArazzoResolveOptions);
-// {
-//   resolvers: [MemoryResolver, FileResolver, HTTPResolverAxios],
-//   resolverOpts: {},
-// }
-
-// Default language service context
-console.log(defaultLanguageServiceContext);
-// {
-//   metadata: {...},
-//   defaultContentLanguage: {
-//     namespace: 'arazzo',
-//     version: '1.0.1',
-//     mediaType: 'application/vnd.oai.workflows;version=1.0.1',
-//   },
-//   validatorProviders: [Arazzo1JsonSchemaValidationProvider],
-//   validationContext: {
-//     jsonSchemaValidation: true,
-//     semanticValidation: true,
-//     referenceValidation: false,
-//     semanticLinting: true,
-//     betterAjvErrors: true,
-//   },
-//   parseContext: {
-//     fileAllowList: ['*'],
-//     arazzo: { sourceDescriptionsResolution: true },
-//   },
-// }
 ```
+
+- `defaultArazzoResolveOptions` - file and HTTP resolvers configuration
+- `defaultLanguageServiceContext` - validation settings (JSON Schema, semantic validation, linting)
 
 ## Working with diagnostics
 
@@ -184,62 +155,7 @@ Both validation functions return an array of [Diagnostic](https://microsoft.gith
 import { validateURI, DiagnosticSeverity } from '@jentic/arazzo-validator';
 
 const diagnostics = await validateURI('/path/to/arazzo.yaml');
-
-for (const diagnostic of diagnostics) {
-  // DiagnosticSeverity.Error = 1
-  // DiagnosticSeverity.Warning = 2
-  // DiagnosticSeverity.Information = 3
-  // DiagnosticSeverity.Hint = 4
-
-  // Position in the document
-  const { start, end } = diagnostic.range;
-
-  if (diagnostic.severity === DiagnosticSeverity.Error) {
-    console.error(
-      `Error at line ${start.line + 1}, column ${start.character + 1}: ${diagnostic.message}`
-    );
-  }
-}
-```
-
-### Filtering by severity
-
-```js
-import { validateURI, DiagnosticSeverity } from '@jentic/arazzo-validator';
-
-const diagnostics = await validateURI('/path/to/arazzo.yaml');
-
-// Get only errors
 const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-
-// Get only warnings
 const warnings = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Warning);
-
-// Check if document is valid
 const isValid = errors.length === 0;
 ```
-
-## Validation types
-
-The validator performs several types of validation:
-
-### JSON Schema validation
-
-Validates the document structure against the Arazzo JSON Schema. This catches structural issues like:
-- Missing required fields
-- Invalid field types
-- Unknown properties
-
-### Semantic validation
-
-Validates Arazzo-specific semantics beyond JSON Schema, such as:
-- Valid workflow references
-- Correct step dependencies
-- Proper expression syntax
-
-### Semantic linting
-
-Applies linting rules for best practices and potential issues:
-- Duplicate keys detection
-- Naming conventions
-- Potential logical errors
