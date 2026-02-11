@@ -41,7 +41,7 @@
     "clean": "rimraf --glob 'src/**/*.mjs' 'src/**/*.cjs' 'test/**/*.mjs' ./dist ./types",
     "typescript:check-types": "tsc --noEmit",
     "typescript:declaration": "tsc -p tsconfig.declaration.json && api-extractor run -l -c ./config/api-extractor/api-extractor.json",
-    "test": "npm run build:es && cross-env BABEL_ENV=es babel test --out-dir test --extensions '.ts' --out-file-extension '.mjs' --root-mode 'upward' && cross-env NODE_ENV=test mocha",
+    "test": "npm run build:es && npm run build:cjs && cross-env BABEL_ENV=es babel test --out-dir test --extensions '.ts' --out-file-extension '.mjs' --root-mode 'upward' && cross-env NODE_ENV=test mocha",
     "prepack": "copyfiles -u 2 ../../LICENSE . && copyfiles -u 2 ../../NOTICE .",
     "postpack": "rimraf NOTICE LICENSE"
   },
