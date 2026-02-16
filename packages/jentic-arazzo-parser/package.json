@@ -53,7 +53,7 @@
     "@speclynx/apidom-error": "2.10.3",
     "@speclynx/apidom-ns-arazzo-1": "2.10.3",
     "@speclynx/apidom-parser-adapter-arazzo-json-1": "2.10.3",
-    "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "2.10.3",
+    "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "2.11.0",
     "@speclynx/apidom-parser-adapter-openapi-json-2": "2.10.3",
     "@speclynx/apidom-parser-adapter-openapi-json-3-0": "2.10.3",
     "@speclynx/apidom-parser-adapter-openapi-json-3-1": "2.10.3",
