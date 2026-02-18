@@ -24,7 +24,7 @@
     "clean": "lerna run clean",
     "test": "lerna run test",
     "link": "npm link --workspaces",
-    "unlink": "npm unlink --global @jentic/arazzo-parser @jentic/arazzo-resolver"
+    "unlink": "npm unlink --global @jentic/arazzo-parser @jentic/arazzo-resolver @jentic/arazzo-runner"
   },
   "repository": {
     "type": "git",
