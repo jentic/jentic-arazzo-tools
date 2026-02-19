@@ -87,8 +87,15 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
   const handleToggle = useCallback(
     (workflowId: string, e: React.SyntheticEvent<HTMLDetailsElement>) => {
-      if ((e.currentTarget as HTMLDetailsElement).open) {
+      const isOpen = (e.currentTarget as HTMLDetailsElement).open;
+      if (isOpen) {
         setExpandedWorkflows((prev) => new Set(prev).add(workflowId));
+      }
+      // sync allExpanded state by checking DOM
+      const container = docsContainerRef.current;
+      if (container) {
+        const details = container.querySelectorAll('.workflow-details');
+        setAllExpanded(Array.from(details).every((d) => (d as HTMLDetailsElement).open));
       }
     },
     [],
@@ -136,7 +143,9 @@ export const DocsView: React.FC<DocsViewProps> = () => {
     return diagrams;
   }, [document]);
 
-  // Handle expand-all button
+  // Handle expand/collapse all button
+  const [allExpanded, setAllExpanded] = useState(false);
+
   const handleExpandAll = useCallback(() => {
     const container = docsContainerRef.current;
     if (!container) return;
@@ -145,7 +154,13 @@ export const DocsView: React.FC<DocsViewProps> = () => {
     details.forEach((d) => {
       (d as HTMLDetailsElement).open = !allOpen;
     });
-  }, []);
+    setAllExpanded(!allOpen);
+    if (!allOpen && document) {
+      setExpandedWorkflows(
+        (prev) => new Set([...prev, ...document.workflows.map((w) => w.workflowId)]),
+      );
+    }
+  }, [document]);
 
   if (!document || !documentation) {
     return (
@@ -839,7 +854,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
               Workflows
             </span>
             <button className="expand-all-btn" onClick={handleExpandAll}>
-              Expand All
+              {allExpanded ? 'Collapse All' : 'Expand All'}
             </button>
           </div>
 
