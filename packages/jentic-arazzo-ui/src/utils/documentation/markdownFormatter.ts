@@ -136,7 +136,9 @@ export function formatWorkflowAsMarkdown(
   sections.push(`\n<div class="timeline">\n`);
   workflow.steps.forEach((step, idx) => {
     const isLast = idx === workflow.steps.length - 1;
-    sections.push(`<div class="timeline-item${isLast ? ' timeline-item-last' : ''}">`);
+    sections.push(
+      `<div class="timeline-item${isLast ? ' timeline-item-last' : ''}" data-step-id="${step.stepId}">`,
+    );
     sections.push(
       `<div class="timeline-marker"><div class="timeline-dot">${idx + 1}</div><div class="timeline-line"></div></div>`,
     );

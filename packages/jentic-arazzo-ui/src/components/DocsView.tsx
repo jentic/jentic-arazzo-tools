@@ -68,7 +68,7 @@ const markdownPlugins = [remarkGfm];
 const rehypePlugins = [rehypeHighlight, rehypeRaw];
 
 export const DocsView: React.FC<DocsViewProps> = () => {
-  const { document, documentURL } = useArazzoViewer();
+  const { document, documentURL, selectedNodeId, nodes, activeWorkflowId } = useArazzoViewer();
   const mermaidInitialized = useRef(false);
   const docsContainerRef = useRef<HTMLDivElement>(null);
   const [workflowViews, setWorkflowViews] = useState<Record<string, WorkflowViewMode>>({});
@@ -113,6 +113,52 @@ export const DocsView: React.FC<DocsViewProps> = () => {
       mermaidInitialized.current = true;
     }
   }, []);
+
+  // Scroll to step when a diagram node is selected
+  useEffect(() => {
+    if (!selectedNodeId || !docsContainerRef.current) return;
+
+    const node = nodes.find((n) => n.id === selectedNodeId);
+    if (!node || (node.data.type !== 'step' && node.data.type !== 'workflowRef')) return;
+
+    const stepId = node.data.step.stepId;
+    const workflowId =
+      node.data.type === 'step' ? node.data.workflowId : node.data.targetWorkflowId;
+
+    // expand the workflow <details> if closed
+    const details = docsContainerRef.current.querySelector(
+      `details[data-workflow-id="${workflowId}"]`,
+    ) as HTMLDetailsElement | null;
+    if (details && !details.open) {
+      details.open = true;
+      setExpandedWorkflows((prev) => new Set(prev).add(workflowId));
+    }
+
+    // scroll to the step after DOM updates
+    requestAnimationFrame(() => {
+      const stepEl = docsContainerRef.current?.querySelector(`[data-step-id="${stepId}"]`);
+      stepEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+  }, [selectedNodeId, nodes]);
+
+  // Scroll to workflow when switching workflow tabs in diagram
+  useEffect(() => {
+    if (!activeWorkflowId || !docsContainerRef.current) return;
+
+    const details = docsContainerRef.current.querySelector(
+      `details[data-workflow-id="${activeWorkflowId}"]`,
+    ) as HTMLDetailsElement | null;
+    if (!details) return;
+
+    if (!details.open) {
+      details.open = true;
+      setExpandedWorkflows((prev) => new Set(prev).add(activeWorkflowId));
+    }
+
+    requestAnimationFrame(() => {
+      details.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }, [activeWorkflowId]);
 
   // Generate documentation (memoized)
   const documentation = useMemo(() => {
@@ -870,6 +916,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
               <details
                 key={workflow.workflowId}
                 className="workflow-details"
+                data-workflow-id={workflow.workflowId}
                 onToggle={(e) => handleToggle(workflow.workflowId, e)}
               >
                 <summary className="workflow-summary-bar">
