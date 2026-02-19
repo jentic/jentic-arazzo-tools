@@ -1,10 +1,11 @@
 /* ==========================================================================
    @jentic/arazzo-ui - Styles
-   All styles scoped under .arazzo-viewer to avoid leaking into host apps
+   All styles scoped under .arazzo-ui to avoid leaking into host apps
+   Note: .arazzo-ui class is applied by the ArazzoUI component
    ========================================================================== */
 
 /* Base container */
-.arazzo-viewer {
+.arazzo-ui {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   font-size: 14px;
   line-height: 1.5;
@@ -12,9 +13,9 @@
   box-sizing: border-box;
 }
 
-.arazzo-viewer *,
-.arazzo-viewer *::before,
-.arazzo-viewer *::after {
+.arazzo-ui *,
+.arazzo-ui *::before,
+.arazzo-ui *::after {
   box-sizing: inherit;
 }
 
@@ -119,14 +120,14 @@
    React Flow overrides
    ========================================================================== */
 
-.arazzo-viewer .react-flow__node {
+.arazzo-ui .react-flow__node {
   cursor: pointer;
 }
 
-.arazzo-viewer .react-flow__edge-path {
+.arazzo-ui .react-flow__edge-path {
   cursor: pointer;
 }
 
-.arazzo-viewer .react-flow__controls {
+.arazzo-ui .react-flow__controls {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
 }

@@ -44,6 +44,7 @@ interface InjectedProviderProps {
 
 interface StandaloneProviderProps {
   document: ArazzoDocument;
+  documentURL?: string | null;
   initialActiveWorkflowId?: string | null;
   initialSelectedNodeId?: string | null;
   events?: ViewerEvents;
@@ -58,6 +59,7 @@ type ArazzoViewerProviderProps =
   | ({ value: ArazzoViewerContextValue } & { children: React.ReactNode })
   | ({
       document: ArazzoDocument;
+      documentURL?: string | null;
       initialActiveWorkflowId?: string | null;
       initialSelectedNodeId?: string | null;
       events?: ViewerEvents;
@@ -81,6 +83,7 @@ export const ArazzoViewerProvider: React.FC<ArazzoViewerProviderProps> = (props)
 
 const StandaloneProvider: React.FC<StandaloneProviderProps> = ({
   document: rawDocument,
+  documentURL = null,
   initialActiveWorkflowId,
   initialSelectedNodeId,
   events,
@@ -199,6 +202,7 @@ const StandaloneProvider: React.FC<StandaloneProviderProps> = ({
 
   const value: ArazzoViewerContextValue = {
     document,
+    documentURL,
     activeWorkflowId,
     setActiveWorkflow,
     activeWorkflow,

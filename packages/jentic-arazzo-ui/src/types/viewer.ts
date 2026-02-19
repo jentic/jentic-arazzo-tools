@@ -32,7 +32,7 @@ export interface ViewerEvents {
 // Component Props & Ref
 // ============================================================================
 
-export interface ArazzoViewerProps {
+export interface ArazzoUIProps {
   document: ArazzoDocument | string;
   view?: ViewerMode;
   activeWorkflowId?: string | null;
@@ -46,7 +46,7 @@ export interface ArazzoViewerProps {
   onViewChange?: (view: ViewerMode) => void;
 }
 
-export interface ArazzoViewerRef {
+export interface ArazzoUIRef {
   fitView(): void;
   setZoom(level: number): void;
   getDocument(): ArazzoDocument;
@@ -63,6 +63,7 @@ export interface ArazzoViewerRef {
 
 export interface ArazzoViewerContextValue {
   document: ArazzoDocument;
+  documentURL: string | null;
   activeWorkflowId: string | null;
   setActiveWorkflow: (id: string | null) => void;
   activeWorkflow: Workflow | null;
@@ -92,6 +93,7 @@ export interface DocumentationMetadata {
   title: string;
   version: string;
   arazzoVersion: string;
+  documentURL?: string | null;
   summary?: string;
   description?: string;
   sourceDescriptions: Array<{

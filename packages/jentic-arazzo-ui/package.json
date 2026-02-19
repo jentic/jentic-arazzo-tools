@@ -30,19 +30,26 @@
       "import": "./dist/arazzo-ui.mjs",
       "require": "./dist/arazzo-ui.js"
     },
-    "./styles.css": "./dist/style.css"
+    "./standalone": {
+      "types": "./types/arazzo-ui-standalone.d.ts",
+      "import": "./dist/arazzo-ui-standalone.mjs",
+      "require": "./dist/arazzo-ui-standalone.js"
+    },
+    "./styles.css": "./dist/arazzo-ui.css"
   },
   "types": "./types/arazzo-ui.d.ts",
   "scripts": {
     "dev": "vite serve --config config/vite/vite.dev.config.ts",
-    "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:umd build:esm",
-    "build:umd": "vite build --config config/vite/vite.config.ts",
-    "build:esm": "cross-env BUILD_FORMAT=esm vite build --config config/vite/vite.config.ts",
+    "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:umd:ui build:umd:standalone build:esm:ui build:esm:standalone",
+    "build:umd:ui": "cross-env BUILD_ENTRY=ArazzoUI vite build --config config/vite/vite.config.ts",
+    "build:umd:standalone": "cross-env BUILD_ENTRY=ArazzoUIStandalone vite build --config config/vite/vite.config.ts",
+    "build:esm:ui": "cross-env BUILD_FORMAT=esm BUILD_ENTRY=ArazzoUI vite build --config config/vite/vite.config.ts",
+    "build:esm:standalone": "cross-env BUILD_FORMAT=esm BUILD_ENTRY=ArazzoUIStandalone vite build --config config/vite/vite.config.ts",
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
     "clean": "rimraf ./dist ./types",
     "typescript:check-types": "tsc --noEmit",
-    "typescript:declaration": "tsc -p tsconfig.declaration.json && api-extractor run -l -c ./config/api-extractor/api-extractor.json",
+    "typescript:declaration": "tsc -p tsconfig.declaration.json && api-extractor run -l -c ./config/api-extractor/api-extractor.ArazzoUI.json && api-extractor run -l -c ./config/api-extractor/api-extractor.ArazzoUIStandalone.json",
     "test": "cross-env NODE_ENV=test mocha",
     "prepack": "copyfiles -u 2 ../../LICENSE . && copyfiles -u 2 ../../NOTICE .",
     "postpack": "rimraf NOTICE LICENSE"
@@ -79,6 +86,7 @@
   "files": [
     "dist/",
     "types/arazzo-ui.d.ts",
+    "types/arazzo-ui-standalone.d.ts",
     "LICENSE",
     "NOTICE",
     "README.md",

@@ -10,7 +10,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      '@jentic/arazzo-ui': resolve(packageRoot, 'src/index.ts'),
+      '@jentic/arazzo-ui': resolve(packageRoot, 'src/ArazzoUI.tsx'),
       // langium imports vscode-jsonrpc subpaths not listed in its exports map
       'vscode-jsonrpc/lib/common/cancellation.js': resolve(monorepoRoot, 'node_modules/vscode-jsonrpc/lib/common/cancellation.js'),
       'vscode-jsonrpc/lib/common/events.js': resolve(monorepoRoot, 'node_modules/vscode-jsonrpc/lib/common/events.js'),

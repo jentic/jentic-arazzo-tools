@@ -10,6 +10,7 @@ import {
 export interface GenerateDocumentationOptions {
   includeMetadata?: boolean;
   includeDiagrams?: boolean;
+  documentURL?: string | null;
 }
 
 export interface DocumentationOutput {
@@ -27,10 +28,11 @@ export function generateDocumentation(
   document: ArazzoDocument,
   options: GenerateDocumentationOptions = {},
 ): DocumentationOutput {
-  const { includeMetadata = true, includeDiagrams = false } = options;
+  const { includeMetadata = true, includeDiagrams = false, documentURL } = options;
 
   // Extract metadata
   const metadata = generateMetadata(document);
+  metadata.documentURL = documentURL;
 
   // Generate workflow documentation
   const workflows: WorkflowDocumentation[] = document.workflows.map((workflow) => ({

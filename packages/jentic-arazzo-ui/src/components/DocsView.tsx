@@ -68,7 +68,7 @@ const markdownPlugins = [remarkGfm];
 const rehypePlugins = [rehypeHighlight, rehypeRaw];
 
 export const DocsView: React.FC<DocsViewProps> = () => {
-  const { document } = useArazzoViewer();
+  const { document, documentURL } = useArazzoViewer();
   const mermaidInitialized = useRef(false);
   const docsContainerRef = useRef<HTMLDivElement>(null);
   const [workflowViews, setWorkflowViews] = useState<Record<string, WorkflowViewMode>>({});
@@ -114,15 +114,15 @@ export const DocsView: React.FC<DocsViewProps> = () => {
     }
   }, []);
 
-
   // Generate documentation (memoized)
   const documentation = useMemo(() => {
     if (!document) return null;
     return generateDocumentation(document, {
       includeMetadata: true,
       includeDiagrams: false,
+      documentURL,
     });
-  }, [document]);
+  }, [document, documentURL]);
 
   // Pre-generate all diagrams (memoized)
   const sequenceDiagrams = useMemo(() => {

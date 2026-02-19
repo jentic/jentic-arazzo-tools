@@ -25,7 +25,7 @@ export function formatHeaderAsMarkdown(
 
   // Document header with title and inline version pills
   sections.push(
-    `<div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #e5e7eb; flex-wrap: wrap;">`,
+    `<div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: ${metadata.documentURL ? '8px' : '20px'}; flex-wrap: wrap;">`,
   );
   sections.push(
     `<h1 style="margin: 0; font-size: 2.25rem; font-weight: 700; color: #111827; line-height: 1;">${metadata.title}</h1>`,
@@ -37,6 +37,12 @@ export function formatHeaderAsMarkdown(
     `<span class="version-badge doc-version" title="Arazzo Specification version">Arazzo ${metadata.arazzoVersion || '1.0.1'}</span>`,
   );
   sections.push(`</div>\n`);
+
+  if (metadata.documentURL) {
+    sections.push(
+      `<div style="margin-bottom: 20px;"><a href="${metadata.documentURL}" target="_blank" rel="noopener noreferrer" style="font-size: 0.875rem; word-break: break-all;">${metadata.documentURL}</a></div>\n`,
+    );
+  }
 
   if (metadata.summary) {
     sections.push(`\n${metadata.summary}\n`);

@@ -3,8 +3,29 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 const isEsm = process.env.BUILD_FORMAT === 'esm';
+const entry = process.env.BUILD_ENTRY || 'ArazzoUI';
 const packageRoot = resolve(__dirname, '../../');
 const monorepoRoot = resolve(packageRoot, '../../');
+
+const entries: Record<string, { esm: string; umd: string; umdName: string; fileName: string }> = {
+  ArazzoUI: {
+    esm: resolve(packageRoot, 'src/ArazzoUI.tsx'),
+    umd: resolve(packageRoot, 'src/ArazzoUI.umd.ts'),
+    umdName: 'ArazzoUI',
+    fileName: 'arazzo-ui',
+  },
+  ArazzoUIStandalone: {
+    esm: resolve(packageRoot, 'src/ArazzoUIStandalone.tsx'),
+    umd: resolve(packageRoot, 'src/ArazzoUIStandalone.umd.ts'),
+    umdName: 'ArazzoUIStandalone',
+    fileName: 'arazzo-ui-standalone',
+  },
+};
+
+const current = entries[entry];
+if (!current) {
+  throw new Error(`Unknown BUILD_ENTRY: ${entry}. Expected one of: ${Object.keys(entries).join(', ')}`);
+}
 
 // ESM: externalize all bare module imports (consumers resolve deps via their bundler)
 // UMD: bundle everything into a single self-contained file
@@ -32,16 +53,16 @@ export default defineConfig({
       },
   build: {
     lib: {
-      entry: resolve(packageRoot, 'src/index.ts'),
+      entry: isEsm ? current.esm : current.umd,
       ...(isEsm
-        ? { formats: ['es'], fileName: () => 'arazzo-ui.mjs' }
-        : { formats: ['umd'], name: 'jenticArazzoUi', fileName: () => 'arazzo-ui.js' }),
+        ? { formats: ['es'], fileName: () => `${current.fileName}.mjs` }
+        : { formats: ['umd'], name: current.umdName, fileName: () => `${current.fileName}.js` }),
     },
     rollupOptions: {
       external: isExternal,
     },
     outDir: resolve(packageRoot, 'dist'),
-    emptyOutDir: !isEsm, // only clean on first (UMD) build
+    emptyOutDir: false,
     minify: !isEsm,
     cssCodeSplit: false,
     copyPublicDir: false,
