@@ -18,6 +18,52 @@ export interface DocsViewProps {
 
 type WorkflowViewMode = 'docs' | 'sequence' | 'flowchart';
 
+let mermaidIdCounter = 0;
+
+function getHiddenContainer(): HTMLDivElement {
+  let el = globalThis.document.getElementById('mermaid-sandbox') as HTMLDivElement | null;
+  if (!el) {
+    el = globalThis.document.createElement('div');
+    el.id = 'mermaid-sandbox';
+    el.style.position = 'absolute';
+    el.style.left = '-9999px';
+    el.style.top = '-9999px';
+    el.style.visibility = 'hidden';
+    el.style.overflow = 'hidden';
+    el.style.height = '0';
+    el.style.width = '0';
+    globalThis.document.body.appendChild(el);
+  }
+  return el;
+}
+
+const MermaidDiagram: React.FC<{ source: string }> = ({ source }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const id = `mermaid-diagram-${++mermaidIdCounter}`;
+    const sandbox = getHiddenContainer();
+
+    mermaid.render(id, source, sandbox).then(
+      ({ svg }) => {
+        if (!cancelled && containerRef.current) {
+          containerRef.current.innerHTML = svg;
+        }
+      },
+      () => {
+        // render failed, leave empty
+      },
+    );
+
+    return () => {
+      cancelled = true;
+    };
+  }, [source]);
+
+  return <div ref={containerRef} className="mermaid-rendered" />;
+};
+
 const markdownPlugins = [remarkGfm];
 const rehypePlugins = [rehypeHighlight, rehypeRaw];
 
@@ -26,6 +72,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
   const mermaidInitialized = useRef(false);
   const docsContainerRef = useRef<HTMLDivElement>(null);
   const [workflowViews, setWorkflowViews] = useState<Record<string, WorkflowViewMode>>({});
+  const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(new Set());
 
   const getWorkflowView = useCallback(
     (workflowId: string): WorkflowViewMode => workflowViews[workflowId] || 'docs',
@@ -35,6 +82,15 @@ export const DocsView: React.FC<DocsViewProps> = () => {
   const setWorkflowView = useCallback(
     (workflowId: string, view: WorkflowViewMode) =>
       setWorkflowViews((prev) => ({ ...prev, [workflowId]: view })),
+    [],
+  );
+
+  const handleToggle = useCallback(
+    (workflowId: string, e: React.SyntheticEvent<HTMLDetailsElement>) => {
+      if ((e.currentTarget as HTMLDetailsElement).open) {
+        setExpandedWorkflows((prev) => new Set(prev).add(workflowId));
+      }
+    },
     [],
   );
 
@@ -51,17 +107,6 @@ export const DocsView: React.FC<DocsViewProps> = () => {
     }
   }, []);
 
-  // Re-render mermaid when any workflow switches to a diagram view
-  useEffect(() => {
-    const hasDiagram = Object.values(workflowViews).some(
-      (v) => v === 'sequence' || v === 'flowchart',
-    );
-    if (hasDiagram) {
-      setTimeout(() => {
-        mermaid.run({ querySelector: '.mermaid' });
-      }, 100);
-    }
-  }, [workflowViews]);
 
   // Generate documentation (memoized)
   const documentation = useMemo(() => {
@@ -124,7 +169,12 @@ export const DocsView: React.FC<DocsViewProps> = () => {
     >
       <div
         ref={docsContainerRef}
-        style={{ flex: 1, overflow: 'auto', padding: '24px 48px', background: '#f9fafb' }}
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '24px 48px',
+          background: '#f9fafb',
+        }}
       >
         <style>{`
           .workflow-details {
@@ -765,11 +815,17 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             border: 1px solid #bfdbfe;
           }
 
-          .mermaid {
+          .mermaid-rendered {
             display: flex;
             justify-content: center;
             margin: 16px 0;
           }
+
+          .mermaid-rendered svg {
+            max-width: 100%;
+            height: auto;
+          }
+
         `}</style>
         <article className="arazzo-docs-prose">
           {/* Header: title, version, sources */}
@@ -792,15 +848,15 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             const currentView = getWorkflowView(workflow.workflowId);
             const workflowMd = documentation.workflowMarkdowns.get(workflow.workflowId) || '';
 
-            let diagramContent: string | null = null;
-            if (currentView === 'sequence') {
-              diagramContent = sequenceDiagrams.get(workflow.workflowId) || null;
-            } else if (currentView === 'flowchart') {
-              diagramContent = flowchartDiagrams.get(workflow.workflowId) || null;
-            }
+            const sequenceSource = sequenceDiagrams.get(workflow.workflowId) || null;
+            const flowchartSource = flowchartDiagrams.get(workflow.workflowId) || null;
 
             return (
-              <details key={workflow.workflowId} className="workflow-details">
+              <details
+                key={workflow.workflowId}
+                className="workflow-details"
+                onToggle={(e) => handleToggle(workflow.workflowId, e)}
+              >
                 <summary className="workflow-summary-bar">
                   <span className="step-count-badge">
                     {stepCount} {stepCount === 1 ? 'Step' : 'Steps'}
@@ -823,15 +879,19 @@ export const DocsView: React.FC<DocsViewProps> = () => {
                     ))}
                   </div>
 
-                  {currentView === 'docs' && (
+                  <div style={{ display: currentView === 'docs' ? 'block' : 'none' }}>
                     <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
                       {workflowMd}
                     </ReactMarkdown>
+                  </div>
+                  {sequenceSource && expandedWorkflows.has(workflow.workflowId) && (
+                    <div style={{ display: currentView === 'sequence' ? 'block' : 'none' }}>
+                      <MermaidDiagram source={sequenceSource} />
+                    </div>
                   )}
-
-                  {diagramContent && (
-                    <div className="mermaid" key={`mermaid-${workflow.workflowId}-${currentView}`}>
-                      {diagramContent}
+                  {flowchartSource && expandedWorkflows.has(workflow.workflowId) && (
+                    <div style={{ display: currentView === 'flowchart' ? 'block' : 'none' }}>
+                      <MermaidDiagram source={flowchartSource} />
                     </div>
                   )}
                 </div>
