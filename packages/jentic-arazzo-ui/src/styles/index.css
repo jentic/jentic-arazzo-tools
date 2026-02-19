@@ -1,0 +1,132 @@
+/* ==========================================================================
+   @jentic/arazzo-ui - Styles
+   All styles scoped under .arazzo-viewer to avoid leaking into host apps
+   ========================================================================== */
+
+/* Base container */
+.arazzo-viewer {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #1f2937;
+  box-sizing: border-box;
+}
+
+.arazzo-viewer *,
+.arazzo-viewer *::before,
+.arazzo-viewer *::after {
+  box-sizing: inherit;
+}
+
+/* ==========================================================================
+   Prose / Typography (replaces @tailwindcss/typography prose class)
+   ========================================================================== */
+
+.arazzo-docs-prose {
+  max-width: none;
+  font-size: 0.875rem;
+  line-height: 1.7;
+}
+
+.arazzo-docs-prose h1 {
+  font-size: 2em;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 0.8em;
+  line-height: 1.2;
+  color: #111827;
+}
+
+.arazzo-docs-prose h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  line-height: 1.3;
+  color: #111827;
+}
+
+.arazzo-docs-prose h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  margin-top: 1.4em;
+  margin-bottom: 0.4em;
+  line-height: 1.4;
+  color: #111827;
+}
+
+.arazzo-docs-prose h4 {
+  font-size: 1em;
+  font-weight: 600;
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+  color: #111827;
+}
+
+.arazzo-docs-prose p {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+
+.arazzo-docs-prose a {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.arazzo-docs-prose a:hover {
+  color: #1d4ed8;
+}
+
+.arazzo-docs-prose blockquote {
+  border-left: 3px solid #e5e7eb;
+  padding-left: 1em;
+  margin-left: 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+.arazzo-docs-prose hr {
+  border: none;
+  border-top: 1px solid #e5e7eb;
+  margin: 2em 0;
+}
+
+.arazzo-docs-prose pre {
+  background: #1f2937;
+  color: #f3f4f6;
+  padding: 1em;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-size: 0.85em;
+  line-height: 1.6;
+  margin: 1em 0;
+}
+
+.arazzo-docs-prose pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  border-radius: 0;
+  font-size: inherit;
+}
+
+.arazzo-docs-prose img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* ==========================================================================
+   React Flow overrides
+   ========================================================================== */
+
+.arazzo-viewer .react-flow__node {
+  cursor: pointer;
+}
+
+.arazzo-viewer .react-flow__edge-path {
+  cursor: pointer;
+}
+
+.arazzo-viewer .react-flow__controls {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+}

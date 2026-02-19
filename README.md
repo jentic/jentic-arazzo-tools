@@ -27,6 +27,7 @@ This monorepo contains the following packages:
 | [@jentic/arazzo-resolver](./packages/jentic-arazzo-resolver) | Resolver for Arazzo Documents |
 | [@jentic/arazzo-validator](./packages/jentic-arazzo-validator) | Validator & Linter for Arazzo Documents |
 | [@jentic/arazzo-runner](./packages/jentic-arazzo-runner) | Runner for Arazzo Workflows |
+| [@jentic/arazzo-ui](./packages/jentic-arazzo-ui) | UI for Arazzo Workflows |
 
 ---
 

@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["test/**/*", "public/**/*"],
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "types",
+    "noEmit": false,
+    "emitDeclarationOnly": true
+  }
+}

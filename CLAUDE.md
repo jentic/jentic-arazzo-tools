@@ -14,6 +14,7 @@ jentic-arazzo-tools/
 │   ├── jentic-arazzo-parser/    # @jentic/arazzo-parser package
 │   ├── jentic-arazzo-resolver/  # @jentic/arazzo-resolver package
 │   ├── jentic-arazzo-runner/    # @jentic/arazzo-runner package
+│   ├── jentic-arazzo-ui/        # @jentic/arazzo-ui package
 │   └── jentic-arazzo-validator/ # @jentic/arazzo-validator package
 ├── scripts/                      # Build and utility scripts
 ├── lerna.json                    # Lerna monorepo configuration
