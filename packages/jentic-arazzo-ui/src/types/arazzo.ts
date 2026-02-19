@@ -3,6 +3,7 @@
  * Based on: https://spec.openapis.org/arazzo/latest.html
  */
 
+/** @public */
 export interface ArazzoDocument {
   arazzo: string;
   info: InfoObject;
@@ -11,6 +12,7 @@ export interface ArazzoDocument {
   components?: ComponentsObject;
 }
 
+/** @public */
 export interface InfoObject {
   title: string;
   version: string;
@@ -18,6 +20,7 @@ export interface InfoObject {
   description?: string;
 }
 
+/** @public */
 export interface SourceDescription {
   name: string;
   url: string;
@@ -26,6 +29,7 @@ export interface SourceDescription {
   _internalId?: string;
 }
 
+/** @public */
 export interface Workflow {
   workflowId: string;
   summary?: string;
@@ -41,6 +45,7 @@ export interface Workflow {
   _internalId?: string;
 }
 
+/** @public */
 export interface Step {
   stepId: string;
   description?: string;
@@ -57,23 +62,27 @@ export interface Step {
   _internalId?: string;
 }
 
+/** @public */
 export interface Parameter {
   name: string;
   in?: 'path' | 'query' | 'header' | 'cookie';
   value: any;
 }
 
+/** @public */
 export interface RequestBody {
   contentType?: string;
   payload?: any;
   replacements?: PayloadReplacement[];
 }
 
+/** @public */
 export interface PayloadReplacement {
   target: string;
   value: any;
 }
 
+/** @public */
 export interface SuccessAction {
   name: string;
   type: 'end' | 'goto';
@@ -82,6 +91,7 @@ export interface SuccessAction {
   criteria?: Criterion[];
 }
 
+/** @public */
 export interface FailureAction {
   name: string;
   type: 'end' | 'retry' | 'goto';
@@ -92,22 +102,26 @@ export interface FailureAction {
   criteria?: Criterion[];
 }
 
+/** @public */
 export interface Criterion {
   context?: string;
   condition: string;
   type?: 'simple' | 'regex' | 'jsonpath' | 'xpath' | CriterionExpressionType;
 }
 
+/** @public */
 export interface CriterionExpressionType {
   type: 'jsonpath' | 'xpath';
   version: string;
 }
 
+/** @public */
 export interface ReusableObject {
   reference: string;
   value?: string;
 }
 
+/** @public */
 export interface ComponentsObject {
   inputs?: Record<string, JSONSchema>;
   parameters?: Record<string, Parameter>;
@@ -115,4 +129,5 @@ export interface ComponentsObject {
   failureActions?: Record<string, FailureAction>;
 }
 
+/** @public */
 export type JSONSchema = Record<string, any>;

@@ -1,5 +1,5 @@
 /**
- * Viewer-specific types for @jentic/arazzo-ui
+ * Viewer-specific types for \@jentic/arazzo-ui
  */
 
 import { Node, Edge } from 'reactflow';
@@ -19,8 +19,10 @@ import {
 // Viewer Mode & Events
 // ============================================================================
 
+/** @public */
 export type ViewerMode = 'diagram' | 'docs' | 'split';
 
+/** @public */
 export interface ViewerEvents {
   onNodeSelect?: (nodeId: string, node: ArazzoNode) => void;
   onEdgeSelect?: (edgeId: string, edge: ArazzoEdge) => void;
@@ -32,6 +34,7 @@ export interface ViewerEvents {
 // Component Props & Ref
 // ============================================================================
 
+/** @public */
 export interface ArazzoUIProps {
   document: ArazzoDocument | string;
   view?: ViewerMode;
@@ -46,6 +49,7 @@ export interface ArazzoUIProps {
   onViewChange?: (view: ViewerMode) => void;
 }
 
+/** @public */
 export interface ArazzoUIRef {
   fitView(): void;
   setZoom(level: number): void;
@@ -81,14 +85,17 @@ export interface ArazzoViewerContextValue {
 // Documentation Types
 // ============================================================================
 
+/** @public */
 export type DiagramType = 'sequence' | 'flowchart';
 
+/** @public */
 export interface DocsViewConfig {
   includeMetadata?: boolean;
   includeDiagrams?: boolean;
   diagramType?: DiagramType;
 }
 
+/** @public */
 export interface DocumentationMetadata {
   title: string;
   version: string;
@@ -103,6 +110,7 @@ export interface DocumentationMetadata {
   }>;
 }
 
+/** @public */
 export interface WorkflowDocumentation {
   workflowId: string;
   summary?: string;
@@ -114,6 +122,7 @@ export interface WorkflowDocumentation {
   failureActions?: (FailureAction | ReusableObject)[];
 }
 
+/** @public */
 export interface StepDocumentation {
   stepId: string;
   description?: string;
@@ -127,6 +136,7 @@ export interface StepDocumentation {
   onFailure?: (FailureAction | ReusableObject)[];
 }
 
+/** @public */
 export interface DocumentationSection {
   id: string;
   title: string;
@@ -138,8 +148,10 @@ export interface DocumentationSection {
 // Node Types
 // ============================================================================
 
+/** @public */
 export type ArazzoNodeType = 'start' | 'end' | 'step' | 'workflowRef' | 'workflow' | 'externalWorkflow';
 
+/** @public */
 export interface StepNodeData {
   type: 'step';
   step: Step;
@@ -152,6 +164,7 @@ export interface StepNodeData {
   isHighlighted?: boolean;
 }
 
+/** @public */
 export interface WorkflowRefNodeData {
   type: 'workflowRef';
   step: Step;
@@ -161,6 +174,7 @@ export interface WorkflowRefNodeData {
   isValid: boolean;
 }
 
+/** @public */
 export interface StartNodeData {
   type: 'start';
   workflowId: string;
@@ -168,18 +182,21 @@ export interface StartNodeData {
   description?: string;
 }
 
+/** @public */
 export interface EndNodeData {
   type: 'end';
   workflowId: string;
   outputs?: Record<string, string>;
 }
 
+/** @public */
 export interface WorkflowNodeData {
   type: 'workflow';
   workflow: Workflow;
   onClick?: (workflowId: string) => void;
 }
 
+/** @public */
 export interface ExternalWorkflowNodeData {
   type: 'externalWorkflow';
   workflowId: string;
@@ -187,6 +204,7 @@ export interface ExternalWorkflowNodeData {
   onClick?: (workflowId: string) => void;
 }
 
+/** @public */
 export type ArazzoNodeData =
   | StepNodeData
   | WorkflowRefNodeData
@@ -195,18 +213,22 @@ export type ArazzoNodeData =
   | WorkflowNodeData
   | ExternalWorkflowNodeData;
 
+/** @public */
 export type ArazzoNode = Node<ArazzoNodeData>;
 
 // ============================================================================
 // Edge Types
 // ============================================================================
 
+/** @public */
 export type ArazzoEdgeType = 'sequential' | 'success' | 'failure' | 'retry' | 'bundled-success' | 'bundled-failure' | 'bundled-retry';
 
+/** @public */
 export interface SequentialEdgeData {
   type: 'sequential';
 }
 
+/** @public */
 export interface SuccessEdgeData {
   type: 'success';
   action: SuccessAction;
@@ -214,6 +236,7 @@ export interface SuccessEdgeData {
   isInherited?: boolean;
 }
 
+/** @public */
 export interface FailureEdgeData {
   type: 'failure';
   action: FailureAction;
@@ -221,6 +244,7 @@ export interface FailureEdgeData {
   isInherited?: boolean;
 }
 
+/** @public */
 export interface RetryEdgeData {
   type: 'retry';
   action: FailureAction;
@@ -230,6 +254,7 @@ export interface RetryEdgeData {
   isInherited?: boolean;
 }
 
+/** @public */
 export interface BundledSuccessEdgeData {
   type: 'bundled-success';
   action: SuccessAction;
@@ -238,6 +263,7 @@ export interface BundledSuccessEdgeData {
   actionIdx: number;
 }
 
+/** @public */
 export interface BundledFailureEdgeData {
   type: 'bundled-failure';
   action: FailureAction;
@@ -246,6 +272,7 @@ export interface BundledFailureEdgeData {
   actionIdx: number;
 }
 
+/** @public */
 export interface BundledRetryEdgeData {
   type: 'bundled-retry';
   action: FailureAction;
@@ -256,6 +283,7 @@ export interface BundledRetryEdgeData {
   actionIdx: number;
 }
 
+/** @public */
 export type ArazzoEdgeData =
   | SequentialEdgeData
   | SuccessEdgeData
@@ -265,12 +293,14 @@ export type ArazzoEdgeData =
   | BundledFailureEdgeData
   | BundledRetryEdgeData;
 
+/** @public */
 export type ArazzoEdge = Edge<ArazzoEdgeData>;
 
 // ============================================================================
 // Validation
 // ============================================================================
 
+/** @public */
 export interface ValidationError {
   path: string;
   message: string;
@@ -284,6 +314,7 @@ export interface ValidationError {
 // Conversion Options
 // ============================================================================
 
+/** @public */
 export interface ConversionOptions {
   autoLayout?: boolean;
   layout?: {

@@ -16,8 +16,47 @@ import { DiagramView, DiagramViewRef } from './components/DiagramView';
 import { DocsView } from './components/DocsView';
 import type { ArazzoDocument, ArazzoUIProps, ArazzoUIRef, ViewerMode } from './types/index';
 
-export type { ArazzoUIProps, ArazzoUIRef, ViewerMode } from './types/index';
-export type { ArazzoDocument } from './types/arazzo';
+export type {
+  ArazzoUIProps,
+  ArazzoUIRef,
+  ViewerMode,
+  DiagramType,
+  ArazzoNode,
+  ArazzoNodeData,
+  StepNodeData,
+  WorkflowRefNodeData,
+  StartNodeData,
+  EndNodeData,
+  WorkflowNodeData,
+  ExternalWorkflowNodeData,
+  ArazzoEdge,
+  ArazzoEdgeData,
+  SequentialEdgeData,
+  SuccessEdgeData,
+  FailureEdgeData,
+  RetryEdgeData,
+  BundledSuccessEdgeData,
+  BundledFailureEdgeData,
+  BundledRetryEdgeData,
+  ValidationError,
+} from './types/index';
+export type {
+  ArazzoDocument,
+  InfoObject,
+  SourceDescription,
+  Workflow,
+  Step,
+  Parameter,
+  RequestBody,
+  PayloadReplacement,
+  SuccessAction,
+  FailureAction,
+  Criterion,
+  CriterionExpressionType,
+  ReusableObject,
+  ComponentsObject,
+  JSONSchema,
+} from './types/arazzo';
 import { stripInternalIds } from './utils/internalIds';
 
 import './styles/index.css';
@@ -54,8 +93,10 @@ async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocu
  *
  * The `document` prop accepts:
  * - An `ArazzoDocument` object (rendered immediately)
- * - A JSON or YAML string (parsed via @jentic/arazzo-parser)
- * - A file path or HTTP(S) URL (fetched and parsed via @jentic/arazzo-parser)
+ * - A JSON or YAML string (parsed via \@jentic/arazzo-parser)
+ * - A file path or HTTP(S) URL (fetched and parsed via \@jentic/arazzo-parser)
+ *
+ * @public
  */
 export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI(props, ref) {
   const {

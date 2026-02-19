@@ -1,6 +1,6 @@
 {
   "extends": "./tsconfig.json",
-  "exclude": ["test/**/*", "public/**/*"],
+  "exclude": ["test/**/*", "public/**/*", "src/**/*.umd.ts"],
   "compilerOptions": {
     "declaration": true,
     "declarationDir": "types",

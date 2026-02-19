@@ -8,9 +8,49 @@ import type { ArazzoDocument } from './types/arazzo';
 
 import './styles/index.css';
 
-export type { ArazzoUIProps, ArazzoUIRef, ViewerMode } from './types/index';
-export type { ArazzoDocument } from './types/arazzo';
+export type {
+  ArazzoUIProps,
+  ArazzoUIRef,
+  ViewerMode,
+  DiagramType,
+  ArazzoNode,
+  ArazzoNodeData,
+  StepNodeData,
+  WorkflowRefNodeData,
+  StartNodeData,
+  EndNodeData,
+  WorkflowNodeData,
+  ExternalWorkflowNodeData,
+  ArazzoEdge,
+  ArazzoEdgeData,
+  SequentialEdgeData,
+  SuccessEdgeData,
+  FailureEdgeData,
+  RetryEdgeData,
+  BundledSuccessEdgeData,
+  BundledFailureEdgeData,
+  BundledRetryEdgeData,
+  ValidationError,
+} from './types/index';
+export type {
+  ArazzoDocument,
+  InfoObject,
+  SourceDescription,
+  Workflow,
+  Step,
+  Parameter,
+  RequestBody,
+  PayloadReplacement,
+  SuccessAction,
+  FailureAction,
+  Criterion,
+  CriterionExpressionType,
+  ReusableObject,
+  ComponentsObject,
+  JSONSchema,
+} from './types/arazzo';
 
+/** @public */
 export type ArazzoUIStandaloneProps = Omit<ArazzoUIProps, 'view'> & {
   initialView?: ViewerMode;
 };
@@ -21,6 +61,8 @@ export type ArazzoUIStandaloneProps = Omit<ArazzoUIProps, 'view'> & {
  * Includes Jentic logo, URL input for loading documents, and view mode toggle.
  * Use this when you want a complete, ready-to-use viewer widget.
  * For custom layouts without the header, use ArazzoUI directly.
+ *
+ * @public
  */
 export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProps>(
   function ArazzoUIStandalone(props, ref) {
