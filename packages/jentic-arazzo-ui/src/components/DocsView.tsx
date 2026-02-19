@@ -141,8 +141,12 @@ export const DocsView: React.FC<DocsViewProps> = () => {
     });
   }, [selectedNodeId, nodes]);
 
-  // Scroll to workflow when switching workflow tabs in diagram
+  // Scroll to workflow when switching workflow tabs in diagram (skip initial value)
+  const prevActiveWorkflowId = useRef(activeWorkflowId);
   useEffect(() => {
+    if (prevActiveWorkflowId.current === activeWorkflowId) return;
+    prevActiveWorkflowId.current = activeWorkflowId;
+
     if (!activeWorkflowId || !docsContainerRef.current) return;
 
     const details = docsContainerRef.current.querySelector(
