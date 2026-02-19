@@ -2,6 +2,7 @@
 /src/**/*.cjs
 /test/**/*.mjs
 /dist
+/build
 /types
 /NOTICE
 /LICENSE

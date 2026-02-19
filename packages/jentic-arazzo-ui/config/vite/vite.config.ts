@@ -35,6 +35,7 @@ function isExternal(id: string) {
 }
 
 export default defineConfig({
+  define: isEsm ? {} : { 'process.env.NODE_ENV': JSON.stringify('production') },
   plugins: [react()],
   resolve: isEsm
     ? undefined

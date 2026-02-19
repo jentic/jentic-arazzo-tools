@@ -68,7 +68,11 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
   function ArazzoUIStandalone(props, ref) {
     const { initialView = 'docs', onViewChange, ...rest } = props;
     const [view, setView] = useState<ViewerMode>(initialView);
-    const [urlInput, setUrlInput] = useState('');
+    const [urlInput, setUrlInput] = useState(
+      typeof props.document === 'string' && /^https?:\/\//i.test(props.document)
+        ? props.document
+        : '',
+    );
     const [documentSource, setDocumentSource] = useState<ArazzoDocument | string>(props.document);
 
     const handleViewChange = useCallback(

@@ -40,7 +40,7 @@ export function formatHeaderAsMarkdown(
 
   if (metadata.documentURL) {
     sections.push(
-      `<div style="margin-bottom: 20px;"><a href="${metadata.documentURL}" target="_blank" rel="noopener noreferrer" style="font-size: 0.875rem; word-break: break-all;">${metadata.documentURL}</a></div>\n`,
+      `<div style="margin-bottom: 20px;"><a href="${metadata.documentURL}" target="_blank" rel="noopener noreferrer" style="font-size: 0.75rem; word-break: break-all;">${metadata.documentURL}</a></div>\n`,
     );
   }
 
