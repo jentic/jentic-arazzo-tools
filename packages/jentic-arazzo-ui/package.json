@@ -40,7 +40,7 @@
   "types": "./types/arazzo-ui.d.ts",
   "scripts": {
     "dev": "vite serve --config config/vite/vite.dev.config.ts",
-    "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:umd:ui build:umd:standalone build:esm:ui build:esm:standalone",
+    "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:umd:ui build:umd:standalone build:esm:ui build:esm:standalone && npm run build:app",
     "build:umd:ui": "cross-env BUILD_ENTRY=ArazzoUI vite build --config config/vite/vite.config.ts",
     "build:umd:standalone": "cross-env BUILD_ENTRY=ArazzoUIStandalone vite build --config config/vite/vite.config.ts",
     "build:esm:ui": "cross-env BUILD_FORMAT=esm BUILD_ENTRY=ArazzoUI vite build --config config/vite/vite.config.ts",
