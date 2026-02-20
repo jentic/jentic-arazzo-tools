@@ -135,6 +135,36 @@ For complete documentation, see the [@jentic/arazzo-validator README](./packages
 
 ---
 
+## UI
+
+Interactive viewer for Arazzo workflows with diagram, documentation, and split views.
+
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-jentic.github.io-blue?style=for-the-badge)](https://jentic.github.io/jentic-arazzo-tools/)
+
+```sh
+npm install @jentic/arazzo-ui
+```
+
+```jsx
+import { ArazzoUI } from '@jentic/arazzo-ui';
+import '@jentic/arazzo-ui/styles.css';
+
+<ArazzoUI document="https://example.com/workflow.arazzo.yaml" view="split" />
+```
+
+Also available as a self-contained widget with built-in header and view controls:
+
+```jsx
+import { ArazzoUIStandalone } from '@jentic/arazzo-ui/standalone';
+import '@jentic/arazzo-ui/styles.css';
+
+<ArazzoUIStandalone document="https://example.com/workflow.arazzo.yaml" />
+```
+
+For complete documentation, see the [@jentic/arazzo-ui README](./packages/jentic-arazzo-ui/README.md).
+
+---
+
 ## Contributing
 
 Please read our [Contributing Guide](./CONTRIBUTING.md) and [Code of Conduct](./CODE_OF_CONDUCT.md) before submitting a pull request.
