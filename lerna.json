@@ -8,6 +8,7 @@
       "hoist": true
     },
     "version": {
+      "exact": true,
       "allowBranch": ["main"],
       "conventionalCommits": true,
       "createRelease": "github",
