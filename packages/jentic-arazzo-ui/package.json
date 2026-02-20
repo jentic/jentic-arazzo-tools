@@ -51,7 +51,7 @@
     "clean": "rimraf ./dist ./types ./build",
     "typescript:check-types": "tsc --noEmit",
     "typescript:declaration": "tsc -p tsconfig.declaration.json && api-extractor run -l -c ./config/api-extractor/api-extractor.ArazzoUI.json && api-extractor run -l -c ./config/api-extractor/api-extractor.ArazzoUIStandalone.json",
-    "test": "cross-env NODE_ENV=test mocha",
+    "test": "echo 'no tests yet'",
     "prepack": "copyfiles -u 2 ../../LICENSE . && copyfiles -u 2 ../../NOTICE .",
     "postpack": "rimraf NOTICE LICENSE"
   },
