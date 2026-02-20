@@ -41,6 +41,10 @@ export default defineConfig({
     ? undefined
     : {
         alias: {
+          // web-tree-sitter imports Node.js builtins that don't exist in the browser;
+          // provide explicit empty shims so Vite doesn't auto-externalize with warnings
+          'fs/promises': resolve(packageRoot, 'config/vite/shims/empty.ts'),
+          module: resolve(packageRoot, 'config/vite/shims/empty.ts'),
           // langium imports vscode-jsonrpc subpaths not listed in its exports map
           'vscode-jsonrpc/lib/common/cancellation.js': resolve(
             monorepoRoot,
@@ -61,6 +65,11 @@ export default defineConfig({
     },
     rollupOptions: {
       external: isExternal,
+      onwarn(warning, warn) {
+        // suppress web-tree-sitter warnings (Node.js builtins + eval usage)
+        if (warning.id?.includes('web-tree-sitter')) return;
+        warn(warning);
+      },
     },
     outDir: resolve(packageRoot, 'dist'),
     emptyOutDir: false,
