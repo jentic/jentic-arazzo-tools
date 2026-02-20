@@ -105,3 +105,12 @@ jobs:
       run: npm ci --engine-strict=false
     - name: Build monorepo
       run: npm run build:es
+    - name: Build ArazzoUI
+      run: npm run build:app
+      working-directory: ./packages/jentic-arazzo-ui
+    - name: Upload build artifacts from ArazoUI
+      if: github.ref == 'refs/heads/main'
+      uses: actions/upload-artifact@v6
+      with:
+        name: arazzo-ui-build
+        path: ./packages/jentic-arazzo-ui/build
