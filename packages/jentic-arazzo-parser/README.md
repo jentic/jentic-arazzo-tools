@@ -103,6 +103,7 @@ const parseResult = await parseArazzo(source, {
     parserOpts: {
       strict: true,      // Use strict parsing mode (default: true)
       sourceMap: false,  // Include source maps (default: false)
+      style: false,      // Capture style information for round-trip preservation (default: false)
     },
   },
 });
@@ -236,9 +237,56 @@ For more details about source maps, see the [SpecLynx ApiDOM Data Model document
 // Source maps with objects (requires strict: false)
 // Positions will reference the internally generated JSON string
 await parseArazzo({ arazzo: '1.0.1', ... }, {
-  parse: { parserOpts: { sourceMap: true, strict: false } },
+  parse: {
+    parserOpts: {
+      sourceMap: true,
+      strict: false
+    }
+  },
 });
 ```
+
+### Style preservation
+
+Style preservation captures format-specific style information for round-trip preservation. When enabled, the parser records formatting details (e.g., YAML quoting styles, flow/block indicators, comments, indentation; JSON indentation, raw number representation) on each parsed element. These details can then be used by [`toYAML`](https://github.com/speclynx/apidom/tree/main/packages/apidom-core#toyaml) and [`toJSON`](https://github.com/speclynx/apidom/tree/main/packages/apidom-core#tojson) from `@speclynx/apidom-core` to reproduce the original formatting.
+
+To enable style preservation, set `style: true` and `strict: false` in the parser options:
+
+```js
+import { parseArazzo } from '@jentic/arazzo-parser';
+import { toYAML } from '@speclynx/apidom-core';
+
+const parseResult = await parseArazzo('/path/to/arazzo.yaml', {
+  parse: {
+    parserOpts: {
+      style: true,
+      strict: false,
+    },
+  },
+});
+
+// round-trip back to YAML preserving original formatting
+const yaml = toYAML(parseResult.api, { preserveStyle: true });
+```
+
+```js
+import { parseArazzo } from '@jentic/arazzo-parser';
+import { toJSON } from '@speclynx/apidom-core';
+
+const parseResult = await parseArazzo('/path/to/arazzo.json', {
+  parse: {
+    parserOpts: {
+      style: true,
+      strict: false,
+    },
+  },
+});
+
+// round-trip back to JSON preserving original formatting
+const json = toJSON(parseResult.api, undefined, undefined, { preserveStyle: true });
+```
+
+**Note:** Style preservation requires `strict: false`. Both `style` and `sourceMap` can be enabled simultaneously — they are independent features.
 
 ## Parsing source descriptions
 

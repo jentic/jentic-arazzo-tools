@@ -243,6 +243,7 @@ const parseResult = await dereferenceArazzo('/path/to/arazzo.json', {
   parse: {
     parserOpts: {
       sourceMap: true,  // Include source maps in parsed documents
+      style: true,      // Capture format-specific style information for round-trip preservation
     },
   },
 });
