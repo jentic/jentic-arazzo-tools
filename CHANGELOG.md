@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.18](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.17...v1.0.0-alpha.18) (2026-02-20)
+
+### Features
+
+- **parser:** add support for lossless roundtrips ([#91](https://github.com/jentic/jentic-arazzo-tools/issues/91)) ([2cffe4f](https://github.com/jentic/jentic-arazzo-tools/commit/2cffe4f142c4a541126a3f5f2e3634195c906f75))
+
 # [1.0.0-alpha.17](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.16...v1.0.0-alpha.17) (2026-02-20)
 
 ### Bug Fixes
