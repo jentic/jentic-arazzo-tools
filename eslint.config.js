@@ -229,6 +229,14 @@ export default tseslint.config(
     },
   },
 
+  // arazzo-ui uses Vite which resolves imports without file extensions
+  {
+    files: ['packages/jentic-arazzo-ui/src/**/*.ts', 'packages/jentic-arazzo-ui/src/**/*.tsx'],
+    rules: {
+      'import/extensions': 'off',
+    },
+  },
+
   // Prettier must be last to override other configs
   eslintPluginPrettierRecommended,
 );

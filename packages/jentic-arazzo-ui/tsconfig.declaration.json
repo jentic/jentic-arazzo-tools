@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": ["test/**/*", "public/**/*", "src/**/*.umd.ts"],
+  "compilerOptions": {
+    "declaration": true,
+    "declarationDir": "types",
+    "noEmit": false,
+    "emitDeclarationOnly": true
+  }
+}

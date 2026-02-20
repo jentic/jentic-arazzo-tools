@@ -1,0 +1,9 @@
+/src/**/*.mjs
+/src/**/*.cjs
+/test/**/*.mjs
+/dist
+/build
+/types
+/NOTICE
+/LICENSE
+/jentic-arazzo-ui-*.tgz

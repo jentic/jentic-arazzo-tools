@@ -14,6 +14,7 @@ jentic-arazzo-tools/
 │   ├── jentic-arazzo-parser/    # @jentic/arazzo-parser package
 │   ├── jentic-arazzo-resolver/  # @jentic/arazzo-resolver package
 │   ├── jentic-arazzo-runner/    # @jentic/arazzo-runner package
+│   ├── jentic-arazzo-ui/        # @jentic/arazzo-ui package
 │   └── jentic-arazzo-validator/ # @jentic/arazzo-validator package
 ├── scripts/                      # Build and utility scripts
 ├── lerna.json                    # Lerna monorepo configuration
@@ -69,6 +70,16 @@ npm run lint       # Lint code
 - Prettier for formatting
 - Commit messages follow Conventional Commits
 - Comments should start with lowercase letters
+
+## Bundle Analysis (arazzo-ui)
+
+To analyze the UMD bundle composition of `@jentic/arazzo-ui`, run from the package directory:
+
+```sh
+node scripts/analyze-bundle.mjs
+```
+
+This performs an in-memory Vite UMD build (no files written) and reports the top 25 largest modules and a breakdown of "other deps" by package. Last known breakdown (unminified): apidom ~30%, mermaid+deps ~18%, other deps ~44%. Total: ~12 MB unminified → ~7 MB minified → ~1.7 MB gzipped.
 
 ## Key Dependencies
 
