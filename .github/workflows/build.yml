@@ -85,7 +85,7 @@ jobs:
           cache-dependency-path: 'package-lock.json'
       - name: Install dependencies
         run: npm ci --engine-strict=false
-      - name: Build mo for testing
+      - name: Build monorepo for testing
         run: npm run build:es
       - name: Execute tests in monorepo
         run: npm run test
