@@ -108,7 +108,7 @@ jobs:
     - name: Build ArazzoUI
       run: npm run build:app
       working-directory: ./packages/jentic-arazzo-ui
-    - name: Upload build artifacts from ArazoUI
+    - name: Upload build artifacts from ArazzoUI
       if: github.ref == 'refs/heads/main'
       uses: actions/upload-artifact@v6
       with:
