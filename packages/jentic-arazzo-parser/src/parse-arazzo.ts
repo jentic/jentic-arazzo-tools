@@ -54,6 +54,7 @@ export const defaultOptions: Options = {
     ],
     parserOpts: {
       sourceMap: false,
+      style: false,
       strict: true,
       sourceDescriptions: false,
     },
