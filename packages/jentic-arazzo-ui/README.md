@@ -7,7 +7,7 @@ It provides interactive diagram views, documentation views, and a split view com
 
 <p align="center">
   <a href="https://arazzo-ui.jentic.com">
-    <img src="https://github.com/jentic/jentic-arazzo-tools/blob/main/assets/arazzo-ui.png" alt="ArazzoUI Screenshot" />
+    <img src="https://raw.githubusercontent.com/jentic/jentic-arazzo-tools/main/assets/arazzo-ui.png" alt="ArazzoUI Screenshot" />
   </a>
 </p>
 
