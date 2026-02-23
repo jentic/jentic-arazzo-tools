@@ -163,7 +163,7 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
                 padding: '6px 16px',
                 border: 'none',
                 borderRadius: '6px',
-                background: '#61affe',
+                background: '#94C83D',
                 color: '#fff',
                 fontSize: '13px',
                 cursor: 'pointer',
