@@ -68,12 +68,17 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
   function ArazzoUIStandalone(props, ref) {
     const { initialView = 'docs', onViewChange, ...rest } = props;
     const [view, setView] = useState<ViewerMode>(initialView);
+
+    // resolve initial document: ?url= query param takes precedence over props.document
+    const urlParam = new URLSearchParams(globalThis.location.search).get('document');
+    const initialDocument = urlParam || props.document;
+
     const [urlInput, setUrlInput] = useState(
-      typeof props.document === 'string' && /^https?:\/\//i.test(props.document)
-        ? props.document
+      typeof initialDocument === 'string' && /^https?:\/\//i.test(initialDocument)
+        ? initialDocument
         : '',
     );
-    const [documentSource, setDocumentSource] = useState<ArazzoDocument | string>(props.document);
+    const [documentSource, setDocumentSource] = useState<ArazzoDocument | string>(initialDocument);
 
     const handleViewChange = useCallback(
       (v: ViewerMode) => {
@@ -87,6 +92,9 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
       const trimmed = urlInput.trim();
       if (trimmed) {
         setDocumentSource(trimmed);
+        const params = new URLSearchParams(globalThis.location.search);
+        params.set('document', trimmed);
+        globalThis.history.replaceState(null, '', `?${params.toString()}`);
       }
     }, [urlInput]);
 
