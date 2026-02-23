@@ -49,6 +49,9 @@ const browserMin = {
   mode: 'production',
   entry: ['./src/index.ts'],
   target: 'web',
+  performance: {
+    hints: false,
+  },
   output: {
     path: path.resolve('./dist'),
     filename: 'jentic-arazzo-validator.browser.min.js',

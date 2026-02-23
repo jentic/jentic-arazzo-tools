@@ -37,6 +37,9 @@
     "./styles.css": "./dist/arazzo-ui.css"
   },
   "types": "./types/arazzo-ui.d.ts",
+  "bin": {
+    "arazzo-ui": "./bin/arazzo-ui.mjs"
+  },
   "scripts": {
     "dev": "vite serve --config config/vite/vite.dev.config.ts",
     "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:umd:ui build:umd:standalone build:esm:ui build:esm:standalone && npm run build:app",
@@ -82,6 +85,7 @@
     "vite": "^6.3.5"
   },
   "files": [
+    "bin/",
     "dist/",
     "types/arazzo-ui.d.ts",
     "types/arazzo-ui-standalone.d.ts",
