@@ -107,10 +107,12 @@ export const defaultOptions: Options = {
  * const result = await dereferenceArazzo('https://example.com/arazzo.yaml');
  *
  * @example
- * // Dereference with source descriptions
+ * Dereference with source descriptions
+ * ```typescript
  * const result = await dereferenceArazzo('/path/to/arazzo.json', {
  *   dereference: { strategyOpts: { sourceDescriptions: true } },
  * });
+ * ```
  *
  * @example
  * // Dereference with custom options
