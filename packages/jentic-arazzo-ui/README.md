@@ -11,6 +11,12 @@ It provides interactive diagram views, documentation views, and a split view com
   </a>
 </p>
 
+Load any Arazzo Document by appending a `?document=` query parameter:
+
+```
+https://arazzo-ui.jentic.com?document=https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml
+```
+
 **Supported Arazzo versions:**
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
 - [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
