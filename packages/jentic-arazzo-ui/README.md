@@ -31,6 +31,16 @@ npm install @jentic/arazzo-ui
 
 **Peer dependencies:** React 18 or 19 ([react](https://www.npmjs.com/package/react) and [react-dom](https://www.npmjs.com/package/react-dom)).
 
+## CLI
+
+Open any Arazzo document in the browser without installing anything locally:
+
+```sh
+npx @jentic/arazzo-ui https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml
+```
+
+This opens `https://arazzo-ui.jentic.com` with the document pre-loaded.
+
 ## Components
 
 ### ArazzoUI

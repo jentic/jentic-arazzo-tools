@@ -141,6 +141,12 @@ Interactive viewer for Arazzo workflows with diagram, documentation, and split v
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-arazzo--ui.jentic.com-blue?style=for-the-badge)](https://arazzo-ui.jentic.com)
 
+Open any Arazzo document in the browser:
+
+```sh
+npx @jentic/arazzo-ui https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml
+```
+
 ```sh
 npm install @jentic/arazzo-ui
 ```
