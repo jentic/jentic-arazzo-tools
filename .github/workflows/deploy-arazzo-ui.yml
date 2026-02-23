@@ -46,6 +46,14 @@ jobs:
       - run: |
           mkdir deploy-dir
           unzip arazzo-ui-build.zip -d deploy-dir
+      - name: Inject Google Tag Manager
+        if: ${{ env.GTAG_ID != '' }}
+        env:
+          GTAG_ID: ${{ secrets.GTAG_ID }}
+        run: |
+          GTAG_SNIPPET=$(envsubst '$GTAG_ID' < packages/jentic-arazzo-ui/config/gtag.html | tr '\n' ' ')
+          sed -i "s|<!-- ANALYTICS -->|${GTAG_SNIPPET}|" deploy-dir/index.html
+          grep -q "googletagmanager.com" deploy-dir/index.html || { echo "::error::GTM injection failed — ANALYTICS placeholder not found in index.html"; exit 1; }
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4.8.0
         with:
