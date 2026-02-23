@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.19](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.18...v1.0.0-alpha.19) (2026-02-23)
+
+### Bug Fixes
+
+- **arazzo-ui:** fix demo URL ([418982e](https://github.com/jentic/jentic-arazzo-tools/commit/418982e231e83e509e2e0705d9a2029ea639b6ae))
+
+### Features
+
+- **arazoo-ui:** align with Arazzo logo color scheme ([#101](https://github.com/jentic/jentic-arazzo-tools/issues/101)) ([850fdca](https://github.com/jentic/jentic-arazzo-tools/commit/850fdca3d067c28b79b6590ed1cbf449b7d510a1))
+- **arazzo-ui:** add CLI for opening any URL from command cli ([#103](https://github.com/jentic/jentic-arazzo-tools/issues/103)) ([6923e7b](https://github.com/jentic/jentic-arazzo-tools/commit/6923e7bdcb62e86266789e18ef6af5dc27459110)), closes [#96](https://github.com/jentic/jentic-arazzo-tools/issues/96)
+- **arazzo-ui:** add support for document url query param ([2a1aed6](https://github.com/jentic/jentic-arazzo-tools/commit/2a1aed6cb1f07bcbe9a0cd7fd9d2e04cc27cf599))
+- **arazzo-ui:** provide Arazzo favicon ([019b45d](https://github.com/jentic/jentic-arazzo-tools/commit/019b45d42a8746b23e7328d5d03ce9328e82fb70))
+
 # [1.0.0-alpha.18](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.17...v1.0.0-alpha.18) (2026-02-20)
 
 ### Features
