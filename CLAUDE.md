@@ -110,7 +110,7 @@ npm run dev                # Vite dev server
 - `arazzo-ui.css` — styles
 - `petstore-order-workflow.arazzo.yaml` — sample fixture
 
-Deployed to GitHub Pages via `gh-pages` branch.
+Deployed to https://arazzo-ui.jentic.com via `gh-pages` branch.
 
 ### Vite Config Notes
 

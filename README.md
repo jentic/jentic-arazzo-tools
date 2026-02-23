@@ -139,7 +139,7 @@ For complete documentation, see the [@jentic/arazzo-validator README](./packages
 
 Interactive viewer for Arazzo workflows with diagram, documentation, and split views.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-jentic.github.io-blue?style=for-the-badge)](https://jentic.github.io/jentic-arazzo-tools/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-arazzo--ui.jentic.com-blue?style=for-the-badge)](https://arazzo-ui.jentic.com)
 
 ```sh
 npm install @jentic/arazzo-ui

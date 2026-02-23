@@ -3,10 +3,10 @@
 `@jentic/arazzo-ui` is a UI component for visualizing [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) workflows.
 It provides interactive diagram views, documentation views, and a split view combining both.
 
-[![Live Demo](https://img.shields.io/badge/Live%20Demo-jentic.github.io-blue?style=for-the-badge)](https://jentic.github.io/jentic-arazzo-tools/)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-arazzo--ui.jentic.com-blue?style=for-the-badge)](https://arazzo-ui.jentic.com)
 
 <p align="center">
-  <a href="https://jentic.github.io/jentic-arazzo-tools/">
+  <a href="https://arazzo-ui.jentic.com">
     <img src="https://github.com/jentic/jentic-arazzo-tools/blob/main/assets/arazzo-ui.png" alt="ArazzoUI Screenshot" />
   </a>
 </p>
