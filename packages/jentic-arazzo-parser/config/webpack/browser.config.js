@@ -6,8 +6,7 @@ const browser = {
   entry: ['./src/index.ts'],
   target: 'web',
   performance: {
-    maxEntrypointSize: 512000,
-    maxAssetSize: 512000,
+    hints: false,
   },
   output: {
     path: path.resolve('./dist'),
