@@ -9,7 +9,7 @@ export interface FormatOptions {
  * Formats documentation data as markdown string
  */
 function sourceIcon(type: string): string {
-  const color = type === 'openapi' ? '#49cc90' : '#61affe';
+  const color = type === 'openapi' ? '#6BA543' : '#94C83D';
   return `<svg class="source-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="12" height="12" rx="3" fill="${color}" opacity="0.15" stroke="${color}" stroke-width="1"/><circle cx="7" cy="7" r="2" fill="${color}"/></svg>`;
 }
 
@@ -28,13 +28,16 @@ export function formatHeaderAsMarkdown(
     `<div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: ${metadata.documentURL ? '8px' : '20px'}; flex-wrap: wrap;">`,
   );
   sections.push(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="215 -5 380 380" style="width: 2.25rem; height: 2.25rem; flex-shrink: 0;"><path fill="#94C83D" d="M268.3,78.8c26.8,0,48.6,21.7,48.6,48.6c0,7.3-1.6,14.1-4.4,20.3c-1.1,2.4-0.8,5.3,1.1,7.1l77.9,78.2c1.3,1.3,1.3,3.4,0,4.6l-12.8,12.9c-1.3,1.3-3.4,1.3-4.6,0l-42.1-41.9c-3.8-3.8-10-3.8-13.9,0l-4.9,4.8c-1.9,1.9-2.2,4.8-1.1,7.3c3,6.2,4.8,13.1,4.8,20.3c0,26.8-21.7,48.6-48.6,48.6c-26.8,0-48.6-21.7-48.6-48.6c0-26.8,21.7-48.6,48.6-48.6c7.1,0,14,1.7,20.3,4.8c2.4,1.2,5.4,0.9,7.3-1.1l4.8-4.8c3.8-3.8,3.8-10.1,0-13.9l-4.8-4.8c-1.9-1.9-4.7-2.2-7.1-1.1c-6.2,2.9-13.1,4.4-20.3,4.4c-26.8,0-48.6-21.7-48.6-48.6C219.8,100.5,241.5,78.8,268.3,78.8z"/><path fill="#6BA543" d="M460.7,271.2c26.8,0,48.6,21.7,48.6,48.6c0,26.8-21.7,48.6-48.6,48.6c-26.8,0-48.6-21.7-48.6-48.6c0-7.1,4-16.3,7.1-22.6c1.2-2.4-1.5-3-3.4-4.9l-5-5c-3.8-3.8-10-3.8-13.9,0l-5,5c-1.9,1.9-2.2,4.8-1.1,7.3c3,6.2,4.8,13.1,4.8,20.3c0,26.8-21.7,48.6-48.6,48.6c-26.8,0-48.6-21.7-48.6-48.6c0-26.8,21.7-48.6,48.6-48.6c7.1,0,14,1.7,20.3,4.8c2.4,1.2,5.4,0.8,7.3-1.1l77.7-78c1.3-1.3,3.4-1.3,4.6,0l13,13c1.3,1.3,1.3,3.4,0,4.6l-41.7,41.6c-3.8,3.8-3.9,10.1,0,13.9l4.9,4.9c1.9,1.9,4.8,2.2,7.3,1.1C446.7,272.9,453.5,271.2,460.7,271.2z"/><path fill="#94C83D" d="M539.5,192.4c26.8,0,48.6,21.7,48.6,48.6s-21.7,48.6-48.6,48.6c-26.8,0-48.6-21.7-48.6-48.6c0-7.1,1.7-14,4.8-20.3c1.2-2.4,0.9-5.4-1.1-7.3l-78.4-78.1c-1.3-1.3-1.3-3.4,0-4.6l13-13c1.3-1.3,3.4-1.3,4.6,0l44.1,44.2c2.6,2.6,6.7,2.6,9.3,0l7.1-7.1c1.9-1.9,2.2-4.7,1.1-7.1c-2.9-6.2-4.4-13.1-4.4-20.3c0-26.8,21.7-48.6,48.6-48.6c26.8,0,48.6,21.7,48.6,48.6s-21.7,48.6-48.6,48.6c-7.3,0-14.1-1.6-20.3-4.4c-2.4-1.1-5.3-0.8-7.1,1.1l-4.8,4.8c-3.8,3.8-3.9,10.1,0,13.9l4.8,4.8c1.9,1.9,4.8,2.2,7.3,1.1C525.5,194.1,532.4,192.4,539.5,192.4z"/><path fill="#6BA543" d="M347.1,0c26.8,0,48.6,21.7,48.6,48.6c0,7.3-1.6,14.1-4.4,20.3c-1.1,2.4-0.8,5.3,1.1,7.1l6.9,6.9c2.6,2.6,6.7,2.6,9.3,0l6.9-7c1.9-1.9,2.2-4.7,1.1-7.1c-2.9-6.2-4.4-13.1-4.4-20.3c0-26.8,21.7-48.6,48.6-48.6c26.8,0,48.6,21.7,48.6,48.6c0,26.8-21.7,48.6-48.6,48.6c-7.3,0-14.1-1.6-20.3-4.4c-2.4-1.1-5.3-0.8-7.1,1.1l-78.1,77.8c-1.3,1.3-3.4,1.3-4.6,0l-12.8-12.8c-1.3-1.3-1.3-3.4,0-4.6l44-44.1c2.6-2.6,2.5-6.7,0-9.3l-7-7c-1.9-1.9-4.7-2.2-7.1-1.1c-6.2,2.9-13.1,4.4-20.3,4.4c-26.8,0-48.6-21.7-48.6-48.6C298.6,21.8,320.3,0,347.1,0z"/></svg>`,
+  );
+  sections.push(
     `<h1 style="margin: 0; font-size: 2.25rem; font-weight: 700; color: #111827; line-height: 1;">${metadata.title}</h1>`,
   );
   sections.push(
-    `<span class="version-badge spec-version" title="Document version">${metadata.version}</span>`,
+    `<span class="version-badge doc-version" title="Document version">${metadata.version}</span>`,
   );
   sections.push(
-    `<span class="version-badge doc-version" title="Arazzo Specification version">Arazzo ${metadata.arazzoVersion || '1.0.1'}</span>`,
+    `<span class="version-badge spec-version" title="Arazzo Specification version">Arazzo ${metadata.arazzoVersion || '1.0.1'}</span>`,
   );
   sections.push(`</div>\n`);
 
@@ -164,7 +167,7 @@ export function formatWorkflowAsMarkdown(
           metadata.sourceDescriptions.length > 0
             ? metadata.sourceDescriptions[0].type || 'arazzo'
             : 'arazzo';
-        const color = defaultType === 'openapi' ? '#49cc90' : '#61affe';
+        const color = defaultType === 'openapi' ? '#6BA543' : '#94C83D';
         opHtml = `<span class="step-op-ref" style="color: ${color}">${step.operationId}</span>`;
       }
     } else if (step.operationPath) {

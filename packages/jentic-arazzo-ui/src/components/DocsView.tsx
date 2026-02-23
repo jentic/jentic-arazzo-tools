@@ -252,7 +252,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .workflow-details[open] {
-            border-color: #93c5fd;
+            border-color: #94C83D;
           }
 
           .workflow-summary-bar {
@@ -263,7 +263,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             cursor: pointer;
             user-select: none;
             list-style: none;
-            background: #eef6ff;
+            background: #f3fae8;
             transition: background 0.15s;
           }
 
@@ -274,7 +274,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .workflow-summary-bar::before {
             content: '▶';
             font-size: 10px;
-            color: #61affe;
+            color: #6BA543;
             transition: transform 0.15s;
             flex-shrink: 0;
           }
@@ -284,7 +284,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .workflow-summary-bar:hover {
-            background: #e0f0ff;
+            background: #ecf5dc;
           }
 
           .workflow-summary-title {
@@ -406,8 +406,8 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .source-card:hover {
-            border-color: #93c5fd;
-            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+            border-color: #94C83D;
+            box-shadow: 0 2px 8px rgba(107, 165, 67, 0.15);
           }
 
           .source-card-top {
@@ -427,12 +427,12 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .source-type-openapi {
-            background: #49cc90;
+            background: #6BA543;
             color: #fff;
           }
 
           .source-type-arazzo {
-            background: #61affe;
+            background: #94C83D;
             color: #fff;
           }
 
@@ -496,18 +496,18 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: #fef3c7;
-            border: 1px solid #fde68a;
+            background: #e8f5d3;
+            border: 1px solid #94C83D;
             flex-shrink: 0;
             font-size: 11px;
             font-weight: 700;
-            color: #92400e;
+            color: #6BA543;
           }
 
           .timeline-line {
             width: 2px;
             flex: 1;
-            background: #fde68a;
+            background: #94C83D;
             margin: 4px 0;
           }
 
@@ -567,8 +567,8 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             font-size: 11px;
             padding: 2px 6px;
             border-radius: 4px;
-            background: #dbeafe;
-            color: #1e40af;
+            background: #e8f5d3;
+            color: #6BA543;
             font-weight: 600;
           }
 
@@ -600,8 +600,8 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
           .timeline-op-name {
             padding: 3px 6px;
-            background: #dbeafe;
-            color: #1e40af;
+            background: #e8f5d3;
+            color: #6BA543;
           }
 
           .source-card-top .source-icon {
@@ -813,7 +813,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .spec-version {
-            background: #49cc90;
+            background: #94C83D;
             color: #fff;
           }
 
@@ -828,9 +828,9 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
+            background: #94C83D;
+            color: #fff;
+            border: 1px solid #6BA543;
           }
 
           .operation-badge {
@@ -839,8 +839,8 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
-            background: #dbeafe;
-            color: #1e40af;
+            background: #e8f5d3;
+            color: #6BA543;
           }
 
           /* Action badges (END, GOTO, RETRY) */
