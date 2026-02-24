@@ -34,12 +34,12 @@ export type Options = PartialDeep<ApiDOMReferenceOptions>;
 export const defaultOptions: Options = {
   parse: {
     parsers: [
-      new OpenApiJSON2Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
-      new OpenApiYAML2Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
-      new OpenApiJSON3_0Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
-      new OpenApiYAML3_0Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
-      new OpenApiJSON3_1Parser({ allowEmpty: false, fileExtensions: ['.json'] }),
-      new OpenApiYAML3_1Parser({ allowEmpty: false, fileExtensions: ['.yaml', '.yml'] }),
+      new OpenApiJSON2Parser({ allowEmpty: false }),
+      new OpenApiYAML2Parser({ allowEmpty: false }),
+      new OpenApiJSON3_0Parser({ allowEmpty: false }),
+      new OpenApiYAML3_0Parser({ allowEmpty: false }),
+      new OpenApiJSON3_1Parser({ allowEmpty: false }),
+      new OpenApiYAML3_1Parser({ allowEmpty: false }),
     ],
     parserOpts: {
       sourceMap: false,
