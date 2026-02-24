@@ -1,5 +1,6 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import type { Diagnostic } from 'vscode-languageserver-types';
+import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import { getLanguageService, LogLevel, type LanguageServiceContext } from '@speclynx/apidom-ls';
 import type { PartialDeep } from 'type-fest';
 import { mergeDeepRight } from 'ramda';
@@ -21,7 +22,7 @@ export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
   defaultContentLanguage: {
     namespace: 'arazzo',
     version: '1.0.1',
-    mediaType: 'application/vnd.oai.workflows;version=1.0.1',
+    mediaType: mediaTypes.latest(),
   },
   validatorProviders: [new Arazzo1JsonSchemaValidationProvider()],
   validationContext: {
