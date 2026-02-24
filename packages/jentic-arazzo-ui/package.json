@@ -47,7 +47,7 @@
     "build:umd:standalone": "cross-env BUILD_ENTRY=ArazzoUIStandalone vite build --config config/vite/vite.config.ts",
     "build:esm:ui": "cross-env BUILD_FORMAT=esm BUILD_ENTRY=ArazzoUI vite build --config config/vite/vite.config.ts",
     "build:esm:standalone": "cross-env BUILD_FORMAT=esm BUILD_ENTRY=ArazzoUIStandalone vite build --config config/vite/vite.config.ts",
-    "build:app": "npm run build:umd:standalone && rimraf ./build && mkdir -p ./build && cp ./dist/arazzo-ui-standalone.js ./dist/arazzo-ui.css ./build/ && cp ./public/* ./build/ && rm -f ./build/main.tsx ./build/index.html && mv ./build/app.html ./build/index.html",
+    "build:app": "npm run build:umd:standalone && rimraf ./build && mkdir -p ./build && cp ./dist/arazzo-ui-standalone.js ./dist/arazzo-ui.css ./build/ && cp ./public/* ./build/ && rm -f ./build/main.tsx ./build/index.html && mv ./build/app.html ./build/index.html && node ./scripts/hash-build-assets.mjs",
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
     "clean": "rimraf ./dist ./types ./build",
