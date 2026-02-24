@@ -1,8 +1,9 @@
 name: Dependabot Auto-Merge
 
 on:
-  pull_request_target:
-    types: [opened, synchronize, reopened]
+  workflow_run:
+    workflows: ["Jentic Arazzo Tools Build"]
+    types: [completed]
 
 permissions:
   contents: write
@@ -12,7 +13,10 @@ jobs:
   dependabot-auto-merge:
     name: Auto-merge non-major updates
     runs-on: ubuntu-latest
-    if: github.actor == 'dependabot[bot]'
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.actor == 'dependabot[bot]'
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
@@ -20,25 +24,16 @@ jobs:
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
-      - name: Wait for checks to pass
-        if: steps.metadata.outputs.update-type != 'version-update:semver-major'
-        uses: lewagon/wait-on-check-action@v1.3.4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          running-workflow-name: Auto-merge non-major updates
-          allowed-conclusions: success,skipped
-
       - name: Approve PR
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: gh pr review --approve "$PR_URL"
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_URL: ${{ github.event.workflow_run.pull_requests[0].url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Merge PR
         if: steps.metadata.outputs.update-type != 'version-update:semver-major'
         run: gh pr merge --squash "$PR_URL"
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
+          PR_URL: ${{ github.event.workflow_run.pull_requests[0].url }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
