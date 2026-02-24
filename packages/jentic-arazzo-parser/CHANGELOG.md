@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.20](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.19...v1.0.0-alpha.20) (2026-02-24)
+
+### Bug Fixes
+
+- loosen parsing constraints to parse URIs without extensions ([#108](https://github.com/jentic/jentic-arazzo-tools/issues/108)) ([3720140](https://github.com/jentic/jentic-arazzo-tools/commit/372014060b7feae9a98e220277c2a5888132bad2))
+
 # [1.0.0-alpha.19](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.18...v1.0.0-alpha.19) (2026-02-23)
 
 ### Features
