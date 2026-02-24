@@ -22,7 +22,7 @@ export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
   defaultContentLanguage: {
     namespace: 'arazzo',
     version: '1.0.1',
-    mediaType: mediaTypes.latest(),
+    mediaType: mediaTypes.findBy('1.0.1'),
   },
   validatorProviders: [new Arazzo1JsonSchemaValidationProvider()],
   validationContext: {
