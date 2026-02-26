@@ -110,7 +110,7 @@ jobs:
       working-directory: ./packages/jentic-arazzo-ui
     - name: Upload build artifacts from ArazzoUI
       if: github.ref == 'refs/heads/main'
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: arazzo-ui-build
         path: ./packages/jentic-arazzo-ui/build
