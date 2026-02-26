@@ -46,7 +46,7 @@
     "@babel/preset-env": "=7.29.0",
     "@babel/preset-typescript": "=7.28.5",
     "@commitlint/cli": "=20.4.1",
-    "@commitlint/config-conventional": "=20.4.1",
+    "@commitlint/config-conventional": "=20.4.2",
     "@eslint/js": "^9.28.0",
     "@microsoft/api-extractor": "^7.55.2",
     "@types/chai": "^5.2.3",
