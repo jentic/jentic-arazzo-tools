@@ -63,6 +63,9 @@
     "ramda-adjunct": "^6.0.0",
     "type-fest": "^5.4.3"
   },
+  "devDependencies": {
+    "@speclynx/apidom-core": "^3.2.1"
+  },
   "files": [
     "src/**/*.mjs",
     "src/**/*.cjs",
