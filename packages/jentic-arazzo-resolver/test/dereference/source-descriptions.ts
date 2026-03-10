@@ -66,8 +66,8 @@ describe('dereferenceArazzo', function () {
         });
 
         const sdParseResult = result.get(1) as ParseResultElement;
-        assert.strictEqual(sdParseResult.meta.get('name')!.toValue(), 'petStore');
-        assert.strictEqual(sdParseResult.meta.get('type')!.toValue(), 'openapi');
+        assert.strictEqual(sdParseResult.meta.get('name'), 'petStore');
+        assert.strictEqual(sdParseResult.meta.get('type'), 'openapi');
       });
     });
 
@@ -88,7 +88,7 @@ describe('dereferenceArazzo', function () {
         assert.strictEqual(result.length, 2);
 
         const sdParseResult = result.get(1) as ParseResultElement;
-        assert.strictEqual(sdParseResult.meta.get('name')!.toValue(), 'petStore');
+        assert.strictEqual(sdParseResult.meta.get('name'), 'petStore');
       });
 
       specify('should dereference multiple named source descriptions', async function () {
@@ -209,8 +209,8 @@ describe('dereferenceArazzo', function () {
         const childArazzo = result.get(1) as ParseResultElement;
         assert.isTrue(isParseResultElement(childArazzo));
         assert.isTrue(isArazzoSpecification1Element(childArazzo.api));
-        assert.strictEqual(childArazzo.meta.get('name')!.toValue(), 'childWorkflows');
-        assert.strictEqual(childArazzo.meta.get('type')!.toValue(), 'arazzo');
+        assert.strictEqual(childArazzo.meta.get('name'), 'childWorkflows');
+        assert.strictEqual(childArazzo.meta.get('type'), 'arazzo');
       });
     });
 

@@ -64,8 +64,8 @@ describe('parse', function () {
         });
 
         const sdParseResult = result.get(1) as ParseResultElement;
-        assert.strictEqual(sdParseResult.meta.get('name')!.toValue(), 'petStore');
-        assert.strictEqual(sdParseResult.meta.get('type')!.toValue(), 'openapi');
+        assert.strictEqual(sdParseResult.meta.get('name'), 'petStore');
+        assert.strictEqual(sdParseResult.meta.get('type'), 'openapi');
       });
 
       specify('should work with global parserOpts flag', async function () {
@@ -85,7 +85,7 @@ describe('parse', function () {
         const sdParseResult = result.get(1) as ParseResultElement;
         assert.isTrue(isParseResultElement(sdParseResult));
         assert.isTrue(sdParseResult.classes.includes('source-description'));
-        assert.strictEqual(sdParseResult.meta.get('name')!.toValue(), 'petStore');
+        assert.strictEqual(sdParseResult.meta.get('name'), 'petStore');
       });
     });
 
@@ -106,7 +106,7 @@ describe('parse', function () {
         assert.strictEqual(result.length, 2);
 
         const sdParseResult = result.get(1) as ParseResultElement;
-        assert.strictEqual(sdParseResult.meta.get('name')!.toValue(), 'petStore');
+        assert.strictEqual(sdParseResult.meta.get('name'), 'petStore');
       });
     });
 
@@ -130,8 +130,8 @@ describe('parse', function () {
         // verify child arazzo was parsed
         const childArazzo = result.get(1) as ParseResultElement;
         assert.isTrue(isParseResultElement(childArazzo));
-        assert.strictEqual(childArazzo.meta.get('name')!.toValue(), 'childWorkflows');
-        assert.strictEqual(childArazzo.meta.get('type')!.toValue(), 'arazzo');
+        assert.strictEqual(childArazzo.meta.get('name'), 'childWorkflows');
+        assert.strictEqual(childArazzo.meta.get('type'), 'arazzo');
         assert.isTrue(isArazzoSpecification1Element(childArazzo.api));
 
         // verify child's openapi source description was recursively parsed (nested under childArazzo)
@@ -139,8 +139,8 @@ describe('parse', function () {
         const nestedOpenApi = childArazzo.get(1) as ParseResultElement;
         assert.isTrue(isParseResultElement(nestedOpenApi));
         assert.isTrue(nestedOpenApi.classes.includes('source-description'));
-        assert.strictEqual(nestedOpenApi.meta.get('name')!.toValue(), 'childApi');
-        assert.strictEqual(nestedOpenApi.meta.get('type')!.toValue(), 'openapi');
+        assert.strictEqual(nestedOpenApi.meta.get('name'), 'childApi');
+        assert.strictEqual(nestedOpenApi.meta.get('type'), 'openapi');
         // openapi was successfully parsed (no errors, api is OpenAPI 3.1 element)
         assert.strictEqual(nestedOpenApi.errors.length, 0);
         assert.isTrue(isOpenApi3_1Element(nestedOpenApi.api));
