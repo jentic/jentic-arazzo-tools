@@ -48,11 +48,12 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
-    "@jentic/arazzo-parser": "1.0.0-alpha.21",
-    "@jentic/arazzo-resolver": "1.0.0-alpha.21",
-    "@speclynx/apidom-core": "^2.13.1",
-    "@speclynx/apidom-datamodel": "^2.13.1",
-    "@speclynx/apidom-error": "^2.13.1"
+    "@jentic/arazzo-parser": "1.0.0-alpha.22",
+    "@jentic/arazzo-resolver": "1.0.0-alpha.22",
+    "@speclynx/apidom-datamodel": "^3.2.1",
+    "@speclynx/apidom-error": "^3.2.1",
+    "@speclynx/apidom-reference": "^3.2.1",
+    "type-fest": "^5.4.4"
   },
   "files": [
     "src/**/*.mjs",

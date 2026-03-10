@@ -1,9 +1,5 @@
-import { ApiDOMError, type ApiDOMErrorOptions } from '@speclynx/apidom-error';
+import { ApiDOMStructuredError } from '@speclynx/apidom-error';
 
-class ArazzoRunnerError extends ApiDOMError {
-  constructor(message?: string, options?: ApiDOMErrorOptions) {
-    super(message, options);
-  }
-}
+class ArazzoRunnerError extends ApiDOMStructuredError {}
 
 export default ArazzoRunnerError;
