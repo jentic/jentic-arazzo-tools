@@ -57,7 +57,7 @@ export const defaultOptions: Options = {
     resolvers: [
       new MemoryResolver(),
       new FileResolver({ fileAllowList: ['*.json', '*.yaml', '*.yml'] }),
-      new HTTPResolverAxios({ timeout: 5000, redirects: 5, withCredentials: false }),
+      new HTTPResolverAxios({ timeout: 15000, redirects: 5, withCredentials: false }),
     ],
     resolverOpts: {},
   },

@@ -7,8 +7,6 @@ import OpenApiJSON3_0Parser from '@speclynx/apidom-reference/parse/parsers/opena
 import OpenApiYAML3_0Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-0';
 import OpenApiJSON3_1Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-1';
 import OpenApiYAML3_1Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-1';
-import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
-import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
 import { detect as detectOpenApiJSON3_1 } from '@speclynx/apidom-parser-adapter-openapi-json-3-1';
 import { detect as detectOpenApiYAML3_1 } from '@speclynx/apidom-parser-adapter-openapi-yaml-3-1';
 import { detect as detectOpenApiJSON3_0 } from '@speclynx/apidom-parser-adapter-openapi-json-3-0';
@@ -19,7 +17,7 @@ import { isPlainObject } from 'ramda-adjunct';
 import type { PartialDeep } from 'type-fest';
 
 import ParseError from './errors/ParseError.ts';
-import MemoryResolver from './resolve/resolvers/memory/index.ts';
+import { defaultOptions as arazzoDefaultOptions } from './parse-arazzo.ts';
 
 /**
  * Options for parsing OpenAPI Documents.
@@ -48,11 +46,7 @@ export const defaultOptions: Options = {
     },
   },
   resolve: {
-    resolvers: [
-      new MemoryResolver(),
-      new FileResolver({ fileAllowList: ['*.json', '*.yaml', '*.yml'] }),
-      new HTTPResolverAxios({ timeout: 5000, redirects: 5, withCredentials: false }),
-    ],
+    resolvers: arazzoDefaultOptions.resolve!.resolvers,
     resolverOpts: {},
   },
 };
