@@ -31,7 +31,6 @@ import {
   isOpenApi3_1Element,
   mediaTypes as openApi3_1MediaTypes,
 } from '@speclynx/apidom-ns-openapi-3-1';
-import { toValue } from '@speclynx/apidom-core';
 import type { PartialDeep } from 'type-fest';
 
 import DereferenceError from '../errors/DereferenceError.ts';
@@ -189,7 +188,7 @@ export async function dereferenceElement<T extends Element>(
         mediaType = inferOpenApiMediaType(element.api);
       }
       if (element.hasMetaProperty('retrievalURI')) {
-        baseURI = toValue(element.meta.get('retrievalURI')) as string;
+        baseURI = element.meta.get('retrievalURI') as string;
       } else if (!baseURI) {
         throw new DereferenceError(
           'baseURI option is required when dereferencing a ParseResultElement without retrievalURI metadata',
@@ -205,7 +204,7 @@ export async function dereferenceElement<T extends Element>(
       }
 
       if (parseResult.hasMetaProperty('retrievalURI')) {
-        rootURI = toValue(parseResult.meta.get('retrievalURI')) as string;
+        rootURI = parseResult.meta.get('retrievalURI') as string;
       } else if (baseURI) {
         rootURI = baseURI;
       } else {

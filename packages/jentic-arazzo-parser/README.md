@@ -174,12 +174,11 @@ When parsing from a file system path or HTTP(S) URL, the `retrievalURI` metadata
 
 ```js
 import { parseArazzo } from '@jentic/arazzo-parser';
-import { toValue } from '@speclynx/apidom-core';
 
 const parseResult = await parseArazzo('/path/to/arazzo.json');
 
 // Get the URI from which the document was retrieved
-const uri = toValue(parseResult.meta.get('retrievalURI'));
+const uri = parseResult.meta.get('retrievalURI');
 // '/path/to/arazzo.json'
 ```
 
@@ -362,6 +361,7 @@ ParseResultElement
 
 ```js
 import { parseArazzo } from '@jentic/arazzo-parser';
+import { toValue } from '@speclynx/apidom-core';
 
 const parseResult = await parseArazzo('/path/to/arazzo.json', {
   parse: {
@@ -383,8 +383,8 @@ for (let i = 0; i < parseResult.length; i++) {
 
   if (element.classes.includes('source-description')) {
     // Source description metadata
-    const name = element.meta.get('name')?.toValue();
-    const type = element.meta.get('type')?.toValue();
+    const name = toValue(element.meta.get('name'));
+    const type = toValue(element.meta.get('type'));
 
     console.log(`Source description "${name}" (${type})`);
 
@@ -424,7 +424,7 @@ if (sdParseResult.errors.length === 0) {
   console.log(`API type: ${api.element}`); // e.g., 'openApi3_1'
 
   // Get the retrieval URI
-  const retrievalURI = toValue(sdParseResult.meta.get('retrievalURI'));
+  const retrievalURI = sdParseResult.meta.get('retrievalURI');
   console.log(`Loaded from: ${retrievalURI}`);
 }
 ```
@@ -497,15 +497,15 @@ for (let i = 0; i < parseResult.length; i++) {
   const element = parseResult.get(i);
 
   if (element.classes.includes('source-description')) {
-    const name = element.meta.get('name')?.toValue();
+    const name = toValue(element.meta.get('name'));
 
     // Use built-in accessors for errors and warnings
     element.errors.forEach((error) => {
-      console.error(`Error in "${name}": ${error.toValue()}`);
+      console.error(`Error in "${name}": ${toValue(error)}`);
     });
 
     element.warnings.forEach((warning) => {
-      console.warn(`Warning in "${name}": ${warning.toValue()}`);
+      console.warn(`Warning in "${name}": ${toValue(warning)}`);
     });
   }
 }

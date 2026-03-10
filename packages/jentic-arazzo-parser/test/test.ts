@@ -5,7 +5,7 @@ import { assert, expect } from 'chai';
 import dedent from 'dedent';
 import { isParseResultElement } from '@speclynx/apidom-datamodel';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
-import { sexprs, toValue } from '@speclynx/apidom-core';
+import { sexprs } from '@speclynx/apidom-core';
 
 import { parseArazzo } from '../src/index.ts';
 import ParseError from '../src/errors/ParseError.ts';
@@ -167,7 +167,7 @@ describe('parse', function () {
     specify('should set retrievalURI metadata to file path', async function () {
       const result = await parseArazzo(fixturePath);
 
-      assert.strictEqual(toValue(result.meta.get('retrievalURI')), fixturePath);
+      assert.strictEqual(result.meta.get('retrievalURI'), fixturePath);
     });
   });
 

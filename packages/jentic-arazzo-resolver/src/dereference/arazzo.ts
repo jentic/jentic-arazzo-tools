@@ -26,7 +26,6 @@ import BinaryParser from '@speclynx/apidom-reference/parse/parsers/binary';
 import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
 import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
 import { isArazzoSpecification1Element, mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
-import { toValue } from '@speclynx/apidom-core';
 import type { PartialDeep } from 'type-fest';
 
 import DereferenceError from '../errors/DereferenceError.ts';
@@ -218,7 +217,7 @@ export async function dereferenceElement<T extends Element>(
         mediaType = mediaTypes.latest();
       }
       if (element.hasMetaProperty('retrievalURI')) {
-        baseURI = toValue(element.meta.get('retrievalURI')) as string;
+        baseURI = element.meta.get('retrievalURI') as string;
       } else if (!baseURI) {
         throw new DereferenceError(
           'baseURI option is required when dereferencing a ParseResultElement without retrievalURI metadata',
@@ -234,7 +233,7 @@ export async function dereferenceElement<T extends Element>(
       }
 
       if (parseResult.hasMetaProperty('retrievalURI')) {
-        rootURI = toValue(parseResult.meta.get('retrievalURI')) as string;
+        rootURI = parseResult.meta.get('retrievalURI') as string;
       } else if (baseURI) {
         rootURI = baseURI;
       } else {

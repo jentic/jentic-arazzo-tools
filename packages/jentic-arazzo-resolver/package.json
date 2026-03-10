@@ -49,15 +49,17 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
-    "@speclynx/apidom-core": "^2.12.4",
-    "@speclynx/apidom-datamodel": "^2.12.4",
-    "@speclynx/apidom-error": "^2.12.4",
-    "@speclynx/apidom-ns-arazzo-1": "^2.12.4",
-    "@speclynx/apidom-ns-openapi-2": "^2.12.4",
-    "@speclynx/apidom-ns-openapi-3-0": "^2.12.4",
-    "@speclynx/apidom-ns-openapi-3-1": "^2.12.4",
-    "@speclynx/apidom-reference": "^2.12.4",
+    "@speclynx/apidom-datamodel": "^3.2.1",
+    "@speclynx/apidom-error": "^3.2.1",
+    "@speclynx/apidom-ns-arazzo-1": "^3.2.1",
+    "@speclynx/apidom-ns-openapi-2": "^3.2.1",
+    "@speclynx/apidom-ns-openapi-3-0": "^3.2.1",
+    "@speclynx/apidom-ns-openapi-3-1": "^3.2.1",
+    "@speclynx/apidom-reference": "^3.2.1",
     "type-fest": "^5.4.3"
+  },
+  "devDependencies": {
+    "@speclynx/apidom-core": "^3.2.1"
   },
   "files": [
     "src/**/*.mjs",

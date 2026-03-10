@@ -359,14 +359,13 @@ Both `dereferenceArazzo` and `dereferenceOpenAPI` functions automatically set `r
 
 ```js
 import { dereferenceArazzo, dereferenceOpenAPI } from '@jentic/arazzo-resolver';
-import { toValue } from '@speclynx/apidom-core';
 
 const arazzoResult = await dereferenceArazzo('https://example.com/arazzo.yaml');
-const arazzoUri = toValue(arazzoResult.meta.get('retrievalURI'));
+const arazzoUri = arazzoResult.meta.get('retrievalURI');
 // 'https://example.com/arazzo.yaml'
 
 const openapiResult = await dereferenceOpenAPI('https://example.com/openapi.yaml');
-const openapiUri = toValue(openapiResult.meta.get('retrievalURI'));
+const openapiUri = openapiResult.meta.get('retrievalURI');
 // 'https://example.com/openapi.yaml'
 ```
 
@@ -379,7 +378,6 @@ Each source description is a `ParseResultElement` with `'source-description'` cl
 
 ```js
 import { dereferenceArazzo } from '@jentic/arazzo-resolver';
-import { toValue } from '@speclynx/apidom-core';
 
 const result = await dereferenceArazzo('/path/to/arazzo.json', {
   dereference: { strategyOpts: { sourceDescriptions: true } },
@@ -394,9 +392,9 @@ for (let i = 1; i < result.length; i++) {
 
   // Check if it's a source description
   if (sdParseResult.classes.includes('source-description')) {
-    const name = toValue(sdParseResult.meta.get('name'));
-    const type = toValue(sdParseResult.meta.get('type')); // 'openapi' or 'arazzo'
-    const retrievalURI = toValue(sdParseResult.meta.get('retrievalURI'));
+    const name = sdParseResult.meta.get('name');
+    const type = sdParseResult.meta.get('type'); // 'openapi' or 'arazzo'
+    const retrievalURI = sdParseResult.meta.get('retrievalURI');
 
     // Access the dereferenced API element
     const api = sdParseResult.api; // OpenApi3_1Element, SwaggerElement, ArazzoSpecification1Element, etc.
@@ -412,7 +410,6 @@ When source descriptions are dereferenced, a `ParseResultElement` is attached to
 
 ```js
 import { dereferenceArazzo } from '@jentic/arazzo-resolver';
-import { toValue } from '@speclynx/apidom-core';
 
 const result = await dereferenceArazzo('/path/to/arazzo.json', {
   dereference: { strategyOpts: { sourceDescriptions: true } },
@@ -431,7 +428,7 @@ if (sdParseResult.errors.length === 0) {
   console.log(`API type: ${api.element}`); // e.g., 'openApi3_1'
 
   // Get the retrieval URI
-  const retrievalURI = toValue(sdParseResult.meta.get('retrievalURI'));
+  const retrievalURI = sdParseResult.meta.get('retrievalURI');
   console.log(`Loaded from: ${retrievalURI}`);
 }
 ```
