@@ -1,6 +1,6 @@
 {
   "name": "@jentic/arazzo-validator",
-  "version": "1.0.0-alpha.21",
+  "version": "1.0.0-alpha.22",
   "description": "Validator & Linter for Arazzo Documents.",
   "keywords": [
     "arazzo",
@@ -56,10 +56,10 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
-    "@jentic/arazzo-parser": "1.0.0-alpha.21",
-    "@speclynx/apidom-ls": "^2.2.3",
-    "@speclynx/apidom-ns-arazzo-1": "^2.13.1",
-    "@speclynx/apidom-reference": "^2.13.1",
+    "@jentic/arazzo-parser": "1.0.0-alpha.22",
+    "@speclynx/apidom-ls": "^2.3.0",
+    "@speclynx/apidom-ns-arazzo-1": "^3.2.1",
+    "@speclynx/apidom-reference": "^3.2.1",
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "ramda": "^0.32.0",

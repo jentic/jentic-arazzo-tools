@@ -45,7 +45,7 @@ describe('dereferenceOpenAPI', function () {
       const result = await dereferenceOpenAPI(rootFilePath);
 
       assert.isTrue(result.hasMetaProperty('retrievalURI'));
-      assert.strictEqual(toValue(result.meta.get('retrievalURI')), rootFilePath);
+      assert.strictEqual(result.meta.get('retrievalURI'), rootFilePath);
     });
   });
 
