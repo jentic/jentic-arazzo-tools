@@ -17,6 +17,7 @@ import { isPlainObject } from 'ramda-adjunct';
 import type { PartialDeep } from 'type-fest';
 
 import ParseError from './errors/ParseError.ts';
+import MemoryResolver from './resolve/resolvers/memory/index.ts';
 import { defaultOptions as arazzoDefaultOptions } from './parse-arazzo.ts';
 
 /**
@@ -39,14 +40,13 @@ export const defaultOptions: Options = {
       new OpenApiJSON3_1Parser({ allowEmpty: false }),
       new OpenApiYAML3_1Parser({ allowEmpty: false }),
     ],
-    parserOpts: {
-      sourceMap: false,
-      style: false,
-      strict: true,
-    },
+    parserOpts: { ...arazzoDefaultOptions.parse!.parserOpts },
   },
   resolve: {
-    resolvers: arazzoDefaultOptions.resolve!.resolvers,
+    resolvers: [
+      new MemoryResolver(),
+      ...arazzoDefaultOptions.resolve!.resolvers!.filter((r) => r.name !== 'memory'),
+    ],
     resolverOpts: {},
   },
 };
