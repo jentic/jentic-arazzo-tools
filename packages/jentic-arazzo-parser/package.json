@@ -1,6 +1,6 @@
 {
   "name": "@jentic/arazzo-parser",
-  "version": "1.0.0-alpha.21",
+  "version": "1.0.0-alpha.22",
   "description": "Parser for Arazzo Documents producing SpecLynx ApiDOM data model.",
   "keywords": [
     "arazzo",
