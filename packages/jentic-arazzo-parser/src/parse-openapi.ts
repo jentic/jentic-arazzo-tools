@@ -80,6 +80,18 @@ export async function parse(
 export async function parse(source: string, options?: Options): Promise<ParseResultElement>;
 /**
  * Parses an OpenAPI Document from a string, object, or URI.
+ * @param source - The OpenAPI Document as a plain object, string content, or URI
+ * @param options - Reference options (uses defaultOptions when not provided)
+ * @returns A promise that resolves to the parsed OpenAPI Document as ApiDOM data model
+ * @throws ParseError - When parsing fails for any reason. The original error is available via the `cause` property.
+ * @public
+ */
+export async function parse(
+  source: string | Record<string, unknown>,
+  options?: Options,
+): Promise<ParseResultElement>;
+/**
+ * Parses an OpenAPI Document from a string, object, or URI.
  *
  * The function handles three types of input:
  * 1. Object - converts to JSON string and parses (source maps supported with `strict: false`)
