@@ -24,7 +24,7 @@ import {
   mediaTypes as openApi3_1MediaTypes,
 } from '@speclynx/apidom-ns-openapi-3-1';
 import type { PartialDeep } from 'type-fest';
-import { defaultOpenAPIOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
+import { defaultParseOpenAPIOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
 
 import DereferenceError from '../errors/DereferenceError.ts';
 

@@ -1,6 +1,6 @@
 import type { Diagnostic } from 'vscode-languageserver-types';
 import type { LanguageServiceContext } from '@speclynx/apidom-ls';
-import { defaultArazzoOptions as defaultArazzoParserOptions } from '@jentic/arazzo-parser';
+import { defaultParseArazzoOptions } from '@jentic/arazzo-parser';
 import {
   readFile,
   mergeOptions,
@@ -20,7 +20,7 @@ import { validate } from './validate.ts';
  *
  * @public
  */
-export const defaultArazzoResolveOptions = defaultArazzoParserOptions.resolve;
+export const defaultArazzoResolveOptions = defaultParseArazzoOptions.resolve;
 
 /**
  * Validates an Arazzo Document from a URI (file path or HTTP(S) URL).
@@ -71,7 +71,7 @@ export async function validateURI(
   context: PartialDeep<LanguageServiceContext> = {},
   resolveOptions: PartialDeep<ApiDOMReferenceResolveOptions> = {},
 ): Promise<Diagnostic[]> {
-  const mergedOptions = mergeOptions(defaultArazzoParserOptions as ApiDOMReferenceOptions, {
+  const mergedOptions = mergeOptions(defaultParseArazzoOptions as ApiDOMReferenceOptions, {
     resolve: resolveOptions,
   });
   const buffer = await readFile(uri, mergedOptions);

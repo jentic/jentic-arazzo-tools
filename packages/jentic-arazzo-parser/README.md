@@ -114,24 +114,11 @@ const parseResult = await parseArazzo(source, {
 You can import the default options:
 
 ```js
-import { defaultOptions } from '@jentic/arazzo-parser';
+import { defaultParseArazzoOptions } from '@jentic/arazzo-parser';
+import { defaultParseOpenAPIOptions } from '@jentic/arazzo-parser';
 
-console.log(defaultOptions);
-// {
-//   parse: {
-//     parsers: [
-//       ArazzoJSON1Parser, ArazzoYAML1Parser,
-//       OpenApiJSON2Parser, OpenApiYAML2Parser,
-//       OpenApiJSON3_0Parser, OpenApiYAML3_0Parser,
-//       OpenApiJSON3_1Parser, OpenApiYAML3_1Parser,
-//     ],
-//     parserOpts: { sourceMap: false, strict: true, sourceDescriptions: false },
-//   },
-//   resolve: {
-//     resolvers: [MemoryResolver, FileResolver, HTTPResolverAxios],
-//     resolverOpts: {},
-//   },
-// }
+console.dir(defaultParseArazzoOptions, { depth: null });
+console.dir(defaultParseOpenAPIOptions, { depth: null });
 ```
 
 ## Error handling
