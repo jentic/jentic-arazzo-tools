@@ -4,6 +4,9 @@ import {
   dereferenceArazzoElement,
   defaultDereferenceArazzoOptions as resolverDefaultOptions,
 } from '@jentic/arazzo-resolver';
+import { toValue } from '@speclynx/apidom-core';
+import { traverse, type Path } from '@speclynx/apidom-traverse';
+import { type WorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
 
 import * as constants from '../../../constants.ts';
 import ArazzoDocument from '../../documents/ArazzoDocument.ts';
@@ -73,8 +76,24 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
     return new ArazzoDocument(uri, parseResult, workflowIndex);
   }
 
-  #buildWorkflowIndex(_parseResult: ParseResultElement): WorkflowIndex {
-    return new WorkflowIndex();
+  #buildWorkflowIndex(parseResult: ParseResultElement): WorkflowIndex {
+    const index = new WorkflowIndex();
+
+    traverse(parseResult.api, {
+      WorkflowElement(path: Path) {
+        const workflow = path.node as WorkflowElement;
+        const workflowId = toValue(workflow.workflowId);
+
+        if (typeof workflowId !== 'string') return path.skip();
+        if (workflowId === '') return path.skip();
+
+        index.set(workflowId, path.formatPath('jsonpointer'));
+
+        path.skip();
+      },
+    });
+
+    return index;
   }
 }
 
