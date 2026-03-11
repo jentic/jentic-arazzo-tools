@@ -12,21 +12,12 @@ import Arazzo1DereferenceStrategy from '@speclynx/apidom-reference/dereference/s
 import OpenAPI2DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-2';
 import OpenAPI30DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-0';
 import OpenAPI31DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-1';
-import ArazzoJSON1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-json-1';
-import ArazzoYAML1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-yaml-1';
-import OpenAPIJSON20Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-2';
-import OpenAPIYAML20Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-2';
-import OpenAPIJSON30Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-0';
-import OpenAPIYAML30Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-0';
-import OpenAPIJSON31Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-1';
-import OpenAPIYAML31Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-1';
 import JSONParser from '@speclynx/apidom-reference/parse/parsers/json';
 import YAMLParser from '@speclynx/apidom-reference/parse/parsers/yaml-1-2';
 import BinaryParser from '@speclynx/apidom-reference/parse/parsers/binary';
-import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
-import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
 import { isArazzoSpecification1Element, mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import type { PartialDeep } from 'type-fest';
+import { defaultArazzoOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
 
 import DereferenceError from '../errors/DereferenceError.ts';
 
@@ -42,30 +33,16 @@ export type Options = PartialDeep<ApiDOMReferenceOptions>;
  */
 export const defaultOptions: Options = {
   resolve: {
-    resolvers: [
-      new FileResolver({ fileAllowList: ['*.json', '*.yaml', '*.yml'] }),
-      new HTTPResolverAxios({ timeout: 5000, redirects: 5, withCredentials: false }),
-    ],
+    resolvers: [...parserDefaultOptions.resolve!.resolvers!],
   },
   parse: {
     parsers: [
-      new ArazzoJSON1Parser({ allowEmpty: false }),
-      new ArazzoYAML1Parser({ allowEmpty: false }),
-      new OpenAPIJSON20Parser({ allowEmpty: false }),
-      new OpenAPIYAML20Parser({ allowEmpty: false }),
-      new OpenAPIJSON30Parser({ allowEmpty: false }),
-      new OpenAPIYAML30Parser({ allowEmpty: false }),
-      new OpenAPIJSON31Parser({ allowEmpty: false }),
-      new OpenAPIYAML31Parser({ allowEmpty: false }),
+      ...parserDefaultOptions.parse!.parsers!,
       new JSONParser({ allowEmpty: false }),
       new YAMLParser({ allowEmpty: false }),
       new BinaryParser({ allowEmpty: false }),
     ],
-    parserOpts: {
-      sourceMap: false,
-      style: false,
-      strict: true,
-    },
+    parserOpts: { ...parserDefaultOptions.parse!.parserOpts },
   },
   dereference: {
     strategies: [
