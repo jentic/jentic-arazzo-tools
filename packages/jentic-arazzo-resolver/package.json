@@ -63,8 +63,7 @@
     "@speclynx/apidom-core": "^4.0.3"
   },
   "files": [
-    "src/**/*.mjs",
-    "src/**/*.cjs",
+    "src/",
     "dist/",
     "types/arazzo-resolver.d.ts",
     "LICENSE",

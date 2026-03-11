@@ -69,8 +69,7 @@
   },
   "files": [
     "bin/",
-    "src/**/*.mjs",
-    "src/**/*.cjs",
+    "src/",
     "dist/",
     "types/arazzo-validator.d.ts",
     "LICENSE",
