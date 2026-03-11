@@ -19,6 +19,7 @@ import {
   type OperationElement as OperationElement31,
 } from '@speclynx/apidom-ns-openapi-3-1';
 import { toValue } from '@speclynx/apidom-core';
+import { mergeOptions, type ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
 
 import * as constants from '../../../constants.ts';
 import OpenAPIDocument from '../../documents/OpenAPIDocument.ts';
@@ -91,6 +92,11 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
 
   async #buildOperationIndex(parseResult: ParseResultElement): Promise<OperationIndex> {
     const index = new OperationIndex();
+    const dereferenceOptions = mergeOptions(defaultOptions as ApiDOMReferenceOptions, {
+      dereference: {
+        strategyOpts: { parseResult },
+      },
+    });
 
     const apiDereferenced = await traverseAsync(parseResult.api, {
       async PathItemElement(path: Path) {
@@ -99,7 +105,7 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
         if (!pathItem.hasMetaProperty('path')) return path.skip();
         if (!isStringElement(pathItem.$ref)) return;
 
-        const pathItemDereferenced = await dereferenceOpenAPIElement(pathItem, defaultOptions);
+        const pathItemDereferenced = await dereferenceOpenAPIElement(pathItem, dereferenceOptions);
         path.replaceWith(pathItemDereferenced);
       },
 
