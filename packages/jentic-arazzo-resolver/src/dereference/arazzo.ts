@@ -17,7 +17,7 @@ import YAMLParser from '@speclynx/apidom-reference/parse/parsers/yaml-1-2';
 import BinaryParser from '@speclynx/apidom-reference/parse/parsers/binary';
 import { isArazzoSpecification1Element, mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import type { PartialDeep } from 'type-fest';
-import { defaultArazzoOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
+import { defaultParseArazzoOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
 
 import DereferenceError from '../errors/DereferenceError.ts';
 
