@@ -4,6 +4,22 @@ import {
   dereferenceOpenAPIElement,
   defaultDereferenceOpenAPIOptions as resolverDefaultOptions,
 } from '@jentic/arazzo-resolver';
+import { isStringElement } from '@speclynx/apidom-datamodel';
+import { traverseAsync, type Path } from '@speclynx/apidom-traverse';
+import {
+  type PathItemElement as PathItemElement2,
+  type OperationElement as OperationElement2,
+} from '@speclynx/apidom-ns-openapi-2';
+import {
+  type PathItemElement as PathItemElement30,
+  type OperationElement as OperationElement30,
+} from '@speclynx/apidom-ns-openapi-3-0';
+import {
+  type PathItemElement as PathItemElement31,
+  type OperationElement as OperationElement31,
+} from '@speclynx/apidom-ns-openapi-3-1';
+import { toValue } from '@speclynx/apidom-core';
+import { mergeOptions, type ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
 
 import * as constants from '../../../constants.ts';
 import OpenAPIDocument from '../../documents/OpenAPIDocument.ts';
@@ -11,6 +27,12 @@ import DocumentRegistryProvider, {
   type DocumentRegistryProviderOptions,
 } from '../DocumentRegistryProvider.ts';
 import OperationIndex from './OperationIndex.ts';
+
+/**
+ * Type definitions.
+ */
+type PathItemElement = PathItemElement2 | PathItemElement30 | PathItemElement31;
+type OperationElement = OperationElement2 | OperationElement30 | OperationElement31;
 
 /**
  * Options for loading an OpenAPI document.
@@ -37,6 +59,7 @@ const defaultOptions: OpenAPIDocumentRegistryProviderOptions = {
   },
   dereference: {
     strategies: resolverDefaultOptions.dereference!.strategies,
+    immutable: false,
   },
 };
 
@@ -63,12 +86,45 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
     parseResult = await parseOpenAPI(uri, this.options);
     parseResult = await dereferenceOpenAPIElement(parseResult, this.options);
 
-    const operationIndex = this.#buildOperationIndex(parseResult);
+    const operationIndex = await this.#buildOperationIndex(parseResult);
     return new OpenAPIDocument(uri, parseResult, operationIndex);
   }
 
-  #buildOperationIndex(_parseResult: ParseResultElement): OperationIndex {
-    return new OperationIndex();
+  async #buildOperationIndex(parseResult: ParseResultElement): Promise<OperationIndex> {
+    const index = new OperationIndex();
+    const dereferenceOptions = mergeOptions(defaultOptions as ApiDOMReferenceOptions, {
+      dereference: {
+        strategyOpts: { parseResult },
+      },
+    });
+
+    const apiDereferenced = await traverseAsync(parseResult.api, {
+      async PathItemElement(path: Path) {
+        const pathItem = path.node as PathItemElement;
+
+        if (!pathItem.hasMetaProperty('path')) return path.skip();
+        if (!isStringElement(pathItem.$ref)) return;
+
+        const pathItemDereferenced = await dereferenceOpenAPIElement(pathItem, dereferenceOptions);
+        path.replaceWith(pathItemDereferenced);
+      },
+
+      OperationElement(path: Path) {
+        const operation = path.node as OperationElement;
+        const operationId = toValue(operation.operationId);
+
+        if (typeof operationId !== 'string') return path.skip();
+        if (operationId === '') return path.skip();
+
+        index.set(operationId, path.formatPath('jsonpointer'));
+
+        path.skip();
+      },
+    });
+
+    parseResult.replaceResult(apiDereferenced!);
+
+    return index;
   }
 }
 

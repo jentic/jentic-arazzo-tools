@@ -56,6 +56,9 @@
     "@speclynx/apidom-reference": "^4.0.3",
     "@speclynx/apidom-traverse": "^4.0.3",
     "@speclynx/apidom-ns-arazzo-1": "^4.0.3",
+    "@speclynx/apidom-ns-openapi-2": "^4.0.3",
+    "@speclynx/apidom-ns-openapi-3-0": "^4.0.3",
+    "@speclynx/apidom-ns-openapi-3-1": "^4.0.3",
     "type-fest": "^5.4.4"
   },
   "files": [
