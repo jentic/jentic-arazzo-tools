@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.26](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.25...v1.0.0-alpha.26) (2026-03-11)
+
+### Bug Fixes
+
+- **parser:** add consistent naming for exported options ([#134](https://github.com/jentic/jentic-arazzo-tools/issues/134)) ([cfa2a54](https://github.com/jentic/jentic-arazzo-tools/commit/cfa2a54fad0189da7d26ca4c76b63bfcc3c60eec))
+
 # [1.0.0-alpha.25](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.24...v1.0.0-alpha.25) (2026-03-11)
 
 ### Bug Fixes
