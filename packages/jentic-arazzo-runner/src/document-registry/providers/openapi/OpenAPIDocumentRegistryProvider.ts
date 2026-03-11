@@ -71,9 +71,9 @@ const providerOptionsOverride: OpenAPIDocumentRegistryProviderOptions = {
 class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
   readonly #options: OpenAPIDocumentRegistryProviderOptions;
 
-  constructor(options: OpenAPIDocumentRegistryProviderOptions = providerOptionsOverride) {
+  constructor(options: OpenAPIDocumentRegistryProviderOptions = {}) {
     super();
-    this.#options = options;
+    this.#options = mergeOptions(providerOptionsOverride as ApiDOMReferenceOptions, options);
   }
 
   async canProvide(uri: string): Promise<boolean> {

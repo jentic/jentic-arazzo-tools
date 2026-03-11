@@ -56,9 +56,9 @@ const providerOptionsOverride: ArazzoDocumentRegistryProviderOptions = {
 class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
   readonly #options: ArazzoDocumentRegistryProviderOptions;
 
-  constructor(options: ArazzoDocumentRegistryProviderOptions = providerOptionsOverride) {
+  constructor(options: ArazzoDocumentRegistryProviderOptions = {}) {
     super();
-    this.#options = options;
+    this.#options = mergeOptions(providerOptionsOverride as ApiDOMReferenceOptions, options);
   }
 
   async canProvide(uri: string): Promise<boolean> {
