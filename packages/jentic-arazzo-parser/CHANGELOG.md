@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.25](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.24...v1.0.0-alpha.25) (2026-03-11)
+
+### Bug Fixes
+
+- **release:** fix issue in lerna not publishing _.cjs|_.mjs files ([8982184](https://github.com/jentic/jentic-arazzo-tools/commit/8982184ddae167b6f2a772114f9a9321f3b67d14))
+
 # [1.0.0-alpha.24](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.23...v1.0.0-alpha.24) (2026-03-11)
 
 **Note:** Version bump only for package @jentic/arazzo-parser
