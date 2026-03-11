@@ -92,7 +92,7 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
   async #buildOperationIndex(parseResult: ParseResultElement): Promise<OperationIndex> {
     const index = new OperationIndex();
 
-    await traverseAsync(parseResult.api, {
+    const apiDereferenced = await traverseAsync(parseResult.api, {
       async PathItemElement(path: Path) {
         const pathItem = path.node as PathItemElement;
 
@@ -115,6 +115,8 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
         path.skip();
       },
     });
+
+    parseResult.replaceResult(apiDereferenced!);
 
     return index;
   }
