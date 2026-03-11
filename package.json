@@ -57,7 +57,7 @@
     "@types/node": "^25.0.10",
     "@types/ramda": "~0.31.1",
     "@types/sinon": "=21.0.0",
-    "babel-loader": "=10.0.0",
+    "babel-loader": "=10.1.1",
     "chai": "^6.2.1",
     "copyfiles": "=2.4.1",
     "core-js": "=3.48.0",
