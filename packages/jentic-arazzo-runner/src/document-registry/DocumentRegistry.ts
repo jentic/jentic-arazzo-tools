@@ -1,3 +1,5 @@
+import { url } from '@speclynx/apidom-reference';
+
 import type APIDocument from './documents/Document.ts';
 import ArazzoDocument from './documents/ArazzoDocument.ts';
 import type DocumentRegistryProvider from './providers/DocumentRegistryProvider.ts';
@@ -51,13 +53,14 @@ class DocumentRegistry {
    * caches, and returns it.
    */
   async acquire(uri: string): Promise<APIDocument> {
-    const cachedDocument = this.#get(uri);
+    const canonicalURI = url.sanitize(url.stripHash(uri));
+    const cachedDocument = this.#get(canonicalURI);
     if (cachedDocument) return cachedDocument;
 
     for (const provider of this.#providers) {
-      if (await provider.canProvide(uri)) {
-        const document = await provider.provide(uri);
-        this.#set(uri, document);
+      if (await provider.canProvide(canonicalURI)) {
+        const document = await provider.provide(canonicalURI);
+        this.#set(canonicalURI, document);
         return document;
       }
     }

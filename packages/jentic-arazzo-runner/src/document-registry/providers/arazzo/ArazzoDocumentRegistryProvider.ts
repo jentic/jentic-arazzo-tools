@@ -27,7 +27,7 @@ export type ArazzoDocumentRegistryProviderOptions = DocumentRegistryProviderOpti
 const defaultOptions: ArazzoDocumentRegistryProviderOptions = {
   parse: {
     parsers: parserDefaultOptions.parse!.parsers,
-    parserOpts: parserDefaultOptions.parse!.parserOpts,
+    parserOpts: { ...parserDefaultOptions.parse!.parserOpts, sourceDescriptions: false },
   },
   resolve: {
     resolvers: parserDefaultOptions.resolve!.resolvers,

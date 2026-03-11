@@ -2,7 +2,10 @@ import type { ParseResultElement } from '@jentic/arazzo-parser';
 import { toValue } from '@speclynx/apidom-core';
 import { isStringElement } from '@speclynx/apidom-datamodel';
 import { find } from '@speclynx/apidom-traverse';
-import { isSourceDescriptionElement, SourceDescriptionElement } from '@speclynx/apidom-ns-arazzo-1';
+import {
+  isSourceDescriptionElement,
+  type SourceDescriptionElement,
+} from '@speclynx/apidom-ns-arazzo-1';
 import { url } from '@speclynx/apidom-reference';
 
 import APIDocument from './Document.ts';
