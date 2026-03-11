@@ -58,6 +58,7 @@ const defaultOptions: OpenAPIDocumentRegistryProviderOptions = {
   },
   dereference: {
     strategies: resolverDefaultOptions.dereference!.strategies,
+    immutable: false,
   },
 };
 
