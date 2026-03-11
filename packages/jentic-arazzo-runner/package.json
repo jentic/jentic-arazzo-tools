@@ -48,14 +48,14 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
-    "@jentic/arazzo-parser": "1.0.0-alpha.22",
-    "@jentic/arazzo-resolver": "1.0.0-alpha.22",
-    "@speclynx/apidom-core": "^3.2.1",
-    "@speclynx/apidom-datamodel": "^3.2.1",
-    "@speclynx/apidom-error": "^3.2.1",
-    "@speclynx/apidom-reference": "^3.2.1",
-    "@speclynx/apidom-traverse": "^3.2.1",
-    "@speclynx/apidom-ns-arazzo-1": "^3.2.1",
+    "@jentic/arazzo-parser": "*",
+    "@jentic/arazzo-resolver": "*",
+    "@speclynx/apidom-core": "^4.0.3",
+    "@speclynx/apidom-datamodel": "^4.0.3",
+    "@speclynx/apidom-error": "^4.0.3",
+    "@speclynx/apidom-reference": "^4.0.3",
+    "@speclynx/apidom-traverse": "^4.0.3",
+    "@speclynx/apidom-ns-arazzo-1": "^4.0.3",
     "type-fest": "^5.4.4"
   },
   "files": [
