@@ -49,5 +49,12 @@ jobs:
           gh release edit "v${VERSION}" --prerelease=false --latest
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Remove non-build artifacts from src before publishing
+        run: |
+          find packages/*/src -type f ! -name '*.cjs' ! -name '*.mjs' -delete
+          git config user.email "vladimir@jentic.com"
+          git config user.name "Vladimir Gorej"
+          git add -A
+          git commit -m "chore: remove source files for publishing [skip ci]"
       - name: Publish monorepo npm packages
         run: npx lerna publish from-package --no-private --yes
