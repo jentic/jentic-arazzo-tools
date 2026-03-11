@@ -11,17 +11,9 @@ import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference/configur
 import OpenAPI2DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-2';
 import OpenAPI3_0DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-0';
 import OpenAPI3_1DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-1';
-import OpenApiJSON2Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-2';
-import OpenApiYAML2Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-2';
-import OpenApiJSON3_0Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-0';
-import OpenApiYAML3_0Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-0';
-import OpenApiJSON3_1Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-1';
-import OpenApiYAML3_1Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-3-1';
 import JSONParser from '@speclynx/apidom-reference/parse/parsers/json';
 import YAMLParser from '@speclynx/apidom-reference/parse/parsers/yaml-1-2';
 import BinaryParser from '@speclynx/apidom-reference/parse/parsers/binary';
-import FileResolver from '@speclynx/apidom-reference/resolve/resolvers/file';
-import HTTPResolverAxios from '@speclynx/apidom-reference/resolve/resolvers/http-axios';
 import { isSwaggerElement, mediaTypes as openApi2MediaTypes } from '@speclynx/apidom-ns-openapi-2';
 import {
   isOpenApi3_0Element,
@@ -32,6 +24,7 @@ import {
   mediaTypes as openApi3_1MediaTypes,
 } from '@speclynx/apidom-ns-openapi-3-1';
 import type { PartialDeep } from 'type-fest';
+import { defaultOpenAPIOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
 
 import DereferenceError from '../errors/DereferenceError.ts';
 
@@ -47,28 +40,16 @@ export type Options = PartialDeep<ApiDOMReferenceOptions>;
  */
 export const defaultOptions: Options = {
   resolve: {
-    resolvers: [
-      new FileResolver({ fileAllowList: ['*.json', '*.yaml', '*.yml'] }),
-      new HTTPResolverAxios({ timeout: 5000, redirects: 5, withCredentials: false }),
-    ],
+    resolvers: [...parserDefaultOptions.resolve!.resolvers!],
   },
   parse: {
     parsers: [
-      new OpenApiJSON2Parser({ allowEmpty: false }),
-      new OpenApiYAML2Parser({ allowEmpty: false }),
-      new OpenApiJSON3_0Parser({ allowEmpty: false }),
-      new OpenApiYAML3_0Parser({ allowEmpty: false }),
-      new OpenApiJSON3_1Parser({ allowEmpty: false }),
-      new OpenApiYAML3_1Parser({ allowEmpty: false }),
+      ...parserDefaultOptions.parse!.parsers!,
       new JSONParser({ allowEmpty: false }),
       new YAMLParser({ allowEmpty: false }),
       new BinaryParser({ allowEmpty: false }),
     ],
-    parserOpts: {
-      sourceMap: false,
-      style: false,
-      strict: true,
-    },
+    parserOpts: { ...parserDefaultOptions.parse!.parserOpts },
   },
   dereference: {
     strategies: [
