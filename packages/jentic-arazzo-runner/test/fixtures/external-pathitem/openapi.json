@@ -1,0 +1,22 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "External PathItem Test",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pets": {
+      "$ref": "./paths/pets.json"
+    },
+    "/pets/{petId}": {
+      "get": {
+        "operationId": "getPetById",
+        "responses": {
+          "200": {
+            "description": "successful operation"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,9 +1,12 @@
 import type { ParseResultElement } from '@jentic/arazzo-parser';
-import { parseArazzo, defaultArazzoOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
+import { parseArazzo, defaultParseArazzoOptions } from '@jentic/arazzo-parser';
+import { dereferenceArazzoElement, defaultDereferenceArazzoOptions } from '@jentic/arazzo-resolver';
 import {
-  dereferenceArazzoElement,
-  defaultDereferenceArazzoOptions as resolverDefaultOptions,
-} from '@jentic/arazzo-resolver';
+  readFile,
+  File,
+  mergeOptions,
+  type ApiDOMReferenceOptions,
+} from '@speclynx/apidom-reference/configuration/empty';
 import { toValue } from '@speclynx/apidom-core';
 import { traverse, type Path } from '@speclynx/apidom-traverse';
 import { type WorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
@@ -27,13 +30,8 @@ export type ArazzoDocumentRegistryProviderOptions = DocumentRegistryProviderOpti
  * Source description parsing and dereferencing are disabled by default;
  * source descriptions are handled separately during step execution.
  */
-const defaultOptions: ArazzoDocumentRegistryProviderOptions = {
-  parse: {
-    parsers: parserDefaultOptions.parse!.parsers,
-    parserOpts: { ...parserDefaultOptions.parse!.parserOpts, sourceDescriptions: false },
-  },
+const providerOptionsOverride: ArazzoDocumentRegistryProviderOptions = {
   resolve: {
-    resolvers: parserDefaultOptions.resolve!.resolvers,
     resolverOpts: {
       cache: {
         maxEntries: constants.MAX_HTTP_CACHE_ENTRIES,
@@ -42,7 +40,7 @@ const defaultOptions: ArazzoDocumentRegistryProviderOptions = {
     },
   },
   dereference: {
-    strategies: resolverDefaultOptions.dereference!.strategies,
+    immutable: false,
     strategyOpts: {
       sourceDescriptions: false,
     },
@@ -56,12 +54,24 @@ const defaultOptions: ArazzoDocumentRegistryProviderOptions = {
  * @public
  */
 class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
-  constructor(options: ArazzoDocumentRegistryProviderOptions = {}) {
-    super(defaultOptions, options);
+  readonly #options: ArazzoDocumentRegistryProviderOptions;
+
+  constructor(options: ArazzoDocumentRegistryProviderOptions = providerOptionsOverride) {
+    super();
+    this.#options = options;
   }
 
-  protected get parserNamePrefix(): string {
-    return 'arazzo';
+  async canProvide(uri: string): Promise<boolean> {
+    const options = this.#buildParseOptions();
+    const data = await readFile(uri, options);
+    const file = new File({ uri, data });
+    const parsers = options.parse.parsers.filter((p) => p.name.startsWith('arazzo'));
+
+    for (const parser of parsers) {
+      if (await parser.canParse(file)) return true;
+    }
+
+    return false;
   }
 
   /**
@@ -69,10 +79,11 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
    */
   async provide(uri: string): Promise<ArazzoDocument> {
     let parseResult: ParseResultElement;
-    parseResult = await parseArazzo(uri, this.options);
-    parseResult = await dereferenceArazzoElement(parseResult, this.options);
+    parseResult = await parseArazzo(uri, this.#buildParseOptions());
+    parseResult = await dereferenceArazzoElement(parseResult, this.#buildDereferenceOptions());
 
     const workflowIndex = this.#buildWorkflowIndex(parseResult);
+
     return new ArazzoDocument(uri, parseResult, workflowIndex);
   }
 
@@ -94,6 +105,14 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
     });
 
     return index;
+  }
+
+  #buildParseOptions(): ApiDOMReferenceOptions {
+    return mergeOptions(defaultParseArazzoOptions as ApiDOMReferenceOptions, this.#options);
+  }
+
+  #buildDereferenceOptions(): ApiDOMReferenceOptions {
+    return mergeOptions(defaultDereferenceArazzoOptions as ApiDOMReferenceOptions, this.#options);
   }
 }
 
