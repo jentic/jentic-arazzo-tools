@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.23](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.22...v1.0.0-alpha.23) (2026-03-11)
+
+### Features
+
+- **resolver:** reuse configuration from parser ([#130](https://github.com/jentic/jentic-arazzo-tools/issues/130)) ([e135be7](https://github.com/jentic/jentic-arazzo-tools/commit/e135be78133ad3957a31716dabd540333d57c0a4))
+
 # [1.0.0-alpha.22](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.21...v1.0.0-alpha.22) (2026-03-10)
 
 ### Performance Improvements
