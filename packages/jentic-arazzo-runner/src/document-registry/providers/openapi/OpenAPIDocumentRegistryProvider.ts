@@ -1,10 +1,16 @@
 import type { ParseResultElement } from '@jentic/arazzo-parser';
-import { parseOpenAPI, defaultOpenAPIOptions as parserDefaultOptions } from '@jentic/arazzo-parser';
+import { parseOpenAPI, defaultParseOpenAPIOptions } from '@jentic/arazzo-parser';
 import {
   dereferenceOpenAPIElement,
-  defaultDereferenceOpenAPIOptions as resolverDefaultOptions,
+  defaultDereferenceOpenAPIOptions,
 } from '@jentic/arazzo-resolver';
 import { isStringElement } from '@speclynx/apidom-datamodel';
+import {
+  readFile,
+  File,
+  mergeOptions,
+  type ApiDOMReferenceOptions,
+} from '@speclynx/apidom-reference/configuration/empty';
 import { traverseAsync, type Path } from '@speclynx/apidom-traverse';
 import {
   type PathItemElement as PathItemElement2,
@@ -19,7 +25,6 @@ import {
   type OperationElement as OperationElement31,
 } from '@speclynx/apidom-ns-openapi-3-1';
 import { toValue } from '@speclynx/apidom-core';
-import { mergeOptions, type ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
 
 import * as constants from '../../../constants.ts';
 import OpenAPIDocument from '../../documents/OpenAPIDocument.ts';
@@ -43,13 +48,8 @@ export type OpenAPIDocumentRegistryProviderOptions = DocumentRegistryProviderOpt
 /**
  * Default options for loading an OpenAPI document.
  */
-const defaultOptions: OpenAPIDocumentRegistryProviderOptions = {
-  parse: {
-    parsers: parserDefaultOptions.parse!.parsers,
-    parserOpts: parserDefaultOptions.parse!.parserOpts,
-  },
+const providerOptionsOverride: OpenAPIDocumentRegistryProviderOptions = {
   resolve: {
-    resolvers: parserDefaultOptions.resolve!.resolvers,
     resolverOpts: {
       cache: {
         maxEntries: constants.MAX_HTTP_CACHE_ENTRIES,
@@ -58,7 +58,6 @@ const defaultOptions: OpenAPIDocumentRegistryProviderOptions = {
     },
   },
   dereference: {
-    strategies: resolverDefaultOptions.dereference!.strategies,
     immutable: false,
   },
 };
@@ -70,33 +69,39 @@ const defaultOptions: OpenAPIDocumentRegistryProviderOptions = {
  * @public
  */
 class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
-  constructor(options: OpenAPIDocumentRegistryProviderOptions = {}) {
-    super(defaultOptions, options);
+  readonly #options: OpenAPIDocumentRegistryProviderOptions;
+
+  constructor(options: OpenAPIDocumentRegistryProviderOptions = providerOptionsOverride) {
+    super();
+    this.#options = options;
   }
 
-  protected get parserNamePrefix(): string {
-    return 'openapi';
+  async canProvide(uri: string): Promise<boolean> {
+    const options = this.#buildParseOptions();
+    const data = await readFile(uri, options);
+    const file = new File({ uri, data });
+    const parsers = options.parse.parsers.filter((p) => p.name.startsWith('openapi'));
+
+    for (const parser of parsers) {
+      if (await parser.canParse(file)) return true;
+    }
+
+    return false;
   }
 
   /**
    * Loads an OpenAPI document from a URI and produces an OpenAPIDocument.
    */
   async provide(uri: string): Promise<OpenAPIDocument> {
-    let parseResult: ParseResultElement;
-    parseResult = await parseOpenAPI(uri, this.options);
-    parseResult = await dereferenceOpenAPIElement(parseResult, this.options);
-
+    const parseResult: ParseResultElement = await parseOpenAPI(uri, this.#buildParseOptions());
     const operationIndex = await this.#buildOperationIndex(parseResult);
+
     return new OpenAPIDocument(uri, parseResult, operationIndex);
   }
 
   async #buildOperationIndex(parseResult: ParseResultElement): Promise<OperationIndex> {
     const index = new OperationIndex();
-    const dereferenceOptions = mergeOptions(defaultOptions as ApiDOMReferenceOptions, {
-      dereference: {
-        strategyOpts: { parseResult },
-      },
-    });
+    const dereferenceOptions = this.#buildDereferenceOptions(parseResult);
 
     const apiDereferenced = await traverseAsync(parseResult.api, {
       async PathItemElement(path: Path) {
@@ -125,6 +130,23 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
     parseResult.replaceResult(apiDereferenced!);
 
     return index;
+  }
+
+  #buildParseOptions(): ApiDOMReferenceOptions {
+    return mergeOptions(defaultParseOpenAPIOptions as ApiDOMReferenceOptions, this.#options);
+  }
+
+  #buildDereferenceOptions(parseResult?: ParseResultElement): ApiDOMReferenceOptions {
+    let options = mergeOptions(
+      defaultDereferenceOpenAPIOptions as ApiDOMReferenceOptions,
+      this.#options,
+    );
+    if (parseResult) {
+      options = mergeOptions(options, {
+        dereference: { strategyOpts: { parseResult } },
+      });
+    }
+    return options;
   }
 }
 

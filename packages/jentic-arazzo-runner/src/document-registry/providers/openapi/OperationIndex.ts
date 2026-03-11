@@ -1,15 +1,10 @@
+import { type JSONPointer } from '@speclynx/apidom-json-pointer';
+
 /**
  * Unique identifier of an OpenAPI operation.
  * @public
  */
 export type OperationId = string;
-
-/**
- * JSON Pointer (RFC 6901) to an operation in an OpenAPI document.
- * e.g., `/paths/~1pets/get`
- * @public
- */
-export type JSONPointer = string;
 
 /**
  * Index mapping operationId to its JSON Pointer in an OpenAPI document.

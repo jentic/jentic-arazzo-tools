@@ -45,15 +45,18 @@ class ArazzoDocument extends APIDocument {
    * and resolves the url against this document's base URI.
    */
   resolveSourceDescriptionURI(sourceDescriptionName: string): string | undefined {
-    const sourceDescription = find(this.parseResult, (element) => {
+    const sourceDescriptionPath = find(this.parseResult, (path) => {
       return (
-        isSourceDescriptionElement(element) &&
-        isStringElement(element.name) &&
-        element.name.equals(sourceDescriptionName)
+        isSourceDescriptionElement(path.node) &&
+        isStringElement(path.node.name) &&
+        path.node.name.equals(sourceDescriptionName)
       );
-    }) as SourceDescriptionElement | undefined;
+    });
 
-    if (!sourceDescription) return;
+    if (!sourceDescriptionPath) return;
+
+    const sourceDescription = sourceDescriptionPath.node as SourceDescriptionElement;
+
     if (!isStringElement(sourceDescription.url)) return;
 
     return url.sanitize(

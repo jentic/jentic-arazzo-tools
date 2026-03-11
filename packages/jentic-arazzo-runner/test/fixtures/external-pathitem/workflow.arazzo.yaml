@@ -1,0 +1,14 @@
+arazzo: "1.0.1"
+info:
+  title: External PathItem Test Workflow
+  version: "1.0.0"
+sourceDescriptions:
+  - name: testAPI
+    url: ./openapi.json
+    type: openapi
+workflows:
+  - workflowId: testWorkflow
+    summary: Test workflow for external path items
+    steps:
+      - stepId: listPets
+        operationId: listPets
