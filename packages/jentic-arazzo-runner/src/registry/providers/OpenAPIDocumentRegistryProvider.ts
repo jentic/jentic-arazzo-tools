@@ -11,6 +11,7 @@ import {
   mergeOptions,
   type ApiDOMReferenceOptions,
 } from '@speclynx/apidom-reference/configuration/empty';
+import { UnmatchedResolverError } from '@speclynx/apidom-reference/configuration/empty';
 import { traverseAsync, type Path } from '@speclynx/apidom-traverse';
 import {
   type PathItemElement as PathItemElement2,
@@ -86,8 +87,9 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
       for (const parser of parsers) {
         if (await parser.canParse(file)) return true;
       }
-    } catch {
-      return false;
+    } catch (error: unknown) {
+      if (error instanceof UnmatchedResolverError) return false;
+      throw error;
     }
 
     return false;

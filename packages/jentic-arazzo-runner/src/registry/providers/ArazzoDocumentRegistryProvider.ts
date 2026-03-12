@@ -7,6 +7,7 @@ import {
   mergeOptions,
   type ApiDOMReferenceOptions,
 } from '@speclynx/apidom-reference/configuration/empty';
+import { UnmatchedResolverError } from '@speclynx/apidom-reference/configuration/empty';
 import { toValue } from '@speclynx/apidom-core';
 import { traverse, type Path } from '@speclynx/apidom-traverse';
 import { type WorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
@@ -71,8 +72,9 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
       for (const parser of parsers) {
         if (await parser.canParse(file)) return true;
       }
-    } catch {
-      return false;
+    } catch (error: unknown) {
+      if (error instanceof UnmatchedResolverError) return false;
+      throw error;
     }
 
     return false;

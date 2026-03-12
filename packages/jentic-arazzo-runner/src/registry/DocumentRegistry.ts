@@ -66,7 +66,9 @@ class DocumentRegistry {
       }
     }
 
-    throw new UnmatchedProviderError(`No provider can handle the document at "${uri}"`, { uri });
+    throw new UnmatchedProviderError(`No provider can handle the document at "${canonicalURI}"`, {
+      uri: canonicalURI,
+    });
   }
 
   /**
