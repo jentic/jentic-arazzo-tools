@@ -17,6 +17,6 @@ export type OperationId = string;
  * are only reachable via `operationPath`.
  * @public
  */
-class OperationIndex extends Map<OperationId, JSONPointer> {}
+class OpenAPIOperationIndex extends Map<OperationId, JSONPointer> {}
 
-export default OperationIndex;
+export default OpenAPIOperationIndex;

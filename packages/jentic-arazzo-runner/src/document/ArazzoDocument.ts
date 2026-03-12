@@ -8,8 +8,8 @@ import {
 } from '@speclynx/apidom-ns-arazzo-1';
 import { url } from '@speclynx/apidom-reference/configuration/empty';
 
-import APIDocument from './Document.ts';
-import type WorkflowIndex from '../providers/arazzo/WorkflowIndex.ts';
+import APIDocument from './APIDocument.ts';
+import type ArazzoWorkflowIndex from './ArazzoWorkflowIndex.ts';
 
 /**
  * An Arazzo document held by the document registry.
@@ -18,12 +18,12 @@ import type WorkflowIndex from '../providers/arazzo/WorkflowIndex.ts';
 class ArazzoDocument extends APIDocument {
   readonly type = 'arazzo' as const;
   isEntry: boolean;
-  readonly workflowIndex: WorkflowIndex;
+  readonly workflowIndex: ArazzoWorkflowIndex;
 
   constructor(
     uri: string,
     parseResult: ParseResultElement,
-    workflowIndex: WorkflowIndex,
+    workflowIndex: ArazzoWorkflowIndex,
     isEntry = false,
   ) {
     super(uri, parseResult);
