@@ -1,6 +1,6 @@
 import { ParseResultElement } from '@speclynx/apidom-datamodel';
 import { parse as parseURI, mergeOptions } from '@speclynx/apidom-reference/configuration/empty';
-import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
+import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference/configuration/empty';
 import OpenApiJSON2Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-2';
 import OpenApiYAML2Parser from '@speclynx/apidom-reference/parse/parsers/openapi-yaml-2';
 import OpenApiJSON3_0Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-3-0';

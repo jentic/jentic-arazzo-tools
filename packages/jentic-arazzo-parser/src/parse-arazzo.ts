@@ -4,7 +4,7 @@ import {
   mergeOptions,
   UnmatchedParserError,
 } from '@speclynx/apidom-reference/configuration/empty';
-import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference';
+import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference/configuration/empty';
 import ArazzoJSON1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-json-1';
 import ArazzoYAML1Parser from '@speclynx/apidom-reference/parse/parsers/arazzo-yaml-1';
 import OpenApiJSON2Parser from '@speclynx/apidom-reference/parse/parsers/openapi-json-2';
