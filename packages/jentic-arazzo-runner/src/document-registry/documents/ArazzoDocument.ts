@@ -6,7 +6,7 @@ import {
   isSourceDescriptionElement,
   type SourceDescriptionElement,
 } from '@speclynx/apidom-ns-arazzo-1';
-import { url } from '@speclynx/apidom-reference';
+import { url } from '@speclynx/apidom-reference/configuration/empty';
 
 import APIDocument from './Document.ts';
 import type WorkflowIndex from '../providers/arazzo/WorkflowIndex.ts';

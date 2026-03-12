@@ -1,4 +1,4 @@
-import { url } from '@speclynx/apidom-reference';
+import { url } from '@speclynx/apidom-reference/configuration/empty';
 
 import type APIDocument from './documents/Document.ts';
 import ArazzoDocument from './documents/ArazzoDocument.ts';
