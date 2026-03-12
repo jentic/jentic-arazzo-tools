@@ -62,13 +62,17 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
   }
 
   async canProvide(uri: string): Promise<boolean> {
-    const options = this.#buildParseOptions();
-    const data = await readFile(uri, options);
-    const file = new File({ uri, data });
-    const parsers = options.parse.parsers.filter((p) => p.name.startsWith('arazzo'));
+    try {
+      const options = this.#buildParseOptions();
+      const data = await readFile(uri, options);
+      const file = new File({ uri, data });
+      const parsers = options.parse.parsers.filter((p) => p.name.startsWith('arazzo'));
 
-    for (const parser of parsers) {
-      if (await parser.canParse(file)) return true;
+      for (const parser of parsers) {
+        if (await parser.canParse(file)) return true;
+      }
+    } catch {
+      return false;
     }
 
     return false;

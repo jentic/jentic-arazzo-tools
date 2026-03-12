@@ -24,5 +24,11 @@ export {
   type OperationId,
 } from './document/OpenAPIOperationIndex.ts';
 
+/* Extractors */
+export { default as ArazzoWorkflowExtractor } from './extractor/ArazzoWorkflowExtractor.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
+export { default as ArazzoWorkflowNotFoundError } from './errors/ArazzoWorkflowNotFoundError.ts';
+export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocumentError.ts';
+export { default as UnmatchedProviderError } from './errors/UnmatchedProviderError.ts';

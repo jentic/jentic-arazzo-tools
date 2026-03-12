@@ -5,7 +5,8 @@ import ArazzoDocument from '../document/ArazzoDocument.ts';
 import type DocumentRegistryProvider from './providers/DocumentRegistryProvider.ts';
 import ArazzoDocumentRegistryProvider from './providers/ArazzoDocumentRegistryProvider.ts';
 import OpenAPIDocumentRegistryProvider from './providers/OpenAPIDocumentRegistryProvider.ts';
-import ArazzoRunnerError from '../errors/ArazzoRunnerError.ts';
+import InvalidEntryDocumentError from '../errors/InvalidEntryDocumentError.ts';
+import UnmatchedProviderError from '../errors/UnmatchedProviderError.ts';
 import * as constants from '../constants.ts';
 
 /**
@@ -65,7 +66,7 @@ class DocumentRegistry {
       }
     }
 
-    throw new ArazzoRunnerError(`No provider can handle the document at "${uri}"`);
+    throw new UnmatchedProviderError(`No provider can handle the document at "${uri}"`, { uri });
   }
 
   /**
@@ -75,7 +76,9 @@ class DocumentRegistry {
   async acquireEntryDocument(uri: string): Promise<ArazzoDocument> {
     const document = await this.acquire(uri);
     if (!ArazzoDocument.is(document)) {
-      throw new ArazzoRunnerError(`Entry document at "${uri}" is not an Arazzo Document`);
+      throw new InvalidEntryDocumentError(`Entry document at "${uri}" is not an Arazzo Document`, {
+        uri,
+      });
     }
     document.isEntry = true;
     return document;
