@@ -2,30 +2,27 @@
 export {
   default as DocumentRegistry,
   type DocumentRegistryOptions,
-} from './document-registry/DocumentRegistry.ts';
+} from './registry/DocumentRegistry.ts';
 
 /* Document Registry Providers */
-export { default as DocumentRegistryProvider } from './document-registry/providers/DocumentRegistryProvider.ts';
-export type { DocumentRegistryProviderOptions } from './document-registry/providers/DocumentRegistryProvider.ts';
-export { default as ArazzoDocumentRegistryProvider } from './document-registry/providers/arazzo/ArazzoDocumentRegistryProvider.ts';
-export type { ArazzoDocumentRegistryProviderOptions } from './document-registry/providers/arazzo/ArazzoDocumentRegistryProvider.ts';
-export { default as OpenAPIDocumentRegistryProvider } from './document-registry/providers/openapi/OpenAPIDocumentRegistryProvider.ts';
-export type { OpenAPIDocumentRegistryProviderOptions } from './document-registry/providers/openapi/OpenAPIDocumentRegistryProvider.ts';
+export { default as DocumentRegistryProvider } from './registry/providers/DocumentRegistryProvider.ts';
+export type { DocumentRegistryProviderOptions } from './registry/providers/DocumentRegistryProvider.ts';
+export { default as ArazzoDocumentRegistryProvider } from './registry/providers/ArazzoDocumentRegistryProvider.ts';
+export type { ArazzoDocumentRegistryProviderOptions } from './registry/providers/ArazzoDocumentRegistryProvider.ts';
+export { default as OpenAPIDocumentRegistryProvider } from './registry/providers/OpenAPIDocumentRegistryProvider.ts';
+export type { OpenAPIDocumentRegistryProviderOptions } from './registry/providers/OpenAPIDocumentRegistryProvider.ts';
 
 /* Documents */
-export { default as APIDocument } from './document-registry/documents/Document.ts';
-export { default as ArazzoDocument } from './document-registry/documents/ArazzoDocument.ts';
-export { default as OpenAPIDocument } from './document-registry/documents/OpenAPIDocument.ts';
+export { default as APIDocument } from './document/APIDocument.ts';
+export { default as ArazzoDocument } from './document/ArazzoDocument.ts';
+export { default as OpenAPIDocument } from './document/OpenAPIDocument.ts';
 
 /* Indexes */
+export { default as ArazzoWorkflowIndex, type WorkflowId } from './document/ArazzoWorkflowIndex.ts';
 export {
-  default as WorkflowIndex,
-  type WorkflowId,
-} from './document-registry/providers/arazzo/WorkflowIndex.ts';
-export {
-  default as OperationIndex,
+  default as OpenAPIOperationIndex,
   type OperationId,
-} from './document-registry/providers/openapi/OperationIndex.ts';
+} from './document/OpenAPIOperationIndex.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';

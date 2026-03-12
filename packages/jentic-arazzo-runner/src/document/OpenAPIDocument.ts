@@ -1,7 +1,7 @@
 import type { ParseResultElement } from '@jentic/arazzo-parser';
 
-import APIDocument from './Document.ts';
-import type OperationIndex from '../providers/openapi/OperationIndex.ts';
+import APIDocument from './APIDocument.ts';
+import type OpenAPIOperationIndex from './OpenAPIOperationIndex.ts';
 
 /**
  * An OpenAPI document held by the document registry.
@@ -9,9 +9,9 @@ import type OperationIndex from '../providers/openapi/OperationIndex.ts';
  */
 class OpenAPIDocument extends APIDocument {
   readonly type = 'openapi' as const;
-  readonly operationIndex: OperationIndex;
+  readonly operationIndex: OpenAPIOperationIndex;
 
-  constructor(uri: string, parseResult: ParseResultElement, operationIndex: OperationIndex) {
+  constructor(uri: string, parseResult: ParseResultElement, operationIndex: OpenAPIOperationIndex) {
     super(uri, parseResult);
     this.operationIndex = operationIndex;
   }

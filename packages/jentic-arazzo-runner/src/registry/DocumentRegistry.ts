@@ -1,10 +1,10 @@
 import { url } from '@speclynx/apidom-reference/configuration/empty';
 
-import type APIDocument from './documents/Document.ts';
-import ArazzoDocument from './documents/ArazzoDocument.ts';
+import type APIDocument from '../document/APIDocument.ts';
+import ArazzoDocument from '../document/ArazzoDocument.ts';
 import type DocumentRegistryProvider from './providers/DocumentRegistryProvider.ts';
-import ArazzoDocumentRegistryProvider from './providers/arazzo/ArazzoDocumentRegistryProvider.ts';
-import OpenAPIDocumentRegistryProvider from './providers/openapi/OpenAPIDocumentRegistryProvider.ts';
+import ArazzoDocumentRegistryProvider from './providers/ArazzoDocumentRegistryProvider.ts';
+import OpenAPIDocumentRegistryProvider from './providers/OpenAPIDocumentRegistryProvider.ts';
 import ArazzoRunnerError from '../errors/ArazzoRunnerError.ts';
 import * as constants from '../constants.ts';
 

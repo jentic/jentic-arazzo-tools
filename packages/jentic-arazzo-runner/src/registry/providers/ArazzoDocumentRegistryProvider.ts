@@ -11,12 +11,12 @@ import { toValue } from '@speclynx/apidom-core';
 import { traverse, type Path } from '@speclynx/apidom-traverse';
 import { type WorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
 
-import * as constants from '../../../constants.ts';
-import ArazzoDocument from '../../documents/ArazzoDocument.ts';
+import * as constants from '../../constants.ts';
+import ArazzoDocument from '../../document/ArazzoDocument.ts';
 import DocumentRegistryProvider, {
   type DocumentRegistryProviderOptions,
-} from '../DocumentRegistryProvider.ts';
-import WorkflowIndex from './WorkflowIndex.ts';
+} from './DocumentRegistryProvider.ts';
+import ArazzoWorkflowIndex from '../../document/ArazzoWorkflowIndex.ts';
 
 /**
  * Options for loading an Arazzo document.
@@ -87,8 +87,8 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
     return new ArazzoDocument(uri, parseResult, workflowIndex);
   }
 
-  #buildWorkflowIndex(parseResult: ParseResultElement): WorkflowIndex {
-    const index = new WorkflowIndex();
+  #buildWorkflowIndex(parseResult: ParseResultElement): ArazzoWorkflowIndex {
+    const index = new ArazzoWorkflowIndex();
 
     traverse(parseResult.api, {
       WorkflowElement(path: Path) {

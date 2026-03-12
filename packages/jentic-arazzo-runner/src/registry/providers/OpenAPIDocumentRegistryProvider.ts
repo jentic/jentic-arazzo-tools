@@ -26,12 +26,12 @@ import {
 } from '@speclynx/apidom-ns-openapi-3-1';
 import { toValue } from '@speclynx/apidom-core';
 
-import * as constants from '../../../constants.ts';
-import OpenAPIDocument from '../../documents/OpenAPIDocument.ts';
+import * as constants from '../../constants.ts';
+import OpenAPIDocument from '../../document/OpenAPIDocument.ts';
 import DocumentRegistryProvider, {
   type DocumentRegistryProviderOptions,
-} from '../DocumentRegistryProvider.ts';
-import OperationIndex from './OperationIndex.ts';
+} from './DocumentRegistryProvider.ts';
+import OpenAPIOperationIndex from '../../document/OpenAPIOperationIndex.ts';
 
 /**
  * Type definitions.
@@ -99,8 +99,8 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
     return new OpenAPIDocument(uri, parseResult, operationIndex);
   }
 
-  async #buildOperationIndex(parseResult: ParseResultElement): Promise<OperationIndex> {
-    const index = new OperationIndex();
+  async #buildOperationIndex(parseResult: ParseResultElement): Promise<OpenAPIOperationIndex> {
+    const index = new OpenAPIOperationIndex();
     const dereferenceOptions = this.#buildDereferenceOptions(parseResult);
 
     const apiDereferenced = await traverseAsync(parseResult.api, {

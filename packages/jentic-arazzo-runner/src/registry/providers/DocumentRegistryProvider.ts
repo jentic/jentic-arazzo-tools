@@ -1,7 +1,7 @@
 import type { PartialDeep } from 'type-fest';
 import type { ApiDOMReferenceOptions } from '@speclynx/apidom-reference/configuration/empty';
 
-import type APIDocument from '../documents/Document.ts';
+import type APIDocument from '../../document/APIDocument.ts';
 
 /**
  * Options for a document registry provider.
