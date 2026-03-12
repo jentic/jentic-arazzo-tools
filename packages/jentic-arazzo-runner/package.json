@@ -63,7 +63,8 @@
     "type-fest": "^5.4.4"
   },
   "files": [
-    "src/",
+    "src/**/*.mjs",
+    "src/**/*.cjs",
     "dist/",
     "types/arazzo-runner.d.ts",
     "LICENSE",
