@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.27](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.26...v1.0.0-alpha.27) (2026-03-12)
+
+### Bug Fixes
+
+- **release:** override minimatch 10.2.3 to fix glob pattern regression in lerna publish ([#143](https://github.com/jentic/jentic-arazzo-tools/issues/143)) ([829f1cf](https://github.com/jentic/jentic-arazzo-tools/commit/829f1cf3d4376b407e4ef2391e155f8e60e1a7d4)), closes [lerna/lerna#4305](https://github.com/lerna/lerna/issues/4305) [isaacs/minimatch#284](https://github.com/isaacs/minimatch/issues/284)
+
 # [1.0.0-alpha.26](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.25...v1.0.0-alpha.26) (2026-03-11)
 
 ### Bug Fixes
