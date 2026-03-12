@@ -5,12 +5,9 @@ import { assert } from 'chai';
 import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
 import { isOpenApi3_0Element } from '@speclynx/apidom-ns-openapi-3-0';
 
-import {
-  DocumentRegistry,
-  ArazzoDocument,
-  OpenAPIDocument,
-  ArazzoRunnerError,
-} from '../../src/index.ts';
+import { DocumentRegistry, ArazzoDocument, OpenAPIDocument } from '../../src/index.ts';
+import InvalidEntryDocumentError from '../../src/errors/InvalidEntryDocumentError.ts';
+import UnmatchedProviderError from '../../src/errors/UnmatchedProviderError.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturePath = path.join(__dirname, '..', 'fixtures', 'petstore-order-workflow.arazzo.yaml');
@@ -142,14 +139,28 @@ describe('DocumentRegistry', function () {
   });
 
   context('acquireEntryDocument with non-Arazzo document', function () {
-    specify('should throw ArazzoRunnerError', async function () {
+    specify('should throw InvalidEntryDocumentError', async function () {
       const registry = new DocumentRegistry();
 
       try {
         await registry.acquireEntryDocument(openapiFixturePath);
-        assert.fail('Expected ArazzoRunnerError to be thrown');
+        assert.fail('Expected InvalidEntryDocumentError to be thrown');
       } catch (error) {
-        assert.instanceOf(error, ArazzoRunnerError);
+        assert.instanceOf(error, InvalidEntryDocumentError);
+      }
+    });
+  });
+
+  context('acquire with unsupported document', function () {
+    specify('should throw UnmatchedProviderError', async function () {
+      const registry = new DocumentRegistry();
+      const unsupportedPath = path.join(__dirname, '..', 'fixtures', 'unsupported.txt');
+
+      try {
+        await registry.acquire(unsupportedPath);
+        assert.fail('Expected UnmatchedProviderError to be thrown');
+      } catch (error) {
+        assert.instanceOf(error, UnmatchedProviderError);
       }
     });
   });
