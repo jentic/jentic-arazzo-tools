@@ -16,6 +16,7 @@ export type { OpenAPIDocumentRegistryProviderOptions } from './registry/provider
 export { default as APIDocument } from './document/APIDocument.ts';
 export { default as ArazzoDocument } from './document/ArazzoDocument.ts';
 export { default as OpenAPIDocument } from './document/OpenAPIDocument.ts';
+export type { OpenAPIOperationElement, OpenAPIPathItemElement } from './document/openapi-types.ts';
 
 /* Indexes */
 export { default as ArazzoWorkflowIndex, type WorkflowId } from './document/ArazzoWorkflowIndex.ts';
@@ -26,9 +27,11 @@ export {
 
 /* Extractors */
 export { default as ArazzoWorkflowExtractor } from './extractor/ArazzoWorkflowExtractor.ts';
+export { default as OpenAPIOperationExtractor } from './extractor/OpenAPIOperationExtractor.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
 export { default as ArazzoWorkflowNotFoundError } from './errors/ArazzoWorkflowNotFoundError.ts';
 export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocumentError.ts';
+export { default as OpenAPIOperationNotFoundError } from './errors/OpenAPIOperationNotFoundError.ts';
 export { default as UnmatchedProviderError } from './errors/UnmatchedProviderError.ts';

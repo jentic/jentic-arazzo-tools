@@ -13,32 +13,18 @@ import {
 } from '@speclynx/apidom-reference/configuration/empty';
 import { UnmatchedResolverError } from '@speclynx/apidom-reference/configuration/empty';
 import { traverseAsync, type Path } from '@speclynx/apidom-traverse';
-import {
-  type PathItemElement as PathItemElement2,
-  type OperationElement as OperationElement2,
-} from '@speclynx/apidom-ns-openapi-2';
-import {
-  type PathItemElement as PathItemElement30,
-  type OperationElement as OperationElement30,
-} from '@speclynx/apidom-ns-openapi-3-0';
-import {
-  type PathItemElement as PathItemElement31,
-  type OperationElement as OperationElement31,
-} from '@speclynx/apidom-ns-openapi-3-1';
 import { toValue } from '@speclynx/apidom-core';
 
+import type {
+  OpenAPIPathItemElement,
+  OpenAPIOperationElement,
+} from '../../document/openapi-types.ts';
 import * as constants from '../../constants.ts';
 import OpenAPIDocument from '../../document/OpenAPIDocument.ts';
 import DocumentRegistryProvider, {
   type DocumentRegistryProviderOptions,
 } from './DocumentRegistryProvider.ts';
 import OpenAPIOperationIndex from '../../document/OpenAPIOperationIndex.ts';
-
-/**
- * Type definitions.
- */
-type PathItemElement = PathItemElement2 | PathItemElement30 | PathItemElement31;
-type OperationElement = OperationElement2 | OperationElement30 | OperationElement31;
 
 /**
  * Options for loading an OpenAPI document.
@@ -111,7 +97,7 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
 
     const apiDereferenced = await traverseAsync(parseResult.api, {
       async PathItemElement(path: Path) {
-        const pathItem = path.node as PathItemElement;
+        const pathItem = path.node as OpenAPIPathItemElement;
 
         if (!pathItem.hasMetaProperty('path')) return path.skip();
         if (!isStringElement(pathItem.$ref)) return;
@@ -121,7 +107,7 @@ class OpenAPIDocumentRegistryProvider extends DocumentRegistryProvider {
       },
 
       OperationElement(path: Path) {
-        const operation = path.node as OperationElement;
+        const operation = path.node as OpenAPIOperationElement;
         const operationId = toValue(operation.operationId);
 
         if (typeof operationId !== 'string') return path.skip();
