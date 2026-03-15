@@ -32,6 +32,11 @@ const normalizerOptionsOverride = mergeOptions(arazzoProviderOptions as ApiDOMRe
  *
  * Dereferences the workflow subtree ($components.* references),
  * producing a self-contained workflow element.
+ *
+ * By default, dereferencing mutates the workflow element in-place
+ * (immutable: false). This allows the document registry to act as
+ * a natural cache — subsequent accesses return the already-dereferenced
+ * workflow without additional processing.
  * @public
  */
 class ArazzoWorkflowNormalizer {

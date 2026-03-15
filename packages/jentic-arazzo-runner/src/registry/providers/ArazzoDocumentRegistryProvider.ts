@@ -27,8 +27,8 @@ export type ArazzoDocumentRegistryProviderOptions = DocumentRegistryProviderOpti
 /**
  * Default options for loading an Arazzo document.
  *
- * Source description parsing and dereferencing are disabled by default;
- * source descriptions are handled separately during step execution.
+ * The provider only parses the Arazzo document; dereferencing is deferred
+ * to the normalizer when a specific workflow is accessed.
  */
 export const providerOptionsOverride: ArazzoDocumentRegistryProviderOptions = {
   resolve: {
