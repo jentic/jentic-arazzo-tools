@@ -18,6 +18,8 @@ class ArazzoWorkflowExtractor {
    */
   extract(document: ArazzoDocument, workflowId: WorkflowId): WorkflowElement {
     const pointer = document.workflowIndex.get(workflowId);
+    let workflow: WorkflowElement;
+
     if (pointer === undefined) {
       throw new ArazzoWorkflowNotFoundError(
         `Workflow "${workflowId}" not found in Arazzo document at "${document.uri}"`,
@@ -25,7 +27,23 @@ class ArazzoWorkflowExtractor {
       );
     }
 
-    return evaluate<WorkflowElement>(document.parseResult.api, pointer);
+    try {
+      workflow = evaluate<WorkflowElement>(document.parseResult.api, pointer);
+    } catch (error) {
+      throw new ArazzoWorkflowNotFoundError(
+        `Failed to evaluate pointer "${pointer}" in Arazzo document at "${document.uri}"`,
+        { cause: error, workflowId, pointer, uri: document.uri },
+      );
+    }
+
+    if (workflow?.element !== 'workflow') {
+      throw new ArazzoWorkflowNotFoundError(
+        `Pointer "${pointer}" does not reference a workflow in Arazzo document at "${document.uri}"`,
+        { workflowId, pointer, uri: document.uri },
+      );
+    }
+
+    return workflow;
   }
 }
 
