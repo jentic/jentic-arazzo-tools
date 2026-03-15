@@ -35,7 +35,7 @@ export type OpenAPIDocumentRegistryProviderOptions = DocumentRegistryProviderOpt
 /**
  * Default options for loading an OpenAPI document.
  */
-const providerOptionsOverride: OpenAPIDocumentRegistryProviderOptions = {
+export const providerOptionsOverride: OpenAPIDocumentRegistryProviderOptions = {
   resolve: {
     resolverOpts: {
       cache: {

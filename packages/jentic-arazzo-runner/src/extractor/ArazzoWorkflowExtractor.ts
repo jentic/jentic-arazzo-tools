@@ -29,7 +29,7 @@ class ArazzoWorkflowExtractor {
 
     try {
       workflow = evaluate<WorkflowElement>(document.parseResult.api, pointer);
-    } catch (error) {
+    } catch (error: unknown) {
       throw new ExtractionError(
         `Failed to evaluate pointer "${pointer}" in Arazzo document at "${document.uri}"`,
         { cause: error, workflowId, pointer, uri: document.uri },
