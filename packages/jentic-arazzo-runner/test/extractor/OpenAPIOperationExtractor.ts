@@ -6,7 +6,7 @@ import { toValue } from '@speclynx/apidom-core';
 
 import { DocumentRegistry, OpenAPIDocument } from '../../src/index.ts';
 import OpenAPIOperationExtractor from '../../src/extractor/OpenAPIOperationExtractor.ts';
-import OpenAPIOperationNotFoundError from '../../src/errors/OpenAPIOperationNotFoundError.ts';
+import ExtractionError from '../../src/errors/ExtractionError.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturePath = path.join(__dirname, '..', 'fixtures', 'petstore-order-workflow.arazzo.yaml');
@@ -57,14 +57,16 @@ describe('OpenAPIOperationExtractor', function () {
       assert.strictEqual(toValue(operation.operationId), 'getPetById');
     });
 
-    specify('should throw OpenAPIOperationNotFoundError for unknown operationId', function () {
+    specify('should throw ExtractionError for unknown operationId', function () {
       const extractor = new OpenAPIOperationExtractor();
 
       try {
         extractor.extract(openapiDoc, 'nonExistent');
-        assert.fail('Expected OpenAPIOperationNotFoundError to be thrown');
+        assert.fail('Expected ExtractionError to be thrown');
       } catch (error) {
-        assert.instanceOf(error, OpenAPIOperationNotFoundError);
+        assert.instanceOf(error, ExtractionError);
+        assert.strictEqual((error as ExtractionError).operationId, 'nonExistent');
+        assert.strictEqual((error as ExtractionError).uri, openapiDoc.uri);
       }
     });
   });
@@ -83,9 +85,11 @@ describe('OpenAPIOperationExtractor', function () {
 
       try {
         extractor.extractByPointer(openapiDoc, '/components/schemas/Pet');
-        assert.fail('Expected OpenAPIOperationNotFoundError to be thrown');
+        assert.fail('Expected ExtractionError to be thrown');
       } catch (error) {
-        assert.instanceOf(error, OpenAPIOperationNotFoundError);
+        assert.instanceOf(error, ExtractionError);
+        assert.strictEqual((error as ExtractionError).pointer, '/components/schemas/Pet');
+        assert.strictEqual((error as ExtractionError).uri, openapiDoc.uri);
       }
     });
 
@@ -94,9 +98,9 @@ describe('OpenAPIOperationExtractor', function () {
 
       try {
         extractor.extractByPointer(openapiDoc, '/paths/~1pet/parameters');
-        assert.fail('Expected OpenAPIOperationNotFoundError to be thrown');
+        assert.fail('Expected ExtractionError to be thrown');
       } catch (error) {
-        assert.instanceOf(error, OpenAPIOperationNotFoundError);
+        assert.instanceOf(error, ExtractionError);
       }
     });
   });

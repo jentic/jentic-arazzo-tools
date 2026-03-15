@@ -29,9 +29,13 @@ export {
 export { default as ArazzoWorkflowExtractor } from './extractor/ArazzoWorkflowExtractor.ts';
 export { default as OpenAPIOperationExtractor } from './extractor/OpenAPIOperationExtractor.ts';
 
+/* Normalizers */
+export { default as ArazzoWorkflowNormalizer } from './normalizer/ArazzoWorkflowNormalizer.ts';
+export type { ArazzoWorkflowNormalizerOptions } from './normalizer/ArazzoWorkflowNormalizer.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
-export { default as ArazzoWorkflowNotFoundError } from './errors/ArazzoWorkflowNotFoundError.ts';
+export { default as NormalizationError } from './errors/NormalizationError.ts';
+export { default as ExtractionError } from './errors/ExtractionError.ts';
 export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocumentError.ts';
-export { default as OpenAPIOperationNotFoundError } from './errors/OpenAPIOperationNotFoundError.ts';
 export { default as UnmatchedProviderError } from './errors/UnmatchedProviderError.ts';

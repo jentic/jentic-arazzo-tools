@@ -3,7 +3,7 @@ import { evaluate, parse, type JSONPointer } from '@speclynx/apidom-json-pointer
 import type { OpenAPIOperationElement } from '../document/openapi-types.ts';
 import type OpenAPIDocument from '../document/OpenAPIDocument.ts';
 import type { OperationId } from '../document/OpenAPIOperationIndex.ts';
-import OpenAPIOperationNotFoundError from '../errors/OpenAPIOperationNotFoundError.ts';
+import ExtractionError from '../errors/ExtractionError.ts';
 
 /**
  * Extracts an operation from an OpenAPI document.
@@ -20,7 +20,7 @@ class OpenAPIOperationExtractor {
   extract(document: OpenAPIDocument, operationId: OperationId): OpenAPIOperationElement {
     const pointer = document.operationIndex.get(operationId);
     if (pointer === undefined) {
-      throw new OpenAPIOperationNotFoundError(
+      throw new ExtractionError(
         `Operation "${operationId}" not found in OpenAPI document at "${document.uri}"`,
         { operationId, uri: document.uri },
       );
@@ -39,7 +39,7 @@ class OpenAPIOperationExtractor {
     try {
       tokens = parse(pointer).tree!;
     } catch (error) {
-      throw new OpenAPIOperationNotFoundError(`Failed to parse pointer "${pointer}"`, {
+      throw new ExtractionError(`Failed to parse pointer "${pointer}"`, {
         cause: error,
         pointer,
         uri: document.uri,
@@ -47,7 +47,7 @@ class OpenAPIOperationExtractor {
     }
 
     if (tokens.length !== 3 || tokens[0] !== 'paths') {
-      throw new OpenAPIOperationNotFoundError(
+      throw new ExtractionError(
         `Invalid operation pointer "${pointer}": expected /paths/{path}/{method}`,
         { pointer, uri: document.uri },
       );
@@ -56,14 +56,14 @@ class OpenAPIOperationExtractor {
     try {
       operation = evaluate<OpenAPIOperationElement>(document.parseResult.api, pointer);
     } catch (error) {
-      throw new OpenAPIOperationNotFoundError(
+      throw new ExtractionError(
         `Failed to evaluate pointer "${pointer}" in OpenAPI document at "${document.uri}"`,
         { cause: error, pointer, uri: document.uri },
       );
     }
 
     if (operation?.element !== 'operation') {
-      throw new OpenAPIOperationNotFoundError(
+      throw new ExtractionError(
         `Pointer "${pointer}" does not reference an operation in OpenAPI document at "${document.uri}"`,
         { pointer, uri: document.uri },
       );
