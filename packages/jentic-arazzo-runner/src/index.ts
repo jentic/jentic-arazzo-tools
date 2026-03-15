@@ -35,7 +35,7 @@ export type { ArazzoWorkflowNormalizerOptions } from './normalizer/ArazzoWorkflo
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
-export { default as ArazzoWorkflowNotFoundError } from './errors/ArazzoWorkflowNotFoundError.ts';
+export { default as NormalizationError } from './errors/NormalizationError.ts';
+export { default as ExtractionError } from './errors/ExtractionError.ts';
 export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocumentError.ts';
-export { default as OpenAPIOperationNotFoundError } from './errors/OpenAPIOperationNotFoundError.ts';
 export { default as UnmatchedProviderError } from './errors/UnmatchedProviderError.ts';

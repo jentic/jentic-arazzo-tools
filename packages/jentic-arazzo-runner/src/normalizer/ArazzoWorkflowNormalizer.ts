@@ -1,4 +1,5 @@
 import type { WorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
+import { toValue } from '@speclynx/apidom-core';
 import { dereferenceArazzoElement, defaultDereferenceArazzoOptions } from '@jentic/arazzo-resolver';
 import {
   mergeOptions,
@@ -7,6 +8,7 @@ import {
 import type { PartialDeep } from 'type-fest';
 
 import type ArazzoDocument from '../document/ArazzoDocument.ts';
+import NormalizationError from '../errors/NormalizationError.ts';
 import { providerOptionsOverride as arazzoProviderOptions } from '../registry/providers/ArazzoDocumentRegistryProvider.ts';
 
 /**
@@ -50,17 +52,24 @@ class ArazzoWorkflowNormalizer {
    * Dereferences the workflow subtree against its parent document.
    */
   async normalize(workflow: WorkflowElement, document: ArazzoDocument): Promise<WorkflowElement> {
-    return dereferenceArazzoElement(
-      workflow,
-      mergeOptions(
-        defaultDereferenceArazzoOptions as ApiDOMReferenceOptions,
-        mergeOptions(this.#options, {
-          dereference: {
-            strategyOpts: { parseResult: document.parseResult },
-          },
-        }),
-      ),
-    );
+    try {
+      return await dereferenceArazzoElement(
+        workflow,
+        mergeOptions(
+          defaultDereferenceArazzoOptions as ApiDOMReferenceOptions,
+          mergeOptions(this.#options, {
+            dereference: {
+              strategyOpts: { parseResult: document.parseResult },
+            },
+          }),
+        ),
+      );
+    } catch (error) {
+      throw new NormalizationError(
+        `Failed to normalize workflow "${toValue(workflow.workflowId)}" in Arazzo document at "${document.uri}"`,
+        { cause: error, workflowId: toValue(workflow.workflowId), uri: document.uri },
+      );
+    }
   }
 }
 

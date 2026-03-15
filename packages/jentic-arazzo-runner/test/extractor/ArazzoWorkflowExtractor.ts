@@ -7,7 +7,7 @@ import { isWorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
 
 import { DocumentRegistry, ArazzoDocument } from '../../src/index.ts';
 import ArazzoWorkflowExtractor from '../../src/extractor/ArazzoWorkflowExtractor.ts';
-import ArazzoWorkflowNotFoundError from '../../src/errors/ArazzoWorkflowNotFoundError.ts';
+import ExtractionError from '../../src/errors/ExtractionError.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fixturePath = path.join(__dirname, '..', 'fixtures', 'petstore-order-workflow.arazzo.yaml');
@@ -35,14 +35,14 @@ describe('ArazzoWorkflowExtractor', function () {
       assert.strictEqual(toValue(workflow.workflowId), 'authenticateAndOrderPet');
     });
 
-    specify('should throw ArazzoWorkflowNotFoundError for unknown workflowId', function () {
+    specify('should throw ExtractionError for unknown workflowId', function () {
       const extractor = new ArazzoWorkflowExtractor();
 
       try {
         extractor.extract(entryDoc, 'nonExistentWorkflow');
-        assert.fail('Expected ArazzoWorkflowNotFoundError to be thrown');
+        assert.fail('Expected ExtractionError to be thrown');
       } catch (error) {
-        assert.instanceOf(error, ArazzoWorkflowNotFoundError);
+        assert.instanceOf(error, ExtractionError);
       }
     });
 
@@ -51,13 +51,10 @@ describe('ArazzoWorkflowExtractor', function () {
 
       try {
         extractor.extract(entryDoc, 'nonExistentWorkflow');
-        assert.fail('Expected ArazzoWorkflowNotFoundError to be thrown');
+        assert.fail('Expected ExtractionError to be thrown');
       } catch (error) {
-        assert.instanceOf(error, ArazzoWorkflowNotFoundError);
-        assert.strictEqual(
-          (error as ArazzoWorkflowNotFoundError).workflowId,
-          'nonExistentWorkflow',
-        );
+        assert.instanceOf(error, ExtractionError);
+        assert.strictEqual((error as ExtractionError).workflowId, 'nonExistentWorkflow');
       }
     });
 
@@ -66,10 +63,10 @@ describe('ArazzoWorkflowExtractor', function () {
 
       try {
         extractor.extract(entryDoc, 'nonExistentWorkflow');
-        assert.fail('Expected ArazzoWorkflowNotFoundError to be thrown');
+        assert.fail('Expected ExtractionError to be thrown');
       } catch (error) {
-        assert.instanceOf(error, ArazzoWorkflowNotFoundError);
-        assert.strictEqual((error as ArazzoWorkflowNotFoundError).uri, entryDoc.uri);
+        assert.instanceOf(error, ExtractionError);
+        assert.strictEqual((error as ExtractionError).uri, entryDoc.uri);
       }
     });
   });
