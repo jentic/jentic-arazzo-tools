@@ -1,6 +1,5 @@
 import type { ParseResultElement } from '@jentic/arazzo-parser';
 import { parseArazzo, defaultParseArazzoOptions } from '@jentic/arazzo-parser';
-import { dereferenceArazzoElement, defaultDereferenceArazzoOptions } from '@jentic/arazzo-resolver';
 import {
   readFile,
   File,
@@ -31,19 +30,13 @@ export type ArazzoDocumentRegistryProviderOptions = DocumentRegistryProviderOpti
  * Source description parsing and dereferencing are disabled by default;
  * source descriptions are handled separately during step execution.
  */
-const providerOptionsOverride: ArazzoDocumentRegistryProviderOptions = {
+export const providerOptionsOverride: ArazzoDocumentRegistryProviderOptions = {
   resolve: {
     resolverOpts: {
       cache: {
         maxEntries: constants.MAX_HTTP_CACHE_ENTRIES,
         maxStaleAge: constants.MAX_HTTP_CACHE_STALE_AGE,
       },
-    },
-  },
-  dereference: {
-    immutable: false,
-    strategyOpts: {
-      sourceDescriptions: false,
     },
   },
 };
@@ -84,10 +77,7 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
    * Loads an Arazzo document from a URI and produces an ArazzoDocument.
    */
   async provide(uri: string): Promise<ArazzoDocument> {
-    let parseResult: ParseResultElement;
-    parseResult = await parseArazzo(uri, this.#buildParseOptions());
-    parseResult = await dereferenceArazzoElement(parseResult, this.#buildDereferenceOptions());
-
+    const parseResult = await parseArazzo(uri, this.#buildParseOptions());
     const workflowIndex = this.#buildWorkflowIndex(parseResult);
 
     return new ArazzoDocument(uri, parseResult, workflowIndex);
@@ -115,10 +105,6 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
 
   #buildParseOptions(): ApiDOMReferenceOptions {
     return mergeOptions(defaultParseArazzoOptions as ApiDOMReferenceOptions, this.#options);
-  }
-
-  #buildDereferenceOptions(): ApiDOMReferenceOptions {
-    return mergeOptions(defaultDereferenceArazzoOptions as ApiDOMReferenceOptions, this.#options);
   }
 }
 

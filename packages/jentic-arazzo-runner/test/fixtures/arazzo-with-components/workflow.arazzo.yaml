@@ -1,0 +1,22 @@
+arazzo: "1.0.1"
+info:
+  title: Test Workflow with Components
+  version: "1.0.0"
+sourceDescriptions:
+  - name: testAPI
+    url: ../petstore.openapi.json
+    type: openapi
+workflows:
+  - workflowId: testWorkflow
+    summary: Test workflow using component references
+    steps:
+      - stepId: getPet
+        operationId: getPetById
+        parameters:
+          - reference: $components.parameters.petId
+components:
+  parameters:
+    petId:
+      name: petId
+      in: path
+      value: "123"
