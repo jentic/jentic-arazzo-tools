@@ -58,6 +58,7 @@ class ArazzoWorkflowNormalizer {
         mergeOptions(
           defaultDereferenceArazzoOptions as ApiDOMReferenceOptions,
           mergeOptions(this.#options, {
+            resolve: { baseURI: document.uri },
             dereference: {
               strategyOpts: { parseResult: document.parseResult },
             },
