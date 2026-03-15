@@ -10,8 +10,7 @@ import OpenAPIOperationNotFoundError from '../errors/OpenAPIOperationNotFoundErr
  *
  * Locates the operation by operationId or operationPath (JSON Pointer)
  * and attaches metadata (pointer, method, path) to the element.
- * The extracted operation is not dereferenced or normalized;
- * use OpenAPIOperationNormalizer for that.
+ * The extracted operation is not dereferenced or normalized.
  * @public
  */
 class OpenAPIOperationExtractor {
@@ -34,9 +33,35 @@ class OpenAPIOperationExtractor {
    * Extracts an operation by JSON Pointer (operationPath).
    */
   extractByPointer(document: OpenAPIDocument, pointer: JSONPointer): OpenAPIOperationElement {
-    const [, path, method] = parse(pointer).tree!;
+    let operation: OpenAPIOperationElement;
+    let tokens: string[];
 
-    const operation = evaluate<OpenAPIOperationElement>(document.parseResult.api, pointer);
+    try {
+      tokens = parse(pointer).tree!;
+    } catch (error) {
+      throw new OpenAPIOperationNotFoundError(`Failed to parse pointer "${pointer}"`, {
+        cause: error,
+        pointer,
+        uri: document.uri,
+      });
+    }
+
+    if (tokens.length !== 3 || tokens[0] !== 'paths') {
+      throw new OpenAPIOperationNotFoundError(
+        `Invalid operation pointer "${pointer}": expected /paths/{path}/{method}`,
+        { pointer, uri: document.uri },
+      );
+    }
+
+    try {
+      operation = evaluate<OpenAPIOperationElement>(document.parseResult.api, pointer);
+    } catch (error) {
+      throw new OpenAPIOperationNotFoundError(
+        `Failed to evaluate pointer "${pointer}" in OpenAPI document at "${document.uri}"`,
+        { cause: error, pointer, uri: document.uri },
+      );
+    }
+
     if (operation?.element !== 'operation') {
       throw new OpenAPIOperationNotFoundError(
         `Pointer "${pointer}" does not reference an operation in OpenAPI document at "${document.uri}"`,
@@ -46,8 +71,8 @@ class OpenAPIOperationExtractor {
 
     // attach metadata for downstream consumers
     operation.meta.set('pointer', pointer);
-    operation.meta.set('http-method', method);
-    operation.meta.set('path', path);
+    operation.meta.set('http-method', tokens[2]);
+    operation.meta.set('path', tokens[1]);
 
     return operation;
   }
