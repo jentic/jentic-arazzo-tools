@@ -58,13 +58,14 @@ class ArazzoWorkflowNormalizer {
         mergeOptions(
           defaultDereferenceArazzoOptions as ApiDOMReferenceOptions,
           mergeOptions(this.#options, {
+            resolve: { baseURI: document.uri },
             dereference: {
               strategyOpts: { parseResult: document.parseResult },
             },
           }),
         ),
       );
-    } catch (error) {
+    } catch (error: unknown) {
       throw new NormalizationError(
         `Failed to normalize workflow "${toValue(workflow.workflowId)}" in Arazzo document at "${document.uri}"`,
         { cause: error, workflowId: toValue(workflow.workflowId), uri: document.uri },

@@ -38,7 +38,7 @@ class OpenAPIOperationExtractor {
 
     try {
       tokens = parse(pointer).tree!;
-    } catch (error) {
+    } catch (error: unknown) {
       throw new ExtractionError(`Failed to parse pointer "${pointer}"`, {
         cause: error,
         pointer,
@@ -55,7 +55,7 @@ class OpenAPIOperationExtractor {
 
     try {
       operation = evaluate<OpenAPIOperationElement>(document.parseResult.api, pointer);
-    } catch (error) {
+    } catch (error: unknown) {
       throw new ExtractionError(
         `Failed to evaluate pointer "${pointer}" in OpenAPI document at "${document.uri}"`,
         { cause: error, pointer, uri: document.uri },
