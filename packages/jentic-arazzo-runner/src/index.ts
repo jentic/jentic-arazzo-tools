@@ -20,6 +20,7 @@ export type { OpenAPIOperationElement, OpenAPIPathItemElement } from './document
 
 /* Indexes */
 export { default as ArazzoWorkflowIndex, type WorkflowId } from './document/ArazzoWorkflowIndex.ts';
+export { default as ArazzoStepIndex, type StepId } from './document/ArazzoStepIndex.ts';
 export {
   default as OpenAPIOperationIndex,
   type OperationId,

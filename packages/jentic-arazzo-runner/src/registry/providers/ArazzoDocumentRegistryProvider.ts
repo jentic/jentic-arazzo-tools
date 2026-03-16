@@ -9,7 +9,7 @@ import {
 import { UnmatchedResolverError } from '@speclynx/apidom-reference/configuration/empty';
 import { toValue } from '@speclynx/apidom-core';
 import { traverse, type Path } from '@speclynx/apidom-traverse';
-import { type WorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
+import { type WorkflowElement, type StepElement } from '@speclynx/apidom-ns-arazzo-1';
 
 import * as constants from '../../constants.ts';
 import ArazzoDocument from '../../document/ArazzoDocument.ts';
@@ -17,6 +17,7 @@ import DocumentRegistryProvider, {
   type DocumentRegistryProviderOptions,
 } from './DocumentRegistryProvider.ts';
 import ArazzoWorkflowIndex from '../../document/ArazzoWorkflowIndex.ts';
+import ArazzoStepIndex from '../../document/ArazzoStepIndex.ts';
 
 /**
  * Options for loading an Arazzo document.
@@ -79,8 +80,9 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
   async provide(uri: string): Promise<ArazzoDocument> {
     const parseResult = await parseArazzo(uri, this.#buildParseOptions());
     const workflowIndex = this.#buildWorkflowIndex(parseResult);
+    const stepIndex = this.#buildStepIndex(parseResult);
 
-    return new ArazzoDocument(uri, parseResult, workflowIndex);
+    return new ArazzoDocument(uri, parseResult, workflowIndex, stepIndex);
   }
 
   #buildWorkflowIndex(parseResult: ParseResultElement): ArazzoWorkflowIndex {
@@ -95,6 +97,26 @@ class ArazzoDocumentRegistryProvider extends DocumentRegistryProvider {
         if (workflowId === '') return path.skip();
 
         index.set(workflowId, path.formatPath('jsonpointer'));
+
+        path.skip();
+      },
+    });
+
+    return index;
+  }
+
+  #buildStepIndex(parseResult: ParseResultElement): ArazzoStepIndex {
+    const index = new ArazzoStepIndex();
+
+    traverse(parseResult.api, {
+      StepElement(path: Path) {
+        const step = path.node as StepElement;
+        const stepId = toValue(step.stepId);
+
+        if (typeof stepId !== 'string') return path.skip();
+        if (stepId === '') return path.skip();
+
+        index.set(stepId, path.formatPath('jsonpointer'));
 
         path.skip();
       },

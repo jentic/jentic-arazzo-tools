@@ -10,6 +10,7 @@ import { url } from '@speclynx/apidom-reference/configuration/empty';
 
 import APIDocument from './APIDocument.ts';
 import type ArazzoWorkflowIndex from './ArazzoWorkflowIndex.ts';
+import type ArazzoStepIndex from './ArazzoStepIndex.ts';
 
 /**
  * An Arazzo document held by the document registry.
@@ -19,16 +20,19 @@ class ArazzoDocument extends APIDocument {
   readonly type = 'arazzo' as const;
   isEntry: boolean;
   readonly workflowIndex: ArazzoWorkflowIndex;
+  readonly stepIndex: ArazzoStepIndex;
 
   constructor(
     uri: string,
     parseResult: ParseResultElement,
     workflowIndex: ArazzoWorkflowIndex,
+    stepIndex: ArazzoStepIndex,
     isEntry = false,
   ) {
     super(uri, parseResult);
     this.isEntry = isEntry;
     this.workflowIndex = workflowIndex;
+    this.stepIndex = stepIndex;
   }
 
   /**

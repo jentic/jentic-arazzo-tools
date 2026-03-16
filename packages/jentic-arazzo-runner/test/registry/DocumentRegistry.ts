@@ -59,6 +59,19 @@ describe('DocumentRegistry', function () {
         authenticateAndOrderPet: '/workflows/0',
       });
     });
+
+    specify('should build a step index', async function () {
+      const registry = new DocumentRegistry();
+      const doc = await registry.acquireEntryDocument(fixturePath);
+
+      assert.deepEqual(Object.fromEntries(doc.stepIndex), {
+        loginUser: '/workflows/0/steps/0',
+        findAvailablePets: '/workflows/0/steps/1',
+        placeOrder: '/workflows/0/steps/2',
+        retrieveOrderedPetDetails: '/workflows/0/steps/3',
+        verifyOrderConfirmation: '/workflows/0/steps/4',
+      });
+    });
   });
 
   context('acquire', function () {
