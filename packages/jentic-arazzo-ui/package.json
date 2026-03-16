@@ -66,7 +66,7 @@
   "dependencies": {
     "@jentic/arazzo-parser": "1.0.0-alpha.27",
     "@jentic/arazzo-resolver": "1.0.0-alpha.27",
-    "@speclynx/apidom-core": "^4.0.4",
+    "@speclynx/apidom-core": "^4.1.0",
     "mermaid": "^11.12.2",
     "react-markdown": "^10.1.0",
     "reactflow": "^11.10.4",

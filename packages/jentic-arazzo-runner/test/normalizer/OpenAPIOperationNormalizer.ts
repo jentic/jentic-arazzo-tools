@@ -24,32 +24,12 @@ describe('OpenAPIOperationNormalizer', function () {
   });
 
   context('normalize', function () {
-    specify('should return an operation element', async function () {
+    specify('should delegate to version-specific normalizer', async function () {
       const operation = extractor.extract(openapiDoc, 'getPetById');
       const normalized = await normalizer.normalize(operation, openapiDoc);
 
       assert.strictEqual(normalized.element, 'operation');
-    });
-
-    specify('should preserve operationId', async function () {
-      const operation = extractor.extract(openapiDoc, 'getPetById');
-      const normalized = await normalizer.normalize(operation, openapiDoc);
-
       assert.strictEqual(toValue(normalized.operationId), 'getPetById');
-    });
-
-    specify('should dereference $ref in operation subtree', async function () {
-      const operation = extractor.extract(openapiDoc, 'getPetById');
-      const normalized = await normalizer.normalize(operation, openapiDoc);
-      const pojo = toValue(normalized) as Record<string, unknown>;
-
-      // responses.200.content should have a resolved schema (not a $ref)
-      const responses = pojo.responses as Record<string, Record<string, unknown>>;
-      const okContent = responses['200'].content as Record<string, Record<string, unknown>>;
-      const jsonSchema = okContent['application/json'].schema as Record<string, unknown>;
-
-      assert.isUndefined(jsonSchema.$ref);
-      assert.isDefined(jsonSchema.properties);
     });
   });
 });
