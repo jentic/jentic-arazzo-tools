@@ -34,6 +34,12 @@ export { default as ArazzoWorkflowNormalizer } from './normalizer/ArazzoWorkflow
 export type { ArazzoWorkflowNormalizerOptions } from './normalizer/ArazzoWorkflowNormalizer.ts';
 export { default as OpenAPIOperationNormalizer } from './normalizer/OpenAPIOperationNormalizer.ts';
 export type { OpenAPIOperationNormalizerOptions } from './normalizer/OpenAPIOperationNormalizer.ts';
+export { default as OpenAPI2OperationNormalizer } from './normalizer/OpenAPI2OperationNormalizer.ts';
+export type { OpenAPI2OperationNormalizerOptions } from './normalizer/OpenAPI2OperationNormalizer.ts';
+export { default as OpenAPI30OperationNormalizer } from './normalizer/OpenAPI30OperationNormalizer.ts';
+export type { OpenAPI30OperationNormalizerOptions } from './normalizer/OpenAPI30OperationNormalizer.ts';
+export { default as OpenAPI31OperationNormalizer } from './normalizer/OpenAPI31OperationNormalizer.ts';
+export type { OpenAPI31OperationNormalizerOptions } from './normalizer/OpenAPI31OperationNormalizer.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
