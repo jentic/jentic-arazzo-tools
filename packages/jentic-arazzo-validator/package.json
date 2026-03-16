@@ -57,7 +57,7 @@
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
     "@jentic/arazzo-parser": "1.0.0-alpha.27",
-    "@speclynx/apidom-ls": "^2.4.3",
+    "@speclynx/apidom-ls": "^2.5.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.0.4",
     "@speclynx/apidom-reference": "^4.0.4",
     "chalk": "^5.6.2",
