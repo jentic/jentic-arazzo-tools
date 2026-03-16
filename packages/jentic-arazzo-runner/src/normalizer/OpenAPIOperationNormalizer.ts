@@ -1,92 +1,75 @@
-import { toValue } from '@speclynx/apidom-core';
 import {
-  dereferenceOpenAPIElement,
-  defaultDereferenceOpenAPIOptions,
-} from '@jentic/arazzo-resolver';
+  isSwaggerElement,
+  type OperationElement as OperationElement2,
+} from '@speclynx/apidom-ns-openapi-2';
 import {
-  mergeOptions,
-  type ApiDOMReferenceOptions,
-} from '@speclynx/apidom-reference/configuration/empty';
-import type { PartialDeep } from 'type-fest';
+  isOpenApi3_0Element,
+  type OperationElement as OperationElement30,
+} from '@speclynx/apidom-ns-openapi-3-0';
+import {
+  isOpenApi3_1Element,
+  type OperationElement as OperationElement31,
+} from '@speclynx/apidom-ns-openapi-3-1';
 
 import type { OpenAPIOperationElement } from '../document/openapi-types.ts';
 import type OpenAPIDocument from '../document/OpenAPIDocument.ts';
 import NormalizationError from '../errors/NormalizationError.ts';
-import { providerOptionsOverride as openAPIProviderOptions } from '../registry/providers/OpenAPIDocumentRegistryProvider.ts';
+import OpenAPI2OperationNormalizer from './OpenAPI2OperationNormalizer.ts';
+import OpenAPI30OperationNormalizer from './OpenAPI30OperationNormalizer.ts';
+import OpenAPI31OperationNormalizer from './OpenAPI31OperationNormalizer.ts';
 
 /**
- * Options for normalizing an OpenAPI operation.
+ * Options for the OpenAPI operation normalizer facade.
  * @public
  */
-export type OpenAPIOperationNormalizerOptions = PartialDeep<ApiDOMReferenceOptions>;
+export interface OpenAPIOperationNormalizerOptions {
+  readonly openapi2?: OpenAPI2OperationNormalizer;
+  readonly openapi30?: OpenAPI30OperationNormalizer;
+  readonly openapi31?: OpenAPI31OperationNormalizer;
+}
 
 /**
- * Default options for normalizing an OpenAPI operation.
- */
-const normalizerOptionsOverride = mergeOptions(openAPIProviderOptions as ApiDOMReferenceOptions, {
-  dereference: {
-    immutable: false,
-  },
-});
-
-/**
- * Normalizes an extracted OpenAPI operation.
+ * Facade for normalizing OpenAPI operations across all supported versions.
  *
- * Dereferences the operation subtree ($ref references),
- * producing a self-contained operation element.
+ * Detects the OpenAPI version from the document and delegates to the
+ * appropriate version-specific normalizer (2.0, 3.0, or 3.1).
  *
- * By default, dereferencing mutates the operation element in-place
- * (immutable: false). This allows the document registry to act as
- * a natural cache — subsequent accesses return the already-dereferenced
- * operation without additional processing.
+ * Custom normalizer instances can be provided via constructor options.
  * @public
  */
 class OpenAPIOperationNormalizer {
-  readonly #options: ApiDOMReferenceOptions;
+  readonly #openapi2: OpenAPI2OperationNormalizer;
+  readonly #openapi30: OpenAPI30OperationNormalizer;
+  readonly #openapi31: OpenAPI31OperationNormalizer;
 
   constructor(options: OpenAPIOperationNormalizerOptions = {}) {
-    this.#options = mergeOptions(normalizerOptionsOverride as ApiDOMReferenceOptions, options);
+    this.#openapi2 = options.openapi2 ?? new OpenAPI2OperationNormalizer();
+    this.#openapi30 = options.openapi30 ?? new OpenAPI30OperationNormalizer();
+    this.#openapi31 = options.openapi31 ?? new OpenAPI31OperationNormalizer();
   }
 
   /**
-   * Normalizes the operation: dereferences subtree, merges inherited properties.
+   * Normalizes the operation by delegating to the version-specific normalizer.
    */
   async normalize(
     operation: OpenAPIOperationElement,
     document: OpenAPIDocument,
   ): Promise<OpenAPIOperationElement> {
-    const normalized = await this.#dereference(operation, document);
+    const root = document.parseResult.api;
 
-    // TODO: merge servers (operation → pathItem → root)
-    // TODO: merge parameters (pathItem + operation, deduped by name+in)
-    // TODO: merge security (operation → root)
-
-    return normalized;
-  }
-
-  async #dereference(
-    operation: OpenAPIOperationElement,
-    document: OpenAPIDocument,
-  ): Promise<OpenAPIOperationElement> {
-    try {
-      return await dereferenceOpenAPIElement(
-        operation,
-        mergeOptions(
-          defaultDereferenceOpenAPIOptions as ApiDOMReferenceOptions,
-          mergeOptions(this.#options, {
-            resolve: { baseURI: document.uri },
-            dereference: {
-              strategyOpts: { parseResult: document.parseResult },
-            },
-          }),
-        ),
-      );
-    } catch (error: unknown) {
-      throw new NormalizationError(
-        `Failed to normalize operation "${toValue(operation.operationId)}" in OpenAPI document at "${document.uri}"`,
-        { cause: error, operationId: toValue(operation.operationId), uri: document.uri },
-      );
+    if (isSwaggerElement(root)) {
+      return this.#openapi2.normalize(operation as OperationElement2, document);
     }
+    if (isOpenApi3_0Element(root)) {
+      return this.#openapi30.normalize(operation as OperationElement30, document);
+    }
+    if (isOpenApi3_1Element(root)) {
+      return this.#openapi31.normalize(operation as OperationElement31, document);
+    }
+
+    throw new NormalizationError(`Unsupported OpenAPI version in document at "${document.uri}"`, {
+      uri: document.uri,
+    });
   }
 }
 
