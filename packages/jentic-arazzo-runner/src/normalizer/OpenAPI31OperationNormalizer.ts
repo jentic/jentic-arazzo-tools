@@ -8,7 +8,13 @@ import {
   mergeOptions,
   type ApiDOMReferenceOptions,
 } from '@speclynx/apidom-reference/configuration/empty';
-import { evaluate, parse, compile, type JSONPointer } from '@speclynx/apidom-json-pointer';
+import {
+  evaluate,
+  parse,
+  compile,
+  testJSONPointer,
+  type JSONPointer,
+} from '@speclynx/apidom-json-pointer';
 import OpenAPI31DereferenceStrategy from '@speclynx/apidom-reference/dereference/strategies/openapi-3-1';
 import type { PartialDeep } from 'type-fest';
 import {
@@ -59,6 +65,14 @@ class OpenAPI31OperationNormalizer {
     document: OpenAPIDocument,
   ): Promise<OperationElement> {
     const operationPointer = toValue(operation.meta.get('pointer')) as JSONPointer;
+
+    if (!testJSONPointer(operationPointer)) {
+      throw new NormalizationError(
+        `Operation is missing valid "pointer" metadata. Was it produced by OpenAPIOperationExtractor?`,
+        { operationId: toValue(operation.operationId), uri: document.uri },
+      );
+    }
+
     const tokens = parse(operationPointer).tree!;
     const pathItemPointer = compile(tokens.slice(0, -1));
     const pathItem = evaluate<PathItemElement>(document.parseResult.api, pathItemPointer);
