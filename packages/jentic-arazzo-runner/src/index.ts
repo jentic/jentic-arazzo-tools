@@ -33,6 +33,7 @@ export { default as OpenAPIOperationExtractor } from './extractor/OpenAPIOperati
 /* Normalizers */
 export { default as ArazzoWorkflowNormalizer } from './normalizer/ArazzoWorkflowNormalizer.ts';
 export type { ArazzoWorkflowNormalizerOptions } from './normalizer/ArazzoWorkflowNormalizer.ts';
+export { default as ArazzoStepNormalizer } from './normalizer/ArazzoStepNormalizer.ts';
 export { default as OpenAPIOperationNormalizer } from './normalizer/OpenAPIOperationNormalizer.ts';
 export type { OpenAPIOperationNormalizerOptions } from './normalizer/OpenAPIOperationNormalizer.ts';
 export { default as OpenAPI2OperationNormalizer } from './normalizer/OpenAPI2OperationNormalizer.ts';
