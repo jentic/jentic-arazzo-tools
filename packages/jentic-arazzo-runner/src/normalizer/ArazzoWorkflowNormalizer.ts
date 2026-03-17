@@ -20,14 +20,8 @@ export type ArazzoWorkflowNormalizerOptions = PartialDeep<ApiDOMReferenceOptions
 /**
  * Default options for normalizing an Arazzo workflow.
  */
-const normalizerOptionsOverride = mergeOptions(arazzoProviderOptions as ApiDOMReferenceOptions, {
-  dereference: {
-    immutable: false,
-    strategyOpts: {
-      sourceDescriptions: false,
-    },
-  },
-});
+// shallow copy to avoid mutating the provider's shared options
+const normalizerOptionsOverride = mergeOptions(arazzoProviderOptions as ApiDOMReferenceOptions, {});
 
 /**
  * Normalizes an extracted Arazzo workflow.

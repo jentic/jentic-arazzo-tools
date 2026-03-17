@@ -22,6 +22,7 @@ import type {
 import * as constants from '../../constants.ts';
 import OpenAPIDocument from '../../document/OpenAPIDocument.ts';
 import DocumentRegistryProvider, {
+  circularReplacer,
   type DocumentRegistryProviderOptions,
 } from './DocumentRegistryProvider.ts';
 import OpenAPIOperationIndex from '../../document/OpenAPIOperationIndex.ts';
@@ -46,6 +47,8 @@ export const providerOptionsOverride: OpenAPIDocumentRegistryProviderOptions = {
   },
   dereference: {
     immutable: false,
+    circular: 'replace',
+    circularReplacer,
   },
 };
 
