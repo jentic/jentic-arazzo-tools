@@ -27,6 +27,7 @@ export {
 
 /* Extractors */
 export { default as ArazzoWorkflowExtractor } from './extractor/ArazzoWorkflowExtractor.ts';
+export { default as ArazzoStepExtractor } from './extractor/ArazzoStepExtractor.ts';
 export { default as OpenAPIOperationExtractor } from './extractor/OpenAPIOperationExtractor.ts';
 
 /* Normalizers */
