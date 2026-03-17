@@ -16,6 +16,7 @@ export type { OpenAPIDocumentRegistryProviderOptions } from './registry/provider
 export { default as APIDocument } from './document/APIDocument.ts';
 export { default as ArazzoDocument } from './document/ArazzoDocument.ts';
 export { default as OpenAPIDocument } from './document/OpenAPIDocument.ts';
+export type { ArazzoStepElement } from './document/arazzo-types.ts';
 export type { OpenAPIOperationElement, OpenAPIPathItemElement } from './document/openapi-types.ts';
 
 /* Indexes */
