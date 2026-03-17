@@ -1,0 +1,13 @@
+arazzo: "1.0.1"
+info:
+  title: Circular Refs Test Workflow (2.0)
+  version: "1.0.0"
+sourceDescriptions:
+  - name: testAPI
+    url: ./openapi-2-0.json
+    type: openapi
+workflows:
+  - workflowId: testWorkflow
+    steps:
+      - stepId: getNodes
+        operationId: getNodes
