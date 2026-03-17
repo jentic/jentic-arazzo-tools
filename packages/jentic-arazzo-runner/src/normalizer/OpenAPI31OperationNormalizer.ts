@@ -69,13 +69,28 @@ class OpenAPI31OperationNormalizer {
     if (!testJSONPointer(operationPointer)) {
       throw new NormalizationError(
         `Operation is missing valid "pointer" metadata. Was it produced by OpenAPIOperationExtractor?`,
-        { operationId: toValue(operation.operationId), uri: document.uri },
+        { operationId: toValue(operation.operationId), uri: document.uri, operationPointer },
       );
     }
 
     const tokens = parse(operationPointer).tree!;
     const pathItemPointer = compile(tokens.slice(0, -1));
-    const pathItem = evaluate<PathItemElement>(document.parseResult.api, pathItemPointer);
+
+    let pathItem: PathItemElement;
+    try {
+      pathItem = evaluate<PathItemElement>(document.parseResult.api, pathItemPointer);
+    } catch (error: unknown) {
+      throw new NormalizationError(
+        `Failed to evaluate path item pointer "${pathItemPointer}" in OpenAPI 3.1 document at "${document.uri}"`,
+        {
+          cause: error,
+          operationId: toValue(operation.operationId),
+          uri: document.uri,
+          operationPointer,
+          pathItemPointer,
+        },
+      );
+    }
 
     if (!isPathItemElement(pathItem)) {
       throw new NormalizationError(
