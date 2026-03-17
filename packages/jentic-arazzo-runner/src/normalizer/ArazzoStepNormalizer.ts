@@ -4,8 +4,9 @@ import type ArazzoDocument from '../document/ArazzoDocument.ts';
 /**
  * Normalizes an extracted Arazzo step.
  *
- * Currently acts as an identity function. Future versions may
- * dereference step-level $ref references or merge inherited properties.
+ * Currently acts as an identity function. Steps are already
+ * dereferenced as part of workflow normalization and have no
+ * inherited properties to merge.
  * @public
  */
 class ArazzoStepNormalizer {

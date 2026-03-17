@@ -1,0 +1,16 @@
+arazzo: "1.0.1"
+info:
+  title: Petstore Order Workflow (Swagger 2.0)
+  version: "1.0.0"
+sourceDescriptions:
+  - name: petstoreAPI
+    url: ./petstore.openapi-2-0.json
+    type: openapi
+workflows:
+  - workflowId: orderPet
+    summary: Place an order for a pet
+    steps:
+      - stepId: getPet
+        operationId: getPetById
+      - stepId: placeOrder
+        operationId: placeOrder
