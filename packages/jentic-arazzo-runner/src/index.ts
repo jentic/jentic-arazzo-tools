@@ -16,6 +16,7 @@ export type { OpenAPIDocumentRegistryProviderOptions } from './registry/provider
 export { default as APIDocument } from './document/APIDocument.ts';
 export { default as ArazzoDocument } from './document/ArazzoDocument.ts';
 export { default as OpenAPIDocument } from './document/OpenAPIDocument.ts';
+export type { ArazzoStepElement } from './document/arazzo-types.ts';
 export type { OpenAPIOperationElement, OpenAPIPathItemElement } from './document/openapi-types.ts';
 
 /* Indexes */
@@ -33,6 +34,7 @@ export { default as OpenAPIOperationExtractor } from './extractor/OpenAPIOperati
 /* Normalizers */
 export { default as ArazzoWorkflowNormalizer } from './normalizer/ArazzoWorkflowNormalizer.ts';
 export type { ArazzoWorkflowNormalizerOptions } from './normalizer/ArazzoWorkflowNormalizer.ts';
+export { default as ArazzoStepNormalizer } from './normalizer/ArazzoStepNormalizer.ts';
 export { default as OpenAPIOperationNormalizer } from './normalizer/OpenAPIOperationNormalizer.ts';
 export type { OpenAPIOperationNormalizerOptions } from './normalizer/OpenAPIOperationNormalizer.ts';
 export { default as OpenAPI2OperationNormalizer } from './normalizer/OpenAPI2OperationNormalizer.ts';
