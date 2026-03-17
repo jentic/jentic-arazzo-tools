@@ -14,6 +14,7 @@ import { type WorkflowElement } from '@speclynx/apidom-ns-arazzo-1';
 import * as constants from '../../constants.ts';
 import ArazzoDocument from '../../document/ArazzoDocument.ts';
 import DocumentRegistryProvider, {
+  circularReplacer,
   type DocumentRegistryProviderOptions,
 } from './DocumentRegistryProvider.ts';
 import ArazzoWorkflowIndex from '../../document/ArazzoWorkflowIndex.ts';
@@ -37,6 +38,14 @@ export const providerOptionsOverride: ArazzoDocumentRegistryProviderOptions = {
         maxEntries: constants.MAX_HTTP_CACHE_ENTRIES,
         maxStaleAge: constants.MAX_HTTP_CACHE_STALE_AGE,
       },
+    },
+  },
+  dereference: {
+    immutable: false,
+    circular: 'replace',
+    circularReplacer,
+    strategyOpts: {
+      sourceDescriptions: false,
     },
   },
 };

@@ -2,8 +2,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { assert } from 'chai';
-import { toValue } from '@speclynx/apidom-core';
-import type { OperationElement } from '@speclynx/apidom-ns-openapi-3-1';
+import { toValue, toJSON } from '@speclynx/apidom-core';
+import { isOperationElement, type OperationElement } from '@speclynx/apidom-ns-openapi-3-1';
 
 import { DocumentRegistry, OpenAPIDocument } from '../../src/index.ts';
 import OpenAPIOperationExtractor from '../../src/extractor/OpenAPIOperationExtractor.ts';
@@ -37,7 +37,7 @@ describe('OpenAPI31OperationNormalizer', function () {
       const operation = extractAs31(extractor, openapiDoc, 'getPetById');
       const normalized = await normalizer.normalize(operation, openapiDoc);
 
-      assert.strictEqual(normalized.element, 'operation');
+      assert.isTrue(isOperationElement(normalized));
     });
 
     specify('should preserve operationId', async function () {
@@ -99,6 +99,55 @@ describe('OpenAPI31OperationNormalizer', function () {
       const security = pojo.security as Record<string, unknown>[];
       assert.isArray(security);
       assert.isAbove(security.length, 0);
+    });
+  });
+
+  context('given OpenAPI document with circular schema references', function () {
+    let circularDoc: OpenAPIDocument;
+
+    before(async function () {
+      const registry = new DocumentRegistry();
+      const circularFixturePath = path.join(
+        __dirname,
+        '..',
+        'fixtures',
+        'circular-refs',
+        'workflow-3-1.arazzo.yaml',
+      );
+      const entryDoc = await registry.acquireEntryDocument(circularFixturePath);
+      const sourceURI = entryDoc.resolveSourceDescriptionURI('testAPI')!;
+      circularDoc = (await registry.acquire(sourceURI)) as OpenAPIDocument;
+    });
+
+    specify('should not throw on circular schemas', async function () {
+      const operation = extractAs31(extractor, circularDoc, 'getNodes');
+      const normalized = await normalizer.normalize(operation, circularDoc);
+
+      assert.isTrue(isOperationElement(normalized));
+    });
+
+    specify('should truncate circular reference with x-circular marker', async function () {
+      const operation = extractAs31(extractor, circularDoc, 'getNodes');
+      const normalized = await normalizer.normalize(operation, circularDoc);
+      const pojo = toValue(normalized) as Record<string, unknown>;
+
+      const responses = pojo.responses as Record<string, Record<string, unknown>>;
+      const content = responses['200'].content as Record<string, Record<string, unknown>>;
+      const schema = content['application/json'].schema as Record<string, unknown>;
+      const properties = schema.properties as Record<string, Record<string, unknown>>;
+      const children = properties.children as Record<string, unknown>;
+      const items = children.items as Record<string, unknown>;
+
+      assert.isUndefined(items.$ref);
+      assert.isDefined(items['x-circular']);
+    });
+
+    specify('should produce a finite tree with no $ref cycles', async function () {
+      const operation = extractAs31(extractor, circularDoc, 'getNodes');
+      const normalized = await normalizer.normalize(operation, circularDoc);
+      const json = toJSON(normalized);
+
+      assert.isString(json);
     });
   });
 });

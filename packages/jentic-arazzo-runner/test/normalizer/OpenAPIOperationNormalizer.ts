@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import { assert } from 'chai';
 import { toValue } from '@speclynx/apidom-core';
+import { isOperationElement } from '@speclynx/apidom-ns-openapi-3-0';
 
 import { DocumentRegistry, OpenAPIDocument } from '../../src/index.ts';
 import OpenAPIOperationExtractor from '../../src/extractor/OpenAPIOperationExtractor.ts';
@@ -28,7 +29,7 @@ describe('OpenAPIOperationNormalizer', function () {
       const operation = extractor.extract(openapiDoc, 'getPetById');
       const normalized = await normalizer.normalize(operation, openapiDoc);
 
-      assert.strictEqual(normalized.element, 'operation');
+      assert.isTrue(isOperationElement(normalized));
       assert.strictEqual(toValue(normalized.operationId), 'getPetById');
     });
   });

@@ -40,7 +40,6 @@ export type OpenAPI30OperationNormalizerOptions = PartialDeep<ApiDOMReferenceOpt
 const normalizerOptionsOverride = mergeOptions(openAPIProviderOptions as ApiDOMReferenceOptions, {
   dereference: {
     strategies: [new OpenAPI30DereferenceStrategy()],
-    immutable: false,
   },
 });
 
