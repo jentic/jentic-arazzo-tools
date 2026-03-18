@@ -45,6 +45,8 @@ export { default as OpenAPI31OperationNormalizer } from './normalizer/OpenAPI31O
 export type { OpenAPI31OperationNormalizerOptions } from './normalizer/OpenAPI31OperationNormalizer.ts';
 
 /* Assemblers */
+export { default as OpenAPIDocumentAssembler } from './assembler/OpenAPIDocumentAssembler.ts';
+export type { OpenAPIDocumentAssemblerOptions } from './assembler/OpenAPIDocumentAssembler.ts';
 export { default as OpenAPI2DocumentAssembler } from './assembler/OpenAPI2DocumentAssembler.ts';
 export { default as OpenAPI30DocumentAssembler } from './assembler/OpenAPI30DocumentAssembler.ts';
 export { default as OpenAPI31DocumentAssembler } from './assembler/OpenAPI31DocumentAssembler.ts';
