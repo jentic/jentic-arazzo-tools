@@ -1,5 +1,5 @@
 import type { ParseResultElement } from '@jentic/arazzo-parser';
-import { toValue, toJSON, toYAML } from '@speclynx/apidom-core';
+import { toValue, toYAML } from '@speclynx/apidom-core';
 
 /**
  * Base document held by the document registry.
@@ -23,10 +23,11 @@ abstract class APIDocument {
   }
 
   /**
-   * Serializes the document's API element to a JSON string.
+   * Returns a JSON-serializable representation of the document's API element.
+   * Compatible with JSON.stringify() — JSON.stringify(doc) produces correct output.
    */
-  toJSON(...args: Parameters<typeof toJSON> extends [unknown, ...infer R] ? R : []): string {
-    return toJSON(this.parseResult.api!, ...args);
+  toJSON(): unknown {
+    return toValue(this.parseResult.api!);
   }
 
   /**

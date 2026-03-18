@@ -18,27 +18,20 @@ describe('APIDocument', function () {
     openapiDoc = (await registry.acquire(sourceURI)) as OpenAPIDocument;
   });
 
-  context('toValue', function () {
-    specify('should return a plain JavaScript object', function () {
-      const value = openapiDoc.toValue();
-
-      assert.isObject(value);
-      assert.strictEqual((value as Record<string, unknown>).openapi, '3.0.4');
-    });
-  });
-
   context('toJSON', function () {
-    specify('should return a JSON string', function () {
+    specify('should return a JSON-serializable object', function () {
       const json = openapiDoc.toJSON();
 
-      assert.isString(json);
-      assert.doesNotThrow(() => JSON.parse(json));
+      assert.isObject(json);
+      assert.strictEqual((json as Record<string, unknown>).openapi, '3.0.4');
     });
 
-    specify('should support pretty printing', function () {
-      const json = openapiDoc.toJSON(undefined, 2);
+    specify('should work with JSON.stringify', function () {
+      const str = JSON.stringify(openapiDoc);
 
-      assert.include(json, '\n');
+      assert.isString(str);
+      const parsed = JSON.parse(str);
+      assert.strictEqual(parsed.openapi, '3.0.4');
     });
   });
 
