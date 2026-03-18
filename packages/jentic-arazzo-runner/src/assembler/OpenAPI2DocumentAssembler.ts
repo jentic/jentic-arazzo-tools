@@ -1,5 +1,5 @@
 import { toValue } from '@speclynx/apidom-core';
-import { isArrayElement } from '@speclynx/apidom-datamodel';
+import { isArrayElement, isElement } from '@speclynx/apidom-datamodel';
 import {
   SwaggerElement,
   PathsElement,
@@ -38,23 +38,25 @@ class OpenAPI2DocumentAssembler {
       });
     }
 
-    const swagger = new SwaggerElement();
-    swagger.swagger = entry.swagger;
-    swagger.info = entry.info;
-    swagger.host = entry.host;
-    swagger.basePath = entry.basePath;
-    swagger.schemes = entry.schemes;
-    swagger.consumes = entry.consumes;
-    swagger.produces = entry.produces;
-    swagger.tags = entry.tags;
-    swagger.externalDocs = entry.externalDocs;
+    // build Swagger 2.0 document
+    const swagger = new SwaggerElement({ swagger: entry.swagger });
+    // prettier-ignore
+    {
+      if (isElement(entry.info))         swagger.info = entry.info;
+      if (isElement(entry.host))         swagger.host = entry.host;
+      if (isElement(entry.basePath))     swagger.basePath = entry.basePath;
+      if (isElement(entry.schemes))      swagger.schemes = entry.schemes;
+      if (isElement(entry.consumes))     swagger.consumes = entry.consumes;
+      if (isElement(entry.produces))     swagger.produces = entry.produces;
+      if (isElement(entry.tags))         swagger.tags = entry.tags;
+      if (isElement(entry.externalDocs)) swagger.externalDocs = entry.externalDocs;
+    }
 
     // build paths with single operation
     const method = toValue(operation.meta.get('http-method')) as string;
     const path = toValue(operation.meta.get('path')) as string;
     const pathItem = new PathItemElement();
     const paths = new PathsElement();
-
     pathItem.set(method, operation);
     paths.set(path, pathItem);
     swagger.paths = paths;
