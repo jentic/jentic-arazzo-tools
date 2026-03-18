@@ -34,6 +34,7 @@ class OpenAPI2DocumentAssembler {
     if (!isSwaggerElement(entry)) {
       throw new AssemblerError(`Expected OpenAPI 2.0 document at "${document.uri}"`, {
         uri: document.uri,
+        operationId: toValue(operation.operationId),
       });
     }
 
