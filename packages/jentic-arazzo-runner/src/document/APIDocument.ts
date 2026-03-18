@@ -16,13 +16,6 @@ abstract class APIDocument {
   }
 
   /**
-   * Converts the document's API element to a plain JavaScript object.
-   */
-  toValue(): unknown {
-    return toValue(this.parseResult.api!);
-  }
-
-  /**
    * Returns a JSON-serializable representation of the document's API element.
    * Compatible with JSON.stringify() — JSON.stringify(doc) produces correct output.
    */
