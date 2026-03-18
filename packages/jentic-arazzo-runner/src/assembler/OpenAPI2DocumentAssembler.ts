@@ -30,12 +30,21 @@ class OpenAPI2DocumentAssembler {
    */
   assemble(operation: OperationElement, document: OpenAPIDocument): SwaggerElement {
     const entry = document.parseResult.api;
+    const method: unknown = toValue(operation.meta.get('http-method'));
+    const path: unknown = toValue(operation.meta.get('path'));
 
     if (!isSwaggerElement(entry)) {
       throw new AssemblerError(`Expected OpenAPI 2.0 document at "${document.uri}"`, {
-        uri: document.uri,
         operationId: toValue(operation.operationId),
+        uri: document.uri,
       });
+    }
+
+    if (typeof method !== 'string' || typeof path !== 'string') {
+      throw new AssemblerError(
+        `Operation is missing valid "http-method" or "path" metadata. Was it produced by OpenAPIOperationExtractor?`,
+        { operationId: toValue(operation.operationId), uri: document.uri },
+      );
     }
 
     // build Swagger 2.0 document
@@ -52,9 +61,6 @@ class OpenAPI2DocumentAssembler {
       if (isElement(entry.externalDocs)) swagger.externalDocs = entry.externalDocs;
     }
 
-    // build paths with single operation
-    const method = toValue(operation.meta.get('http-method')) as string;
-    const path = toValue(operation.meta.get('path')) as string;
     const pathItem = new PathItemElement();
     const paths = new PathsElement();
     pathItem.set(method, operation);
@@ -64,7 +70,7 @@ class OpenAPI2DocumentAssembler {
     // include only referenced security definitions
     const securityDefinitions = this.#extractReferencedSecurityDefinitions(operation, entry);
     if (securityDefinitions.length > 0) {
-      swagger.securityDefinitions = this.#extractReferencedSecurityDefinitions(operation, entry);
+      swagger.securityDefinitions = securityDefinitions;
     }
 
     return swagger;
@@ -83,7 +89,7 @@ class OpenAPI2DocumentAssembler {
     if (!isArrayElement(operation.security)) return securityDefinitions;
     if (!isSecurityDefinitionsElement(entry.securityDefinitions)) return securityDefinitions;
 
-    // collect references names of Security Definitions
+    // collect referenced names of Security Definitions
     const referencedNames = new Set<string>();
     for (const securityRequirement of operation.security) {
       if (!isSecurityRequirementElement(securityRequirement)) continue;
