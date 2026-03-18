@@ -3,28 +3,23 @@ import { fileURLToPath } from 'node:url';
 
 import { assert, expect } from 'chai';
 import { toJSON } from '@speclynx/apidom-core';
-import { isSwaggerElement, type OperationElement } from '@speclynx/apidom-ns-openapi-2';
+import { isOpenApi3_0Element, type OperationElement } from '@speclynx/apidom-ns-openapi-3-0';
 
 import { DocumentRegistry, OpenAPIDocument } from '../../src/index.ts';
 import OpenAPIOperationExtractor from '../../src/extractor/OpenAPIOperationExtractor.ts';
-import OpenAPI2OperationNormalizer from '../../src/normalizer/OpenAPI2OperationNormalizer.ts';
-import OpenAPI2DocumentAssembler from '../../src/assembler/OpenAPI2DocumentAssembler.ts';
+import OpenAPI30OperationNormalizer from '../../src/normalizer/OpenAPI30OperationNormalizer.ts';
+import OpenAPI30DocumentAssembler from '../../src/assembler/OpenAPI30DocumentAssembler.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const fixturePath = path.join(
-  __dirname,
-  '..',
-  'fixtures',
-  'petstore-order-workflow-2-0.arazzo.yaml',
-);
+const fixturePath = path.join(__dirname, '..', 'fixtures', 'petstore-order-workflow.arazzo.yaml');
 
-const extractAs2 = (extractor: OpenAPIOperationExtractor, doc: OpenAPIDocument, id: string) =>
+const extractAs30 = (extractor: OpenAPIOperationExtractor, doc: OpenAPIDocument, id: string) =>
   extractor.extract(doc, id) as unknown as OperationElement;
 
-describe('OpenAPI2DocumentAssembler', function () {
+describe('OpenAPI30DocumentAssembler', function () {
   const extractor = new OpenAPIOperationExtractor();
-  const normalizer = new OpenAPI2OperationNormalizer();
-  const assembler = new OpenAPI2DocumentAssembler();
+  const normalizer = new OpenAPI30OperationNormalizer();
+  const assembler = new OpenAPI30DocumentAssembler();
   let openapiDoc: OpenAPIDocument;
 
   before(async function () {
@@ -36,16 +31,16 @@ describe('OpenAPI2DocumentAssembler', function () {
 
   context('assemble', function () {
     specify('should return an OpenAPIDocument', async function () {
-      const operation = extractAs2(extractor, openapiDoc, 'getPetById');
+      const operation = extractAs30(extractor, openapiDoc, 'getPetById');
       const normalized = await normalizer.normalize(operation, openapiDoc);
       const assembled = assembler.assemble(normalized, openapiDoc);
 
       assert.instanceOf(assembled, OpenAPIDocument);
-      assert.isTrue(isSwaggerElement(assembled.parseResult.api));
+      assert.isTrue(isOpenApi3_0Element(assembled.parseResult.api));
     });
 
     specify('should assemble getPetById operation', async function () {
-      const operation = extractAs2(extractor, openapiDoc, 'getPetById');
+      const operation = extractAs30(extractor, openapiDoc, 'getPetById');
       const normalized = await normalizer.normalize(operation, openapiDoc);
       const assembled = assembler.assemble(normalized, openapiDoc);
 
@@ -53,7 +48,7 @@ describe('OpenAPI2DocumentAssembler', function () {
     });
 
     specify('should assemble placeOrder operation', async function () {
-      const operation = extractAs2(extractor, openapiDoc, 'placeOrder');
+      const operation = extractAs30(extractor, openapiDoc, 'placeOrder');
       const normalized = await normalizer.normalize(operation, openapiDoc);
       const assembled = assembler.assemble(normalized, openapiDoc);
 
