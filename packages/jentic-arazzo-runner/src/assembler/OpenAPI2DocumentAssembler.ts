@@ -1,5 +1,6 @@
 import { toValue } from '@speclynx/apidom-core';
-import { isArrayElement, isElement } from '@speclynx/apidom-datamodel';
+import { isArrayElement, isElement, ParseResultElement } from '@speclynx/apidom-datamodel';
+import { compile } from '@speclynx/apidom-json-pointer';
 import {
   SwaggerElement,
   PathsElement,
@@ -12,7 +13,8 @@ import {
   type OperationElement,
 } from '@speclynx/apidom-ns-openapi-2';
 
-import type OpenAPIDocument from '../document/OpenAPIDocument.ts';
+import OpenAPIDocument from '../document/OpenAPIDocument.ts';
+import OpenAPIOperationIndex from '../document/OpenAPIOperationIndex.ts';
 import AssemblerError from '../errors/AssemblerError.ts';
 
 /**
@@ -28,27 +30,35 @@ class OpenAPI2DocumentAssembler {
   /**
    * Assembles a standalone Swagger 2.0 document from a normalized operation.
    */
-  assemble(operation: OperationElement, document: OpenAPIDocument): SwaggerElement {
+  assemble(operation: OperationElement, document: OpenAPIDocument): OpenAPIDocument {
     const entry = document.parseResult.api;
+    const operationId: unknown = toValue(operation.operationId);
     const method: unknown = toValue(operation.meta.get('http-method'));
     const path: unknown = toValue(operation.meta.get('path'));
 
-    if (!isSwaggerElement(entry)) {
-      throw new AssemblerError(`Expected OpenAPI 2.0 document at "${document.uri}"`, {
-        operationId: toValue(operation.operationId),
-        uri: document.uri,
-      });
+    if (typeof operationId !== 'string' || operationId.length === 0) {
+      throw new AssemblerError(
+        `Operation is missing operationId in document at "${document.uri}"`,
+        { uri: document.uri },
+      );
     }
 
     if (typeof method !== 'string' || typeof path !== 'string') {
       throw new AssemblerError(
         `Operation is missing valid "http-method" or "path" metadata. Was it produced by OpenAPIOperationExtractor?`,
-        { operationId: toValue(operation.operationId), uri: document.uri },
+        { operationId, uri: document.uri },
       );
     }
 
+    if (!isSwaggerElement(entry)) {
+      throw new AssemblerError(`Expected OpenAPI 2.0 document at "${document.uri}"`, {
+        operationId,
+        uri: document.uri,
+      });
+    }
+
     // build Swagger 2.0 document
-    const swagger = new SwaggerElement({ swagger: entry.swagger });
+    const swagger = new SwaggerElement({ swagger: entry.swagger }, { classes: ['api'] });
     // prettier-ignore
     {
       if (isElement(entry.info))         swagger.info = entry.info;
@@ -61,6 +71,7 @@ class OpenAPI2DocumentAssembler {
       if (isElement(entry.externalDocs)) swagger.externalDocs = entry.externalDocs;
     }
 
+    // build paths with single operation
     const pathItem = new PathItemElement();
     const paths = new PathsElement();
     pathItem.set(method, operation);
@@ -73,7 +84,14 @@ class OpenAPI2DocumentAssembler {
       swagger.securityDefinitions = securityDefinitions;
     }
 
-    return swagger;
+    // wrap in ParseResultElement and return as OpenAPIDocument
+    const parseResult = new ParseResultElement([swagger]);
+    const operationIndex = new OpenAPIOperationIndex().set(
+      operationId,
+      compile(['paths', path, method]),
+    );
+
+    return new OpenAPIDocument(document.uri, parseResult, operationIndex);
   }
 
   /**

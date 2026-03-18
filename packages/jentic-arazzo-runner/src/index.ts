@@ -46,6 +46,7 @@ export type { OpenAPI31OperationNormalizerOptions } from './normalizer/OpenAPI31
 
 /* Assemblers */
 export { default as OpenAPI2DocumentAssembler } from './assembler/OpenAPI2DocumentAssembler.ts';
+export { default as OpenAPI30DocumentAssembler } from './assembler/OpenAPI30DocumentAssembler.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
