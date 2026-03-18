@@ -44,8 +44,12 @@ export type { OpenAPI30OperationNormalizerOptions } from './normalizer/OpenAPI30
 export { default as OpenAPI31OperationNormalizer } from './normalizer/OpenAPI31OperationNormalizer.ts';
 export type { OpenAPI31OperationNormalizerOptions } from './normalizer/OpenAPI31OperationNormalizer.ts';
 
+/* Assemblers */
+export { default as OpenAPI2DocumentAssembler } from './assembler/OpenAPI2DocumentAssembler.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
+export { default as AssemblerError } from './errors/AssemblerError.ts';
 export { default as NormalizationError } from './errors/NormalizationError.ts';
 export { default as ExtractionError } from './errors/ExtractionError.ts';
 export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocumentError.ts';
