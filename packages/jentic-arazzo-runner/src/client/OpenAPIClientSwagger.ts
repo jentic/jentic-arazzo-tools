@@ -1,4 +1,4 @@
-import { parse } from '@speclynx/apidom-json-pointer';
+import { parse, testJSONPointer } from '@speclynx/apidom-json-pointer';
 
 // @ts-expect-error vendored swagger-client bundle has no type declarations
 import { execute } from '../vendor/swagger-client.mjs';
@@ -50,7 +50,17 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
     if (operationId) {
       rawResponse = await execute({ spec: this.#spec, operationId, ...rest });
     } else if (operationPath) {
-      const [, pathName, method] = parse(operationPath).tree!;
+      if (!testJSONPointer(operationPath)) {
+        throw new ClientError(`Invalid operationPath: "${operationPath}"`, { operationPath });
+      }
+      const tokens = parse(operationPath).tree!;
+      if (tokens.length !== 3 || tokens[0] !== 'paths') {
+        throw new ClientError(
+          `operationPath "${operationPath}" must be of form /paths/{path}/{method}`,
+          { operationPath },
+        );
+      }
+      const [, pathName, method] = tokens;
       rawResponse = await execute({ spec: this.#spec, pathName, method, ...rest });
     } else {
       throw new ClientError('Either operationId or operationPath must be provided');
