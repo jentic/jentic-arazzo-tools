@@ -131,7 +131,6 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
         }
       })
       .catch((err) => {
-        console.dir(err);
         if (!cancelled) {
           setError(err instanceof Error ? err.message : String(err));
           setParsedDocument(null);
