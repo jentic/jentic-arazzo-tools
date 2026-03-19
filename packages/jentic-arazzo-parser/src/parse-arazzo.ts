@@ -170,7 +170,7 @@ export async function parse(
     sourceProvenance = '[inline YAML]';
   } else {
     sourceProvenance =
-      url.isHttpUrl(source) || url.isURI(source) || url.isURI(`file://${source}`)
+      url.isHttpUrl(source) || url.getProtocol(source) === 'file' || url.isURI(`file://${source}`)
         ? source
         : '[inline CONTENT]';
   }

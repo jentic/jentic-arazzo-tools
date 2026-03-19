@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 
 import { execFile } from 'node:child_process';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+import { url as urlUtils } from '@speclynx/apidom-reference/configuration/empty';
 
 const BASE_URL = 'https://arazzo-ui.jentic.com';
 
@@ -22,25 +25,33 @@ function openBrowser(url) {
   }
 }
 
-const url = process.argv[2];
+const input = process.argv[2];
 
-if (!url || url === '--help' || url === '-h') {
-  console.log('Usage: arazzo-ui <url>\n');
-  console.log('Open an Arazzo document in the browser.\n');
-  console.log('Example:');
+if (!input || input === '--help' || input === '-h') {
+  console.log('Usage: arazzo-ui <url-or-file>\n');
+  console.log('Open an Arazzo Document in the browser.\n');
+  console.log('Examples:');
   console.log(
     '  npx @jentic/arazzo-ui https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml',
   );
-  process.exit(url ? 0 : 1);
+  console.log('  npx @jentic/arazzo-ui ./workflow.arazzo.yaml');
+  process.exit(input ? 0 : 1);
 }
 
-try {
-  new URL(url);
-} catch {
-  console.error(`Invalid URL: ${url}\nPlease provide a valid URL to an Arazzo document.`);
-  process.exit(1);
+let viewerURL;
+
+if (urlUtils.isHttpUrl(input)) {
+  viewerURL = `${BASE_URL}?document=${encodeURIComponent(input)}`;
+} else {
+  const filePath = resolve(input);
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    viewerURL = `${BASE_URL}#document=${encodeURIComponent(content)}`;
+  } catch (err) {
+    console.error(`Failed to read file: ${filePath}\n${err.message}`);
+    process.exit(1);
+  }
 }
 
-const viewerURL = `${BASE_URL}?document=${encodeURIComponent(url)}`;
 console.log(`Opening ${viewerURL}`);
 openBrowser(viewerURL);
