@@ -1,7 +1,8 @@
-import React, { forwardRef, useState, useCallback } from 'react';
+import React, { forwardRef, useState, useCallback, useRef } from 'react';
 
 import { ArazzoUI } from './ArazzoUI';
 import { JenticLogo } from './components/JenticLogo';
+import { UploadIcon } from './components/UploadIcon';
 import { ViewModeControl } from './components/ViewModeControl';
 import type { ArazzoUIProps, ArazzoUIRef, ViewerMode } from './types/index';
 import type { ArazzoDocument } from './types/arazzo';
@@ -79,6 +80,9 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
         : '',
     );
     const [documentSource, setDocumentSource] = useState<ArazzoDocument | string>(initialDocument);
+    const [dragging, setDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const dragCounter = useRef(0);
 
     const handleViewChange = useCallback(
       (v: ViewerMode) => {
@@ -107,6 +111,71 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
       [handleExplore],
     );
 
+    const loadFile = useCallback((file: File) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target?.result;
+        if (typeof content === 'string') {
+          setUrlInput('');
+          setDocumentSource(content);
+          const params = new URLSearchParams(globalThis.location.search);
+          params.delete('document');
+          const qs = params.toString();
+          globalThis.history.replaceState(null, '', qs ? `?${qs}` : globalThis.location.pathname);
+        }
+      };
+      reader.readAsText(file);
+    }, []);
+
+    const handleFileChange = useCallback(
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          loadFile(file);
+        }
+        // reset so the same file can be re-selected
+        e.target.value = '';
+      },
+      [loadFile],
+    );
+
+    const handleDragEnter = useCallback((e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current += 1;
+      if (dragCounter.current === 1) {
+        setDragging(true);
+      }
+    }, []);
+
+    const handleDragLeave = useCallback((e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current -= 1;
+      if (dragCounter.current === 0) {
+        setDragging(false);
+      }
+    }, []);
+
+    const handleDragOver = useCallback((e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    }, []);
+
+    const handleDrop = useCallback(
+      (e: React.DragEvent) => {
+        e.preventDefault();
+        e.stopPropagation();
+        dragCounter.current = 0;
+        setDragging(false);
+        const file = e.dataTransfer.files?.[0];
+        if (file) {
+          loadFile(file);
+        }
+      },
+      [loadFile],
+    );
+
     return (
       <div
         className={`arazzo-ui-standalone ${props.className ?? ''}`}
@@ -115,9 +184,21 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
           flexDirection: 'column',
           width: '100%',
           height: '100%',
+          position: 'relative',
           ...props.style,
         }}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
       >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".yaml,.yml,.json,.arazzo"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
         <div
           className="arazzo-ui-toolbar"
           style={{
@@ -145,7 +226,7 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
               display: 'flex',
               alignItems: 'center',
               gap: '8px',
-              width: '520px',
+              width: '560px',
             }}
           >
             <input
@@ -181,6 +262,26 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
             >
               Explore
             </button>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              title="Upload Arazzo document"
+              style={{
+                padding: '6px',
+                border: '1px solid #444',
+                borderRadius: '6px',
+                background: '#2a2a2a',
+                color: '#fff',
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '32px',
+                height: '32px',
+              }}
+            >
+              <UploadIcon size={16} />
+            </button>
           </div>
           <div style={{ position: 'absolute', right: '16px' }}>
             <ViewModeControl value={view} onChange={handleViewChange} />
@@ -197,6 +298,35 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
             style={undefined}
           />
         </div>
+        {dragging && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: 'rgba(148, 200, 61, 0.1)',
+              border: '2px dashed #94C83D',
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              pointerEvents: 'none',
+            }}
+          >
+            <div
+              style={{
+                background: '#1B1B1B',
+                color: '#94C83D',
+                padding: '16px 32px',
+                borderRadius: '8px',
+                fontSize: '16px',
+                fontWeight: 600,
+              }}
+            >
+              Drop Arazzo document here
+            </div>
+          </div>
+        )}
       </div>
     );
   },
