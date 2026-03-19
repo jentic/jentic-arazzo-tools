@@ -75,7 +75,7 @@
     "jest-resolve": "^30.2.0",
     "jsdom": "=28.1.0",
     "jsdom-global": "=3.0.2",
-    "lerna": "=9.0.6",
+    "lerna": "=9.0.7",
     "lint-staged": "=16.3.1",
     "microtime": "=3.1.1",
     "mocha": "=11.7.5",
