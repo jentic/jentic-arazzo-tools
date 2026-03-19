@@ -142,6 +142,8 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
     const handleDragEnter = useCallback((e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
+      const types = Array.from(e.dataTransfer.types);
+      if (!types.includes('Files')) return;
       dragCounter.current += 1;
       if (dragCounter.current === 1) {
         setDragging(true);
@@ -151,7 +153,7 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
     const handleDragLeave = useCallback((e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      dragCounter.current -= 1;
+      dragCounter.current = Math.max(0, dragCounter.current - 1);
       if (dragCounter.current === 0) {
         setDragging(false);
       }
@@ -264,6 +266,7 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
             </button>
             <button
               onClick={() => fileInputRef.current?.click()}
+              aria-label="Upload Arazzo document"
               title="Upload Arazzo document"
               style={{
                 padding: '6px',
