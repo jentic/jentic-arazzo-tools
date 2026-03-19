@@ -170,7 +170,9 @@ export async function parse(
     sourceProvenance = '[inline YAML]';
   } else {
     sourceProvenance =
-      url.isHttpUrl(source) || url.isURI(`file://${source}`) ? source : '[inline CONTENT]';
+      url.isHttpUrl(source) || url.isURI(source) || url.isURI(`file://${source}`)
+        ? source
+        : '[inline CONTENT]';
   }
 
   // next we assume that source is either file system URI or HTTP(S) URL
