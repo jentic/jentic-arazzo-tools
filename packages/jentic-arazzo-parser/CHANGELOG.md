@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.29](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.28...v1.0.0-alpha.29) (2026-03-19)
+
+### Bug Fixes
+
+- **parser:** avoid dumping entire source document to error ([#176](https://github.com/jentic/jentic-arazzo-tools/issues/176)) ([2e51fde](https://github.com/jentic/jentic-arazzo-tools/commit/2e51fdea7d0d7aa9be0d54ae1df30eee2117fb76))
+
+### Features
+
+- **ui:** open local files via CLI in browser ([#177](https://github.com/jentic/jentic-arazzo-tools/issues/177)) ([ef440d3](https://github.com/jentic/jentic-arazzo-tools/commit/ef440d36fdff0f1a1bab2453e57ae1b957f9ccc5)), closes [#144](https://github.com/jentic/jentic-arazzo-tools/issues/144)
+
 # [1.0.0-alpha.28](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.27...v1.0.0-alpha.28) (2026-03-19)
 
 **Note:** Version bump only for package @jentic/arazzo-parser
