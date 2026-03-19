@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.28](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.27...v1.0.0-alpha.28) (2026-03-19)
+
+### Features
+
+- **ui:** add support for locale file upload ([#174](https://github.com/jentic/jentic-arazzo-tools/issues/174)) ([2166e3f](https://github.com/jentic/jentic-arazzo-tools/commit/2166e3f42beae19c630b5f1614420ddfd7ced1ee)), closes [#110](https://github.com/jentic/jentic-arazzo-tools/issues/110)
+
 # [1.0.0-alpha.27](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.26...v1.0.0-alpha.27) (2026-03-12)
 
 **Note:** Version bump only for package @jentic/arazzo-ui
