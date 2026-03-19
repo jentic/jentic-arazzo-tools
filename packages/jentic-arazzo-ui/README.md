@@ -45,6 +45,7 @@ npx @jentic/arazzo-ui ./workflow.arazzo.yaml
 
 This opens `https://arazzo-ui.jentic.com` with the document pre-loaded.
 Local files are passed via the URL fragment (`#document=`), so the document content is never sent to the server.
+The resulting URL is also shareable if the workflow size is not too large.
 
 ## Components
 
