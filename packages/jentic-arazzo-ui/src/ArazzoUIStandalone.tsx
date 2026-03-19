@@ -142,7 +142,8 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
     const handleDragEnter = useCallback((e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!e.dataTransfer.types.includes('Files')) return;
+      const types = Array.from(e.dataTransfer.types);
+      if (!types.includes('Files')) return;
       dragCounter.current += 1;
       if (dragCounter.current === 1) {
         setDragging(true);
@@ -152,7 +153,6 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
     const handleDragLeave = useCallback((e: React.DragEvent) => {
       e.preventDefault();
       e.stopPropagation();
-      if (!e.dataTransfer.types.includes('Files')) return;
       dragCounter.current = Math.max(0, dragCounter.current - 1);
       if (dragCounter.current === 0) {
         setDragging(false);
