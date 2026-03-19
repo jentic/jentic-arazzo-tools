@@ -70,9 +70,10 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
     const { initialView = 'docs', onViewChange, ...rest } = props;
     const [view, setView] = useState<ViewerMode>(initialView);
 
-    // ?document= query param takes precedence over props.document
-    const documentParam = new URLSearchParams(globalThis.location.search).get('document');
-    const initialDocument = documentParam || props.document;
+    // ?document= query param takes precedence, #document= hash used for large inline content
+    const queryParam = new URLSearchParams(globalThis.location.search).get('document');
+    const hashParam = new URLSearchParams(globalThis.location.hash.slice(1)).get('document');
+    const initialDocument = queryParam || hashParam || props.document;
 
     const [urlInput, setUrlInput] = useState(
       typeof initialDocument === 'string' && /^https?:\/\//i.test(initialDocument)
@@ -98,7 +99,8 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
         setDocumentSource(trimmed);
         const params = new URLSearchParams(globalThis.location.search);
         params.set('document', trimmed);
-        globalThis.history.replaceState(null, '', `?${params.toString()}`);
+        const qs = params.toString();
+        globalThis.history.replaceState(null, '', `?${qs}`);
       }
     }, [urlInput]);
 
@@ -118,10 +120,7 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
         if (typeof content === 'string') {
           setUrlInput('');
           setDocumentSource(content);
-          const params = new URLSearchParams(globalThis.location.search);
-          params.delete('document');
-          const qs = params.toString();
-          globalThis.history.replaceState(null, '', qs ? `?${qs}` : globalThis.location.pathname);
+          globalThis.history.replaceState(null, '', globalThis.location.pathname);
         }
       };
       reader.readAsText(file);
