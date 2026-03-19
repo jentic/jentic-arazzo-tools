@@ -27,10 +27,11 @@
   },
   "types": "./types/arazzo-runner.d.ts",
   "scripts": {
-    "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:es build:cjs build:umd:browser",
-    "build:es": "cross-env BABEL_ENV=es babel src --out-dir src --extensions '.ts' --out-file-extension '.mjs' --root-mode 'upward'",
+    "build": "npm run clean && npm run build:es && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:cjs build:umd:browser",
+    "build:es": "npm run build:swagger-client && cross-env BABEL_ENV=es babel src --out-dir src --extensions '.ts' --out-file-extension '.mjs' --root-mode 'upward'",
     "build:cjs": "cross-env BABEL_ENV=cjs babel src --out-dir src --extensions '.ts' --out-file-extension '.cjs' --root-mode 'upward'",
     "build:umd:browser": "cross-env BABEL_ENV=browser webpack --config config/webpack/browser.config.js --progress",
+    "build:swagger-client": "webpack --config config/webpack/swagger-client.config.js --progress",
     "lint": "eslint ./",
     "lint:fix": "eslint ./ --fix",
     "clean": "rimraf --glob 'src/**/*.mjs' 'src/**/*.cjs' 'test/**/*.mjs' ./dist ./types",
@@ -54,12 +55,12 @@
     "@speclynx/apidom-datamodel": "^4.2.0",
     "@speclynx/apidom-error": "^4.2.0",
     "@speclynx/apidom-json-pointer": "^4.2.0",
-    "@speclynx/apidom-reference": "^4.2.0",
-    "@speclynx/apidom-traverse": "^4.2.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.2.0",
     "@speclynx/apidom-ns-openapi-2": "^4.2.0",
     "@speclynx/apidom-ns-openapi-3-0": "^4.2.0",
     "@speclynx/apidom-ns-openapi-3-1": "^4.2.0",
+    "@speclynx/apidom-reference": "^4.2.0",
+    "@speclynx/apidom-traverse": "^4.2.0",
     "type-fest": "^5.4.4"
   },
   "files": [
@@ -71,5 +72,8 @@
     "NOTICE",
     "README.md",
     "CHANGELOG.md"
-  ]
+  ],
+  "devDependencies": {
+    "swagger-client": "^3.37.1"
+  }
 }

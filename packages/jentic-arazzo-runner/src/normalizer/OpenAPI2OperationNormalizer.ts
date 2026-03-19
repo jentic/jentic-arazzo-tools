@@ -137,7 +137,7 @@ class OpenAPI2OperationNormalizer {
       );
     } catch (error: unknown) {
       throw new NormalizationError(
-        `Failed to dereference Operation "${toValue(operation.operationId)}" in OpenAPI 2.0 document at "${document.uri}"`,
+        `Failed to dereference Operation("${toValue(operation.operationId)}") in OpenAPI 2.0 document at "${document.uri}"`,
         { cause: error, operationId: toValue(operation.operationId), uri: document.uri },
       );
     }

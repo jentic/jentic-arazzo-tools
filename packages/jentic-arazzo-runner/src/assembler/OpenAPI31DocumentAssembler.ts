@@ -36,28 +36,20 @@ class OpenAPI31DocumentAssembler {
    */
   assemble(operation: OperationElement, document: OpenAPIDocument): OpenAPIDocument {
     const entry = document.parseResult.api;
-    const operationId: unknown = toValue(operation.operationId);
     const method: unknown = toValue(operation.meta.get('http-method'));
     const path: unknown = toValue(operation.meta.get('path'));
-
-    if (typeof operationId !== 'string' || operationId.length === 0) {
-      throw new AssemblerError(
-        `Operation is missing operationId in document at "${document.uri}"`,
-        { uri: document.uri },
-      );
-    }
 
     if (typeof method !== 'string' || typeof path !== 'string') {
       throw new AssemblerError(
         `Operation is missing valid "http-method" or "path" metadata. Was it produced by OpenAPIOperationExtractor?`,
-        { operationId, uri: document.uri },
+        { uri: document.uri, operationId: toValue(operation.operationId) },
       );
     }
 
     if (!isOpenApi3_1Element(entry)) {
       throw new AssemblerError(`Expected OpenAPI 3.1 document at "${document.uri}"`, {
-        operationId,
         uri: document.uri,
+        operationId: toValue(operation.operationId),
       });
     }
 
@@ -88,10 +80,11 @@ class OpenAPI31DocumentAssembler {
 
     // wrap in ParseResultElement and return as OpenAPIDocument
     const parseResult = new ParseResultElement([openapi]);
-    const operationIndex = new OpenAPIOperationIndex().set(
-      operationId,
-      compile(['paths', path, method]),
-    );
+    const operationIndex = new OpenAPIOperationIndex();
+    const operationId = toValue(operation.operationId);
+    if (typeof operationId === 'string' && operationId.length > 0) {
+      operationIndex.set(operationId, compile(['paths', path, method]));
+    }
 
     return new OpenAPIDocument(document.uri, parseResult, operationIndex);
   }

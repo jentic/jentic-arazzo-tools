@@ -51,9 +51,17 @@ export { default as OpenAPI2DocumentAssembler } from './assembler/OpenAPI2Docume
 export { default as OpenAPI30DocumentAssembler } from './assembler/OpenAPI30DocumentAssembler.ts';
 export { default as OpenAPI31DocumentAssembler } from './assembler/OpenAPI31DocumentAssembler.ts';
 
+/* Clients */
+export { default as OpenAPIClient } from './client/OpenAPIClient.ts';
+export type { OpenAPIOperationExecuteOptions } from './client/OpenAPIClient.ts';
+export { default as OpenAPIOperationResponse } from './client/OpenAPIOperationResponse.ts';
+export { default as OpenAPIClientSwagger } from './client/OpenAPIClientSwagger.ts';
+export type { SwaggerOpenAPIOperationExecuteOptions } from './client/OpenAPIClientSwagger.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
 export { default as AssemblerError } from './errors/AssemblerError.ts';
+export { default as ClientError } from './errors/ClientError.ts';
 export { default as NormalizationError } from './errors/NormalizationError.ts';
 export { default as ExtractionError } from './errors/ExtractionError.ts';
 export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocumentError.ts';
