@@ -1,5 +1,6 @@
 import { ParseResultElement } from '@speclynx/apidom-datamodel';
 import {
+  url,
   parse as parseURI,
   mergeOptions,
   UnmatchedParserError,
@@ -168,7 +169,10 @@ export async function parse(
     source = 'memory://arazzo.yaml';
     sourceProvenance = '[inline YAML]';
   } else {
-    sourceProvenance = source;
+    sourceProvenance =
+      url.isHttpUrl(source) || url.isURI(source) || url.isURI(`file://${source}`)
+        ? source
+        : '[inline CONTENT]';
   }
 
   // next we assume that source is either file system URI or HTTP(S) URL

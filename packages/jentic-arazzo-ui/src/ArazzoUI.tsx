@@ -183,13 +183,24 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#dc2626',
-          fontSize: '14px',
           padding: '24px',
           ...style,
         }}
       >
-        {error || 'Failed to load document'}
+        <div
+          style={{
+            maxWidth: '480px',
+            padding: '16px 24px',
+            borderRadius: '8px',
+            border: '1px solid #fca5a5',
+            background: '#fef2f2',
+            color: '#991b1b',
+            fontSize: '14px',
+            lineHeight: '1.5',
+          }}
+        >
+          {error || 'Failed to load document'}
+        </div>
       </div>
     );
   }
