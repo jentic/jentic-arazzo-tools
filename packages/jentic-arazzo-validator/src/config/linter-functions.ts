@@ -137,8 +137,8 @@ export const linterfunctions: FunctionItem[] = [
       if (!element || !isStringElement(element)) return true;
       const value = toValue(element) as string;
       if (value.length === 0) return true;
-      // Basic MIME type validation: type/subtype with optional parameters
-      return /^[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_.+]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_.+]*/.test(value);
+      // Basic MIME type validation: type/subtype with optional parameters (e.g. "; charset=utf-8")
+      return /^[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_.+]*\/[a-zA-Z0-9][a-zA-Z0-9!#$&\-^_.+]*(?:\s*;\s*[a-zA-Z0-9!#$&\-^_.+]+=(?:[a-zA-Z0-9!#$&\-^_.+]+|"[^"]*"))*$/.test(value);
     },
   },
   {
