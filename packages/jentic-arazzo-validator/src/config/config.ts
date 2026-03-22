@@ -1,5 +1,6 @@
 import type { Metadata } from '@speclynx/apidom-ls';
 import configArazzo from './arazzo/config.ts';
+import { linterfunctionsMap } from './linter-functions.ts';
 
 /**
  * @public
@@ -9,7 +10,7 @@ export function config(): Metadata {
     metadataMaps: {
       arazzo: configArazzo,
     },
-    linterFunctions: {},
+    linterFunctions: linterfunctionsMap,
     symbols: [],
     tokens: [],
   } as Metadata;

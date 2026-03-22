@@ -1,0 +1,43 @@
+arazzo: 1.0.1
+info:
+  summary: Missing required title and version
+  description: A detailed description
+sourceDescriptions:
+  - type: openapi
+    url: ./petstore.openapi.json
+workflows:
+  - summary: Missing required workflowId
+    description: A workflow description
+    inputs:
+      type: foo
+      properties:
+        petName:
+          type: string
+          maxLength: notANumber
+          deprecated: notABoolean
+    steps:
+      - description: Missing required stepId
+        operationId: $sourceDescriptions.petStore.createPet
+        requestBody:
+          contentType: 123
+          replacements:
+            - value: something
+        parameters:
+          - in: path
+            value: 1
+        successCriteria:
+          - context: $response.body
+        onSuccess:
+          - type: goto
+            stepId: get-pet
+        onFailure:
+          - type: retry
+            retryAfter: -1
+            retryLimit: -5
+            criteria:
+              - condition: $statusCode == 503
+    successActions:
+      - type: goto
+        stepId: create-pet
+    failureActions:
+      - type: end
