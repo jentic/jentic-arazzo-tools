@@ -5,10 +5,7 @@ import path from 'node:path';
 
 const execFileAsync = promisify(execFile);
 const binPath = path.resolve(import.meta.dirname, '../../bin/arazzo-validator.mjs');
-const fixturesPath = path.resolve(
-  import.meta.dirname,
-  '../../../jentic-arazzo-resolver/test/dereference/fixtures/dereference',
-);
+const fixturesPath = path.resolve(import.meta.dirname, '../fixtures');
 
 describe('bin', function () {
   this.timeout(30000);
@@ -34,7 +31,7 @@ describe('bin', function () {
 
   describe('valid file', function () {
     specify('should exit with code 0 and show success message', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [binPath, validFile]);
 
       assert.include(stdout, "No results with a severity of 'error' or higher found!");
@@ -43,7 +40,7 @@ describe('bin', function () {
 
   describe('--format json', function () {
     specify('should output valid JSON', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [binPath, '--format', 'json', validFile]);
 
       const parsed = JSON.parse(stdout);
@@ -55,7 +52,7 @@ describe('bin', function () {
 
   describe('--format github-actions', function () {
     specify('should output GitHub Actions format', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [
         binPath,
         '--format',
@@ -70,7 +67,7 @@ describe('bin', function () {
 
   describe('--format codeframe', function () {
     specify('should show success message for valid file', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [binPath, '--format', 'codeframe', validFile]);
 
       assert.include(stdout, "No results with a severity of 'error' or higher found!");
@@ -79,7 +76,7 @@ describe('bin', function () {
 
   describe('--quiet', function () {
     specify('should suppress output', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [binPath, '--quiet', validFile]);
 
       assert.equal(stdout, '');
@@ -88,7 +85,7 @@ describe('bin', function () {
 
   describe('--verbose', function () {
     specify('should show additional information to stderr', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stderr } = await execFileAsync('node', [binPath, '--verbose', validFile]);
 
       assert.include(stderr, 'Validating');
@@ -98,7 +95,7 @@ describe('bin', function () {
 
   describe('short options', function () {
     specify('-f should work as --format', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [binPath, '-f', 'json', validFile]);
 
       const parsed = JSON.parse(stdout);
@@ -106,14 +103,14 @@ describe('bin', function () {
     });
 
     specify('-q should work as --quiet', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [binPath, '-q', validFile]);
 
       assert.equal(stdout, '');
     });
 
     specify('-v should work as --verbose', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stderr } = await execFileAsync('node', [binPath, '-v', validFile]);
 
       assert.include(stderr, 'Validating');
@@ -122,7 +119,7 @@ describe('bin', function () {
 
   describe('option combinations', function () {
     specify('--verbose --format json should work together', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout, stderr } = await execFileAsync('node', [
         binPath,
         '--verbose',
@@ -139,7 +136,7 @@ describe('bin', function () {
     });
 
     specify('--quiet --format json should suppress stdout', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [
         binPath,
         '--quiet',
@@ -154,7 +151,7 @@ describe('bin', function () {
 
   describe('--fail-severity', function () {
     specify('should show success message with error level', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [
         binPath,
         '--fail-severity',
@@ -166,7 +163,7 @@ describe('bin', function () {
     });
 
     specify('should show success message with warning level', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [
         binPath,
         '--fail-severity',
@@ -178,7 +175,7 @@ describe('bin', function () {
     });
 
     specify('should show success message with info level', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [
         binPath,
         '--fail-severity',
@@ -190,7 +187,7 @@ describe('bin', function () {
     });
 
     specify('should show success message with hint level', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       const { stdout } = await execFileAsync('node', [
         binPath,
         '--fail-severity',
@@ -204,7 +201,7 @@ describe('bin', function () {
 
   describe('invalid options', function () {
     specify('should reject invalid format', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       try {
         await execFileAsync('node', [binPath, '--format', 'invalid', validFile]);
         assert.fail('Should have thrown');
@@ -215,7 +212,7 @@ describe('bin', function () {
     });
 
     specify('should reject invalid fail-severity', async function () {
-      const validFile = path.join(fixturesPath, 'root.yaml');
+      const validFile = path.join(fixturesPath, 'arazzo-full-valid.yaml');
       try {
         await execFileAsync('node', [binPath, '--fail-severity', 'invalid', validFile]);
         assert.fail('Should have thrown');

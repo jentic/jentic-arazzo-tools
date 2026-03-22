@@ -2,6 +2,19 @@ import { assert } from 'chai';
 import dedent from 'dedent';
 
 import { validate, DiagnosticSeverity, createTextDocument } from '../src/index.ts';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import fs from 'node:fs';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const specArazzoFullValid = fs
+  .readFileSync(path.join(__dirname, 'fixtures', 'arazzo-full-valid.yaml'))
+  .toString();
+
+const specArazzoFullInvalid = fs
+  .readFileSync(path.join(__dirname, 'fixtures', 'arazzo-full-invalid.yaml'))
+  .toString();
 
 describe('validate', function () {
   this.timeout(10000);
@@ -31,15 +44,18 @@ describe('validate', function () {
     });
   });
 
-  context('given invalid Arazzo document', function () {
-    const invalidArazzo = dedent`
-      arazzo: '1.0.1'
-      info:
-        title: My Workflow
-    `;
+  context('given valid Arazzo document from file', function () {
+    specify('should not return errors', async function () {
+      const textDocument = createTextDocument('memory://arazzo.yaml', specArazzoFullValid);
+      const diagnostics = await validate(textDocument);
+      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
+      assert.equal(errors.length, 0);
+    });
+  });
 
+  context('given invalid Arazzo document from file', function () {
     specify('should return errors', async function () {
-      const textDocument = createTextDocument('memory://arazzo.yaml', invalidArazzo);
+      const textDocument = createTextDocument('memory://arazzo.yaml', specArazzoFullInvalid);
       const diagnostics = await validate(textDocument);
       const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
       assert.isAbove(errors.length, 0);

@@ -1,0 +1,28 @@
+import { DiagnosticSeverity } from 'vscode-languageserver-types';
+
+import ApilintCodes from '../../../codes.ts';
+import { LinterMeta, ArazzoTargetSpecs } from '@speclynx/apidom-ls';
+
+
+const urlRequiredLint: LinterMeta = {
+  code: ApilintCodes.ARAZZO_SOURCE_DESCRIPTION_FIELD_URL_REQUIRED,
+  source: 'apilint',
+  message: "should always have a 'url'",
+  severity: DiagnosticSeverity.Error,
+  linterFunction: 'hasRequiredField',
+  linterParams: ['url'],
+  marker: 'key',
+  data: {
+    quickFix: [
+      {
+        message: "add 'url' field",
+        action: 'addChild',
+        snippetYaml: 'url: \n  ',
+        snippetJson: '"url": "",\n    ',
+      },
+    ],
+  },
+  targetSpecs: [...ArazzoTargetSpecs.Arazzo],
+};
+
+export default urlRequiredLint;
