@@ -2,6 +2,7 @@ import { assert } from 'chai';
 import dedent from 'dedent';
 
 import { validate, DiagnosticSeverity, createTextDocument } from '../src/index.ts';
+import ApilintCodes from '../src/config/codes.ts';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
@@ -59,6 +60,43 @@ describe('validate', function () {
       const diagnostics = await validate(textDocument);
       const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
       assert.isAbove(errors.length, 0);
+    });
+  });
+
+  context('given Arazzo document missing required title in info', function () {
+    const missingTitle = dedent`
+      arazzo: '1.0.1'
+      info:
+        version: '1.0.0'
+      sourceDescriptions:
+        - name: myApi
+          type: openapi
+          url: https://example.com/openapi.json
+      workflows:
+        - workflowId: myWorkflow
+          steps:
+            - stepId: step1
+              operationId: myApi.getUsers
+    `;
+
+    specify('should return ARAZZO_INFO_FIELD_TITLE_REQUIRED error', async function () {
+      const textDocument = createTextDocument('memory://arazzo.yaml', missingTitle);
+      const diagnostics = await validate(textDocument);
+      const titleRequired = diagnostics.find(
+        (d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED,
+      );
+      assert.isDefined(titleRequired, 'expected diagnostic with code 9030200');
+      assert.equal(titleRequired!.severity, DiagnosticSeverity.Error);
+      assert.isBelow(
+        titleRequired!.range.start.line,
+        titleRequired!.range.end.line + 1,
+        'range should have a valid start position',
+      );
+      assert.notDeepEqual(
+        titleRequired!.range.start,
+        titleRequired!.range.end,
+        'range should have distinct start and end positions',
+      );
     });
   });
 
