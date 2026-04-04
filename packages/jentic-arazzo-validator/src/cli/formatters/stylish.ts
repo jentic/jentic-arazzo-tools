@@ -18,9 +18,16 @@ export function severityToString(severity: DiagnosticSeverity | undefined): stri
 }
 
 export function formatLocation(diagnostic: Diagnostic): string {
-  const line = diagnostic.range.start.line + 1;
-  const col = diagnostic.range.start.character + 1;
-  return `${line}:${col}`;
+  const startLine = diagnostic.range.start.line + 1;
+  const startCol = diagnostic.range.start.character + 1;
+  const endLine = diagnostic.range.end.line + 1;
+  const endCol = diagnostic.range.end.character + 1;
+
+  if (startLine === endLine && startCol === endCol) {
+    return `${startLine}:${startCol}`;
+  }
+
+  return `${startLine}:${startCol}-${endLine}:${endCol}`;
 }
 
 export interface FormatOptions {

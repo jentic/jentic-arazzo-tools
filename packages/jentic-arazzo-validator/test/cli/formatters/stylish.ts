@@ -23,7 +23,7 @@ describe('stylish', function () {
     const output = formatStylish('/path/to/file.yaml', sampleDiagnostics);
 
     assert.include(output, '/path/to/file.yaml');
-    assert.include(output, '11:5'); // 0-indexed to 1-indexed
+    assert.include(output, '11:5-11:11'); // 0-indexed to 1-indexed, full range
     assert.include(output, 'Missing required field');
     assert.include(output, 'error');
     assert.include(output, 'warning');
