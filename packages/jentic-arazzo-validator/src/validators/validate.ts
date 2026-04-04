@@ -1,11 +1,15 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
+import { DiagnosticSeverity } from 'vscode-languageserver-types';
 import type { Diagnostic } from 'vscode-languageserver-types';
 import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import { getLanguageService, LogLevel, type LanguageServiceContext } from '@speclynx/apidom-ls';
+import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
+import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
 import type { PartialDeep } from 'type-fest';
 import { mergeDeepRight } from 'ramda';
 
 import { config } from '../config/config.ts';
+import ApilintCodes from '../config/codes.ts';
 import { Arazzo1JsonSchemaValidationProvider } from './json-schema-provider.ts';
 
 /**
@@ -78,6 +82,25 @@ export async function validate(
   textDocument: TextDocument,
   context: PartialDeep<LanguageServiceContext> = {},
 ): Promise<Diagnostic[]> {
+  const content = textDocument.getText();
+  const isArazzo = (await detectArazzoJSON(content)) || (await detectArazzoYAML(content));
+
+  if (!isArazzo) {
+    const lastChar = textDocument.positionAt(content.length);
+    return [
+      {
+        range: {
+          start: { line: 0, character: 0 },
+          end: { line: lastChar.line, character: lastChar.character },
+        },
+        message: 'Document content is not recognized as an Arazzo Specification',
+        severity: DiagnosticSeverity.Error,
+        code: ApilintCodes.ARAZZO_NOT_DETECTED,
+        source: 'apilint',
+      },
+    ];
+  }
+
   const mergedContext = mergeDeepRight(
     defaultLanguageServiceContext,
     context,

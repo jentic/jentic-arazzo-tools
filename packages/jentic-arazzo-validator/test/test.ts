@@ -84,11 +84,13 @@ describe('validate', function () {
       const diagnostics = await validate(textDocument);
       assert.equal(
         ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED,
-        9030200,
-        'ARAZZO_INFO_FIELD_TITLE_REQUIRED should remain diagnostic code 9030200',
+        9010200,
+        'ARAZZO_INFO_FIELD_TITLE_REQUIRED should be diagnostic code 9010200',
       );
-      const titleRequired = diagnostics.find((d) => d.code === 9030200);
-      assert.isDefined(titleRequired, 'expected diagnostic with code 9030200');
+      const titleRequired = diagnostics.find(
+        (d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED,
+      );
+      assert.isDefined(titleRequired, 'expected diagnostic with code 9010200');
       assert.equal(titleRequired!.severity, DiagnosticSeverity.Error);
       assert.isTrue(
         titleRequired!.range.start.line < titleRequired!.range.end.line ||
@@ -99,31 +101,31 @@ describe('validate', function () {
     });
   });
 
-  // eslint-disable-next-line mocha/no-pending-tests
-  context.skip('given valid YAML represented as array', function () {
+  context('given valid YAML represented as array', function () {
     const yamlArray = dedent`
       - item1
       - item2
       - item3
     `;
 
-    specify('should return errors', async function () {
+    specify('should return ARAZZO_NOT_DETECTED error', async function () {
       const textDocument = createTextDocument('memory://arazzo.yaml', yamlArray);
       const diagnostics = await validate(textDocument);
-      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-      assert.isAbove(errors.length, 0);
+      const notDetected = diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_NOT_DETECTED);
+      assert.isDefined(notDetected, 'expected diagnostic with code 9000001');
+      assert.equal(notDetected!.severity, DiagnosticSeverity.Error);
     });
   });
 
-  // eslint-disable-next-line mocha/no-pending-tests
-  context.skip('given valid JSON represented as array', function () {
+  context('given valid JSON represented as array', function () {
     const jsonArray = '["item1", "item2", "item3"]';
 
-    specify('should return errors', async function () {
+    specify('should return ARAZZO_NOT_DETECTED error', async function () {
       const textDocument = createTextDocument('memory://arazzo.json', jsonArray);
       const diagnostics = await validate(textDocument);
-      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-      assert.isAbove(errors.length, 0);
+      const notDetected = diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_NOT_DETECTED);
+      assert.isDefined(notDetected, 'expected diagnostic with code 9000001');
+      assert.equal(notDetected!.severity, DiagnosticSeverity.Error);
     });
   });
 
@@ -150,8 +152,7 @@ describe('validate', function () {
     });
   });
 
-  // eslint-disable-next-line mocha/no-pending-tests
-  context.skip('given OpenAPI document instead of Arazzo', function () {
+  context('given OpenAPI document instead of Arazzo', function () {
     const openApiDoc = dedent`
       openapi: '3.0.3'
       info:
@@ -160,11 +161,12 @@ describe('validate', function () {
       paths: {}
     `;
 
-    specify('should return errors', async function () {
+    specify('should return ARAZZO_NOT_DETECTED error', async function () {
       const textDocument = createTextDocument('memory://openapi.yaml', openApiDoc);
       const diagnostics = await validate(textDocument);
-      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-      assert.isAbove(errors.length, 0);
+      const notDetected = diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_NOT_DETECTED);
+      assert.isDefined(notDetected, 'expected diagnostic with code 9000001');
+      assert.equal(notDetected!.severity, DiagnosticSeverity.Error);
     });
   });
 });
