@@ -82,20 +82,19 @@ describe('validate', function () {
     specify('should return ARAZZO_INFO_FIELD_TITLE_REQUIRED error', async function () {
       const textDocument = createTextDocument('memory://arazzo.yaml', missingTitle);
       const diagnostics = await validate(textDocument);
-      const titleRequired = diagnostics.find(
-        (d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED,
+      assert.equal(
+        ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED,
+        9030200,
+        'ARAZZO_INFO_FIELD_TITLE_REQUIRED should remain diagnostic code 9030200',
       );
+      const titleRequired = diagnostics.find((d) => d.code === 9030200);
       assert.isDefined(titleRequired, 'expected diagnostic with code 9030200');
       assert.equal(titleRequired!.severity, DiagnosticSeverity.Error);
-      assert.isBelow(
-        titleRequired!.range.start.line,
-        titleRequired!.range.end.line + 1,
-        'range should have a valid start position',
-      );
-      assert.notDeepEqual(
-        titleRequired!.range.start,
-        titleRequired!.range.end,
-        'range should have distinct start and end positions',
+      assert.isTrue(
+        titleRequired!.range.start.line < titleRequired!.range.end.line ||
+          (titleRequired!.range.start.line === titleRequired!.range.end.line &&
+            titleRequired!.range.start.character < titleRequired!.range.end.character),
+        'range should have start position before end position',
       );
     });
   });
