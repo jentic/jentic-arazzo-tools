@@ -108,22 +108,24 @@ describe('validate', function () {
       - item3
     `;
 
-    specify('should return errors', async function () {
+    specify('should return ARAZZO_NOT_DETECTED error', async function () {
       const textDocument = createTextDocument('memory://arazzo.yaml', yamlArray);
       const diagnostics = await validate(textDocument);
-      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-      assert.isAbove(errors.length, 0);
+      const notDetected = diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_NOT_DETECTED);
+      assert.isDefined(notDetected, 'expected diagnostic with code 9000001');
+      assert.equal(notDetected!.severity, DiagnosticSeverity.Error);
     });
   });
 
   context('given valid JSON represented as array', function () {
     const jsonArray = '["item1", "item2", "item3"]';
 
-    specify('should return errors', async function () {
+    specify('should return ARAZZO_NOT_DETECTED error', async function () {
       const textDocument = createTextDocument('memory://arazzo.json', jsonArray);
       const diagnostics = await validate(textDocument);
-      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-      assert.isAbove(errors.length, 0);
+      const notDetected = diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_NOT_DETECTED);
+      assert.isDefined(notDetected, 'expected diagnostic with code 9000001');
+      assert.equal(notDetected!.severity, DiagnosticSeverity.Error);
     });
   });
 
@@ -159,11 +161,12 @@ describe('validate', function () {
       paths: {}
     `;
 
-    specify('should return errors', async function () {
+    specify('should return ARAZZO_NOT_DETECTED error', async function () {
       const textDocument = createTextDocument('memory://openapi.yaml', openApiDoc);
       const diagnostics = await validate(textDocument);
-      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
-      assert.isAbove(errors.length, 0);
+      const notDetected = diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_NOT_DETECTED);
+      assert.isDefined(notDetected, 'expected diagnostic with code 9000001');
+      assert.equal(notDetected!.severity, DiagnosticSeverity.Error);
     });
   });
 });
