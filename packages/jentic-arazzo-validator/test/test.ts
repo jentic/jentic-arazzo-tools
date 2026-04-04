@@ -84,11 +84,13 @@ describe('validate', function () {
       const diagnostics = await validate(textDocument);
       assert.equal(
         ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED,
-        9030200,
-        'ARAZZO_INFO_FIELD_TITLE_REQUIRED should remain diagnostic code 9030200',
+        9010200,
+        'ARAZZO_INFO_FIELD_TITLE_REQUIRED should be diagnostic code 9010200',
       );
-      const titleRequired = diagnostics.find((d) => d.code === 9030200);
-      assert.isDefined(titleRequired, 'expected diagnostic with code 9030200');
+      const titleRequired = diagnostics.find(
+        (d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED,
+      );
+      assert.isDefined(titleRequired, 'expected diagnostic with code 9010200');
       assert.equal(titleRequired!.severity, DiagnosticSeverity.Error);
       assert.isTrue(
         titleRequired!.range.start.line < titleRequired!.range.end.line ||
@@ -99,8 +101,7 @@ describe('validate', function () {
     });
   });
 
-  // eslint-disable-next-line mocha/no-pending-tests
-  context.skip('given valid YAML represented as array', function () {
+  context('given valid YAML represented as array', function () {
     const yamlArray = dedent`
       - item1
       - item2
@@ -115,8 +116,7 @@ describe('validate', function () {
     });
   });
 
-  // eslint-disable-next-line mocha/no-pending-tests
-  context.skip('given valid JSON represented as array', function () {
+  context('given valid JSON represented as array', function () {
     const jsonArray = '["item1", "item2", "item3"]';
 
     specify('should return errors', async function () {
@@ -150,8 +150,7 @@ describe('validate', function () {
     });
   });
 
-  // eslint-disable-next-line mocha/no-pending-tests
-  context.skip('given OpenAPI document instead of Arazzo', function () {
+  context('given OpenAPI document instead of Arazzo', function () {
     const openApiDoc = dedent`
       openapi: '3.0.3'
       info:
