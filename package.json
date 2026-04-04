@@ -93,6 +93,8 @@
     "webpack-cli": "=7.0.2"
   },
   "overrides": {
-    "minimatch@10.2.3": "10.2.4"
+    "minimatch@10.2.3": "^10.2.4",
+    "lodash-es": "^4.18.0",
+    "lodash": "^4.18.0"
   }
 }
