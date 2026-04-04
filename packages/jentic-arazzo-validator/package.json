@@ -1,6 +1,6 @@
 {
   "name": "@jentic/arazzo-validator",
-  "version": "1.0.0-alpha.29",
+  "version": "1.0.0-alpha.30",
   "description": "Validator & Linter for Arazzo Documents.",
   "keywords": [
     "arazzo",
@@ -56,19 +56,19 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
-    "@jentic/arazzo-parser": "1.0.0-alpha.29",
+    "@jentic/arazzo-parser": "1.0.0-alpha.30",
     "@speclynx/apidom-ls": "^2.7.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.2.0",
     "@speclynx/apidom-parser-adapter-arazzo-json-1": "^4.2.0",
     "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "^4.2.0",
     "@speclynx/apidom-reference": "^4.2.0",
+    "@swaggerexpert/arazzo-runtime-expression": "^2.0.3",
     "chalk": "^5.6.2",
     "commander": "^14.0.3",
     "ramda": "^0.32.0",
     "type-fest": "^5.4.4",
     "vscode-languageserver-textdocument": "^1.0.12",
-    "vscode-languageserver-types": "=3.17.6-next.6",
-    "@swaggerexpert/arazzo-runtime-expression": "^2.0.3"
+    "vscode-languageserver-types": "=3.17.6-next.6"
   },
   "files": [
     "bin/",

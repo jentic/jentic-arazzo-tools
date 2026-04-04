@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.30](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.29...v1.0.0-alpha.30) (2026-04-04)
+
+### Bug Fixes
+
+- **deps:** update lodash to non-vulnerable version ([#191](https://github.com/jentic/jentic-arazzo-tools/issues/191)) ([bfe8e16](https://github.com/jentic/jentic-arazzo-tools/commit/bfe8e16ebe7eab7b563809cdd18f8e1a90310dc7))
+- **security:** upgrade lodash and lodash-es to 4.18.x via overrides ([a39e33f](https://github.com/jentic/jentic-arazzo-tools/commit/a39e33f81f8810e78af0c9989955feb6c3f3b50c)), closes [#48](https://github.com/jentic/jentic-arazzo-tools/issues/48) [#49](https://github.com/jentic/jentic-arazzo-tools/issues/49)
+- **validator:** anchor contentType MIME regex and support parameters ([b912017](https://github.com/jentic/jentic-arazzo-tools/commit/b91201731f0e2d8e96986a20b03806a8980aedbc))
+- **validator:** detect non-Arazzo documents ([#194](https://github.com/jentic/jentic-arazzo-tools/issues/194)) ([0152fec](https://github.com/jentic/jentic-arazzo-tools/commit/0152fec747c9f3bd5cf0fc300bbf24eb95430a62))
+- **validator:** make script tag lint rule case-insensitive ([5f1e7f8](https://github.com/jentic/jentic-arazzo-tools/commit/5f1e7f8056572318a21b99a7061e7377d2f5eb09))
+
+### Features
+
+- **validator:** add comprehensive Arazzo specification lint rules ([4697c5c](https://github.com/jentic/jentic-arazzo-tools/commit/4697c5c3ccc94ab10032d22c69c4c457ec4cde50))
+- **validator:** show full range in CLI formatters ([#193](https://github.com/jentic/jentic-arazzo-tools/issues/193)) ([d7a3145](https://github.com/jentic/jentic-arazzo-tools/commit/d7a314530d94fd6f56b4c83b7c738d44c30703f2))
+
 # [1.0.0-alpha.29](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.28...v1.0.0-alpha.29) (2026-03-19)
 
 ### Bug Fixes
