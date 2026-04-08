@@ -48,7 +48,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
-    "@speclynx/apidom-datamodel": "^4.2.0",
+    "@speclynx/apidom-datamodel": "^4.3.1",
     "@speclynx/apidom-error": "^4.2.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.2.0",
     "@speclynx/apidom-parser-adapter-arazzo-json-1": "^4.2.0",

@@ -50,7 +50,7 @@
   "dependencies": {
     "@babel/runtime-corejs3": "^7.28.4",
     "@jentic/arazzo-parser": "1.0.0-alpha.30",
-    "@speclynx/apidom-datamodel": "^4.2.0",
+    "@speclynx/apidom-datamodel": "^4.3.1",
     "@speclynx/apidom-error": "^4.2.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.2.0",
     "@speclynx/apidom-ns-openapi-2": "^4.2.0",
