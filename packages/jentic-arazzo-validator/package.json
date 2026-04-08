@@ -60,7 +60,7 @@
     "@speclynx/apidom-ls": "^2.7.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.2.0",
     "@speclynx/apidom-parser-adapter-arazzo-json-1": "^4.2.0",
-    "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "^4.2.0",
+    "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "^4.3.1",
     "@speclynx/apidom-reference": "^4.2.0",
     "@swaggerexpert/arazzo-runtime-expression": "^2.0.3",
     "chalk": "^5.6.2",
