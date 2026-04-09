@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: 'Download arazzo-ui-build artifact'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -47,7 +47,7 @@ jobs:
           mkdir deploy-dir
           unzip arazzo-ui-build.zip -d deploy-dir
       - name: Inject Google Tag Manager
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         env:
           GTAG_ID: ${{ secrets.GTAG_ID }}
         with:
