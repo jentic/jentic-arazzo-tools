@@ -67,7 +67,7 @@
     "@jentic/arazzo-parser": "1.0.0-alpha.30",
     "@jentic/arazzo-resolver": "1.0.0-alpha.30",
     "@speclynx/apidom-core": "^4.2.0",
-    "mermaid": "^11.12.2",
+    "mermaid": "^11.15.0",
     "react-markdown": "^10.1.0",
     "reactflow": "^11.10.4",
     "rehype-highlight": "^7.0.2",
