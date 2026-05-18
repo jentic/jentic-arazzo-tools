@@ -45,6 +45,7 @@
     "@babel/plugin-transform-runtime": "=7.29.0",
     "@babel/preset-env": "=7.29.2",
     "@babel/preset-typescript": "=7.28.5",
+    "@babel/plugin-transform-modules-systemjs": "=7.29.4",
     "@commitlint/cli": "=20.5.0",
     "@commitlint/config-conventional": "=20.5.0",
     "@eslint/js": "^9.28.0",
