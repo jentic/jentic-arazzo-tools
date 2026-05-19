@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.31](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.30...v1.0.0-alpha.31) (2026-05-19)
+
+### Bug Fixes
+
+- **release:** use GitHub App token instead of GITHUB_TOKEN ([#221](https://github.com/jentic/jentic-arazzo-tools/issues/221)) ([ae64b36](https://github.com/jentic/jentic-arazzo-tools/commit/ae64b363ed19fb8372bb32d707229584e105bbd8))
+
 # [1.0.0-alpha.30](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.29...v1.0.0-alpha.30) (2026-04-04)
 
 ### Bug Fixes
