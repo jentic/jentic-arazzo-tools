@@ -52,7 +52,7 @@
     "@jentic/arazzo-parser": "*",
     "@jentic/arazzo-resolver": "*",
     "@speclynx/apidom-core": "^4.10.0",
-    "@speclynx/apidom-datamodel": "^4.10.0",
+    "@speclynx/apidom-datamodel": "^4.10.1",
     "@speclynx/apidom-error": "^4.10.0",
     "@speclynx/apidom-json-pointer": "^4.10.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.10.0",
