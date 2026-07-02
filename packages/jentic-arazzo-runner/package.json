@@ -54,7 +54,7 @@
     "@speclynx/apidom-core": "^4.10.0",
     "@speclynx/apidom-datamodel": "^4.10.0",
     "@speclynx/apidom-error": "^4.10.0",
-    "@speclynx/apidom-json-pointer": "^4.10.0",
+    "@speclynx/apidom-json-pointer": "^4.16.0",
     "@speclynx/apidom-ns-arazzo-1": "^4.10.0",
     "@speclynx/apidom-ns-openapi-2": "^4.10.0",
     "@speclynx/apidom-ns-openapi-3-0": "^4.10.0",
