@@ -59,7 +59,7 @@
     "@speclynx/apidom-parser-adapter-openapi-yaml-2": "^4.10.0",
     "@speclynx/apidom-parser-adapter-openapi-yaml-3-0": "^4.10.0",
     "@speclynx/apidom-parser-adapter-openapi-yaml-3-1": "^4.10.0",
-    "@speclynx/apidom-reference": "^4.10.0",
+    "@speclynx/apidom-reference": "^4.16.0",
     "ramda-adjunct": "^6.0.0",
     "type-fest": "^5.4.4"
   },
