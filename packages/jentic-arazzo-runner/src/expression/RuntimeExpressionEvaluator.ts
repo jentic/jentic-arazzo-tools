@@ -85,8 +85,9 @@ const pointerRealm = composeRealms(new ApiDOMEvaluationRealm(), new JSONEvaluati
  * the external document (via the registry) the source name points at.
  *
  * A reference resolves to `undefined` when it is absent. Runtime values
- * originate from JSON (or ApiDOM), where absence is `null` and a value is never
- * `undefined`, so `undefined` unambiguously marks "unresolved".
+ * originate from JSON (or ApiDOM), which cannot represent `undefined` — an
+ * absent value is a missing property and an explicit null is `null` — so
+ * `undefined` unambiguously marks "unresolved".
  *
  * Three modes are supported:
  * - {@link RuntimeExpressionEvaluator.evaluate} resolves a pure expression
