@@ -58,6 +58,17 @@ export { default as OpenAPIOperationResponse } from './client/OpenAPIOperationRe
 export { default as OpenAPIClientSwagger } from './client/OpenAPIClientSwagger.ts';
 export type { SwaggerOpenAPIOperationExecuteOptions } from './client/OpenAPIClientSwagger.ts';
 
+/* Runtime Expressions */
+export { default as RuntimeExpressionEvaluator } from './expression/RuntimeExpressionEvaluator.ts';
+export type { RuntimeExpressionEvaluatorOptions } from './expression/RuntimeExpressionEvaluator.ts';
+export type {
+  RuntimeExpressionContext,
+  RuntimeExpressionRequestContext,
+  RuntimeExpressionResponseContext,
+  RuntimeExpressionStepContext,
+  RuntimeExpressionWorkflowContext,
+} from './expression/RuntimeExpressionContext.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
 export { default as AssemblerError } from './errors/AssemblerError.ts';
@@ -66,3 +77,4 @@ export { default as NormalizationError } from './errors/NormalizationError.ts';
 export { default as ExtractionError } from './errors/ExtractionError.ts';
 export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocumentError.ts';
 export { default as UnmatchedProviderError } from './errors/UnmatchedProviderError.ts';
+export { default as RuntimeExpressionError } from './errors/RuntimeExpressionError.ts';

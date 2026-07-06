@@ -72,6 +72,19 @@ class DocumentRegistry {
   }
 
   /**
+   * Returns an already-loaded document by URI, or undefined if not cached.
+   *
+   * Synchronous counterpart to `acquire`: it never loads a document, only
+   * returns one the registry already holds, marking it most recently used like
+   * any other access. Consumers that must resolve a reference without awaiting
+   * (e.g. runtime expression evaluation) use this; the executor is responsible
+   * for having acquired the document beforehand.
+   */
+  get(uri: string): APIDocument | undefined {
+    return this.#get(url.sanitize(url.stripHash(uri)));
+  }
+
+  /**
    * Acquires the entry Arazzo document and marks it with `isEntry: true`.
    * Validates that the document is an Arazzo specification.
    */
