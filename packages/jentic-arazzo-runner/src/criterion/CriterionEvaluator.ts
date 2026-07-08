@@ -7,32 +7,25 @@ import {
 } from '@speclynx/apidom-ns-arazzo-1';
 
 import CriterionError from '../errors/CriterionError.ts';
-import type ArazzoDocument from '../document/ArazzoDocument.ts';
-import type DocumentRegistry from '../registry/DocumentRegistry.ts';
-import RuntimeExpressionEvaluator from '../expression/RuntimeExpressionEvaluator.ts';
-import type { RuntimeExpressionContext } from '../expression/RuntimeExpressionContext.ts';
 import RegexCriterionEvaluator from './RegexCriterionEvaluator.ts';
+
+/**
+ * Resolves a criterion's `context` runtime expression to a value.
+ *
+ * A criterion condition is applied to the value this produces. It should
+ * resolve leniently — an unresolvable reference returning `undefined` fails the
+ * criterion, rather than throwing (a common way to drive it is
+ * `(expression) => runtimeExpressionEvaluator.evaluate(expression)` with a
+ * lenient evaluator).
+ * @public
+ */
+export type CriterionContextResolver = (expression: string) => unknown;
 
 /**
  * Options for the CriterionEvaluator.
  * @public
  */
 export interface CriterionEvaluatorOptions {
-  /**
-   * The runtime state that a criterion's `context` runtime expression is
-   * resolved against.
-   */
-  readonly context?: RuntimeExpressionContext;
-  /**
-   * The Arazzo document, forwarded to the runtime expression evaluator to
-   * resolve `$components` / `$sourceDescriptions` in a criterion's `context`.
-   */
-  readonly document?: ArazzoDocument;
-  /**
-   * The document registry, forwarded to the runtime expression evaluator to
-   * reach documents referenced by `$sourceDescriptions`.
-   */
-  readonly registry?: DocumentRegistry;
   /**
    * Regex condition evaluator. Injectable for testing.
    */
@@ -47,29 +40,26 @@ export interface CriterionEvaluatorOptions {
  *   pattern to the resolved value.
  * - `simple`, `jsonpath`, `xpath` — not yet implemented.
  *
- * For the non-`simple` types the `context` is a runtime expression whose
- * resolved value the condition is applied to; it is resolved leniently, so an
- * unresolvable context yields `undefined` and fails the criterion rather than
- * throwing.
+ * The evaluator is agnostic about how a criterion's `context` runtime
+ * expression is resolved: the caller supplies a {@link CriterionContextResolver}
+ * per evaluation, keeping runtime-state, document, and registry concerns in the
+ * runtime expression evaluator rather than duplicated here.
  * @public
  */
 class CriterionEvaluator {
-  readonly #context: RuntimeExpressionContext;
-  readonly #document?: ArazzoDocument;
-  readonly #registry?: DocumentRegistry;
   readonly #regex: RegexCriterionEvaluator;
 
   constructor(options: CriterionEvaluatorOptions = {}) {
-    this.#context = options.context ?? {};
-    this.#document = options.document;
-    this.#registry = options.registry;
     this.#regex = options.regex ?? new RegexCriterionEvaluator();
   }
 
   /**
    * Evaluates a criterion element, returning whether the condition is met.
+   *
+   * `resolve` produces the value a non-`simple` condition is applied to, from
+   * the criterion's `context` runtime expression.
    */
-  evaluate(criterion: CriterionElement): boolean {
+  evaluate(criterion: CriterionElement, resolve: CriterionContextResolver): boolean {
     if (!isCriterionElement(criterion)) {
       throw new CriterionError('Element is not a Criterion Object', {
         reason: 'invalid-criterion',
@@ -89,7 +79,7 @@ class CriterionEvaluator {
 
     switch (type) {
       case 'regex':
-        return this.#regex.evaluate(condition, this.#resolveContext(criterion, type));
+        return this.#regex.evaluate(condition, this.#resolveContext(criterion, type, resolve));
       case 'simple':
       case 'jsonpath':
       case 'xpath':
@@ -122,24 +112,23 @@ class CriterionEvaluator {
   }
 
   /**
-   * Resolves the criterion's `context` runtime expression against the runtime
-   * state. The condition types that need a context (`regex`, `jsonpath`,
-   * `xpath`) must declare one; a missing context resolves to `undefined` and
-   * fails the criterion downstream.
+   * Resolves the criterion's `context` runtime expression to the value the
+   * condition is applied to. The condition types that need a context (`regex`,
+   * `jsonpath`, `xpath`) must declare one; a missing context resolves to
+   * `undefined` and fails the criterion downstream.
    */
-  #resolveContext(criterion: CriterionElement, type: string): unknown {
+  #resolveContext(
+    criterion: CriterionElement,
+    type: string,
+    resolve: CriterionContextResolver,
+  ): unknown {
     if (!isStringElement(criterion.context)) {
       throw new CriterionError(`Criterion type "${type}" requires a "context"`, {
         type,
         reason: 'missing-context',
       });
     }
-    const evaluator = new RuntimeExpressionEvaluator(this.#context, {
-      strict: false,
-      document: this.#document,
-      registry: this.#registry,
-    });
-    return evaluator.evaluate(toValue(criterion.context) as string);
+    return resolve(toValue(criterion.context) as string);
   }
 }
 
