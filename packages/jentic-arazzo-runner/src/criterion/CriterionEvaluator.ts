@@ -153,15 +153,22 @@ class CriterionEvaluator {
 
   /**
    * Extracts the expression `version` from a Criterion Expression Type Object,
-   * or `undefined` when the `type` is a bare string (no version) — in which case
-   * the spec default for the type applies.
+   * or `undefined` when no version is declared (a bare-string `type`, or a type
+   * object without a `version`) — in which case the spec default for the type
+   * applies. A `version` that is present but not a string is malformed and
+   * throws a {@link CriterionError} rather than silently defaulting.
    */
   #resolveVersion(criterion: CriterionElement): string | undefined {
     const type = criterion.type;
-    if (isCriterionExpressionTypeElement(type) && isStringElement(type.version)) {
+    if (!isCriterionExpressionTypeElement(type) || type.version === undefined) {
+      return undefined;
+    }
+    if (isStringElement(type.version)) {
       return toValue(type.version) as string;
     }
-    return undefined;
+    throw new CriterionError('Criterion has an invalid expression type "version"', {
+      reason: 'invalid-version',
+    });
   }
 
   /**

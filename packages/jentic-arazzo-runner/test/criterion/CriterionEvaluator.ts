@@ -140,6 +140,22 @@ describe('CriterionEvaluator', function () {
         /Unsupported jsonpath version/,
       );
     });
+
+    specify(
+      'should throw for a present-but-non-string version rather than defaulting',
+      function () {
+        const criterion = refractCriterion({ context: '$response.body', condition: '$.pets[*]' });
+        // a version that is present but not a string is malformed — it must not
+        // silently fall back to the default rfc9535.
+        criterion.type = new CriterionExpressionTypeElement({ type: 'jsonpath', version: 42 });
+
+        assert.throws(
+          () => evaluator.evaluate(criterion, resolve),
+          CriterionError,
+          /invalid expression type "version"/,
+        );
+      },
+    );
   });
 
   context('condition and type validation', function () {
