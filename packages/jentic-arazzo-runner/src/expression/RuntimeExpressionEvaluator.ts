@@ -1,7 +1,7 @@
 import {
   parse,
   test,
-  extract,
+  interpolate,
   type ASTNode,
   type RequestExpression,
   type ResponseExpression,
@@ -135,22 +135,11 @@ class RuntimeExpressionEvaluator {
    * string form of its evaluated value. Returns a string.
    *
    * Object and array values are serialized with `JSON.stringify`. In non-strict
-   * mode, unresolvable references render as an empty string. `extract` is the
-   * authority on which `{…}` occurrences are expressions, so a `{…}` it does not
-   * recognize (e.g. a literal JSON payload) is left unchanged.
+   * mode, unresolvable references render as an empty string. A `{…}` that is not
+   * a valid embedded expression (e.g. a literal JSON payload) is left unchanged.
    */
   interpolate(template: string): string {
-    // splice from `position` onward so substituted text is never re-scanned —
-    // a resolved value that looks like a `{expression}` is not re-interpolated.
-    let result = '';
-    let position = 0;
-    for (const expression of extract(template)) {
-      const token = `{${expression}}`;
-      const at = template.indexOf(token, position);
-      result += template.slice(position, at) + this.#stringify(this.evaluate(expression));
-      position = at + token.length;
-    }
-    return result + template.slice(position);
+    return interpolate(template, (expression) => this.evaluate(expression));
   }
 
   /**
@@ -337,16 +326,6 @@ class RuntimeExpressionEvaluator {
       if (error instanceof JSONPointerEvaluateError) return undefined;
       throw error;
     }
-  }
-
-  /**
-   * Stringifies a value for interpolation into a template.
-   */
-  #stringify(value: unknown): string {
-    if (value === undefined || value === null) return '';
-    if (typeof value === 'string') return value;
-    if (typeof value === 'object') return JSON.stringify(value);
-    return String(value);
   }
 }
 
