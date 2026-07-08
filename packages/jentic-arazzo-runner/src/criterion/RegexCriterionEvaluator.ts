@@ -10,12 +10,11 @@ import CriterionError from '../errors/CriterionError.ts';
  * the author's responsibility via `^`/`$`, consistent with the spec's `^200$`
  * example.
  *
- * Per Arazzo 1.1.0, a `null` or `undefined` context fails the condition.
- *
- * The context is coerced with `String()`, so a non-scalar context matches
- * against its coercion (an object becomes `"[object Object]"`, an array its
- * comma-joined items); the spec does not define regex over non-scalar contexts,
- * so authors should target a scalar via the `context` runtime expression.
+ * Per Arazzo 1.1.0, a `null` or `undefined` context fails the condition. A
+ * non-scalar context is serialized with `JSON.stringify` (matching how the
+ * runtime expression evaluator stringifies values for interpolation), so a
+ * pattern can match against an object/array body; scalars are coerced with
+ * `String()`.
  *
  * The pattern is a native `RegExp`, which has no execution timeout; a
  * pathological author pattern (catastrophic backtracking) against a long
@@ -46,7 +45,19 @@ class RegexCriterionEvaluator {
       });
     }
 
-    return regExp.test(String(context));
+    return regExp.test(this.#stringify(context));
+  }
+
+  /**
+   * Coerces a non-null context value to the string the pattern is tested
+   * against, matching the runtime expression evaluator's interpolation
+   * stringify: strings as-is, objects/arrays as JSON, everything else via
+   * `String()`. A value whose `JSON.stringify` is `undefined` becomes `''`.
+   */
+  #stringify(context: unknown): string {
+    if (typeof context === 'string') return context;
+    if (typeof context === 'object') return JSON.stringify(context) ?? '';
+    return String(context);
   }
 }
 
