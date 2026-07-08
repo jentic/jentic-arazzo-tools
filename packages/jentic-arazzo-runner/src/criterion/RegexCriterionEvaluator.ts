@@ -11,6 +11,16 @@ import CriterionError from '../errors/CriterionError.ts';
  * example.
  *
  * Per Arazzo 1.1.0, a `null` or `undefined` context fails the condition.
+ *
+ * The context is coerced with `String()`, so a non-scalar context matches
+ * against its coercion (an object becomes `"[object Object]"`, an array its
+ * comma-joined items); the spec does not define regex over non-scalar contexts,
+ * so authors should target a scalar via the `context` runtime expression.
+ *
+ * The pattern is a native `RegExp`, which has no execution timeout; a
+ * pathological author pattern (catastrophic backtracking) against a long
+ * context can stall. Patterns originate from the Arazzo document, so this is
+ * treated as trusted input rather than guarded here.
  * @public
  */
 class RegexCriterionEvaluator {

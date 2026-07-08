@@ -49,5 +49,10 @@ describe('RegexCriterionEvaluator', function () {
     specify('should throw CriterionError for an invalid regular expression', function () {
       assert.throws(() => evaluator.evaluate('(', 'x'), CriterionError);
     });
+
+    specify('should match against a non-scalar context via its string coercion', function () {
+      assert.isTrue(evaluator.evaluate('object', {}));
+      assert.isFalse(evaluator.evaluate('^200$', { status: 200 }));
+    });
   });
 });

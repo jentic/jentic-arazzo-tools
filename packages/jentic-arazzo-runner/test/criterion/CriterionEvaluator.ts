@@ -83,6 +83,12 @@ describe('CriterionEvaluator', function () {
       assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError);
     });
 
+    specify('should throw when the condition is an empty string', function () {
+      const criterion = refractCriterion({ context: '$statusCode', condition: '', type: 'regex' });
+
+      assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError, /missing/);
+    });
+
     specify('should throw "not yet supported" for a simple condition', function () {
       const criterion = refractCriterion({ condition: '$statusCode == 200' });
 

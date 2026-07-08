@@ -69,7 +69,9 @@ class CriterionEvaluator {
     const condition = isStringElement(criterion.condition)
       ? (toValue(criterion.condition) as string)
       : undefined;
-    if (condition === undefined) {
+    // `condition` is required; an empty string is not a meaningful condition
+    // (e.g. an empty regex would match unconditionally), so reject it too.
+    if (condition === undefined || condition === '') {
       throw new CriterionError('Criterion is missing a "condition"', {
         reason: 'missing-condition',
       });
