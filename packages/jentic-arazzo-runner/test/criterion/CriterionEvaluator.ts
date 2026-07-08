@@ -106,5 +106,14 @@ describe('CriterionEvaluator', function () {
         /not yet supported/,
       );
     });
+
+    specify('should throw for a present-but-malformed type rather than defaulting', function () {
+      const criterion = refractCriterion({ context: '$statusCode', condition: '^200$' });
+      // a Criterion Expression Type Object with no inner `type` is present but
+      // unreadable — it must not silently degrade to `simple`.
+      criterion.type = new CriterionExpressionTypeElement();
+
+      assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError, /invalid "type"/);
+    });
   });
 });

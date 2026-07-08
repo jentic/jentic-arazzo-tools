@@ -98,24 +98,26 @@ class CriterionEvaluator {
   }
 
   /**
-   * Determines the criterion `type`, defaulting to `simple` when omitted. The
-   * `type` field may be a bare string or a Criterion Expression Type Object
-   * (whose own `type` names the flavor).
+   * Determines the criterion `type`, defaulting to `simple` only when the field
+   * is omitted. The `type` field may be a bare string or a Criterion Expression
+   * Type Object (whose own `type` names the flavor). A present-but-unreadable
+   * `type` throws a {@link CriterionError} rather than silently defaulting.
    */
   #resolveType(criterion: CriterionElement): string {
     const type = criterion.type;
+    if (type === undefined) return 'simple';
     if (isCriterionExpressionTypeElement(type) && isStringElement(type.type)) {
       return toValue(type.type) as string;
     }
     if (isStringElement(type)) return toValue(type) as string;
-    return 'simple';
+    throw new CriterionError('Criterion has an invalid "type"', { reason: 'invalid-type' });
   }
 
   /**
    * Resolves the criterion's `context` runtime expression to the value the
    * condition is applied to. The condition types that need a context (`regex`,
-   * `jsonpath`, `xpath`) must declare one; a missing context resolves to
-   * `undefined` and fails the criterion downstream.
+   * `jsonpath`, `xpath`) must declare one; a criterion of such a type without a
+   * `context` throws a {@link CriterionError}.
    */
   #resolveContext(
     criterion: CriterionElement,
