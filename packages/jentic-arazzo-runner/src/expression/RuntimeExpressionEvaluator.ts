@@ -136,10 +136,8 @@ class RuntimeExpressionEvaluator {
    *
    * Object and array values are serialized with `JSON.stringify`. In non-strict
    * mode, unresolvable references render as an empty string. `extract` is the
-   * authority on which `{…}` occurrences are expressions; a literal JSON payload
-   * or a body-pointer form `{$response.body#/x}` (which `extract` cannot recover,
-   * as `}` is a legal JSON Pointer character) is left unchanged — author those
-   * in the unbraced form for typed resolution.
+   * authority on which `{…}` occurrences are expressions, so a `{…}` it does not
+   * recognize (e.g. a literal JSON payload) is left unchanged.
    */
   interpolate(template: string): string {
     // splice from `position` onward so substituted text is never re-scanned —
@@ -224,13 +222,13 @@ class RuntimeExpressionEvaluator {
         );
       case 'WorkflowsExpression':
         return this.#drill(
-          this.#get(this.#context.workflows?.[node.workflowId]?.[node.field], node.subField),
+          this.#get(this.#context.workflows?.[node.workflowId]?.[node.field], node.fieldName),
           node.jsonPointer?.value,
         );
       case 'SourceDescriptionsExpression':
         return this.#sourceDescription(node.sourceName, node.reference);
       case 'ComponentsExpression':
-        return this.#component(node.field, node.subField);
+        return this.#component(node.componentType, node.componentName);
       default:
         throw new RuntimeExpressionError(
           `Unsupported runtime expression node "${(node as ASTNode).type}"`,
