@@ -76,6 +76,29 @@ describe('CriterionEvaluator', function () {
     });
   });
 
+  context('simple type (default)', function () {
+    specify('should evaluate a simple condition when type is omitted', function () {
+      const criterion = refractCriterion({ condition: '$statusCode == 200' });
+
+      assert.isTrue(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should evaluate a false simple condition', function () {
+      const criterion = refractCriterion({ condition: '$statusCode == 404' });
+
+      assert.isFalse(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should not require a context for a simple condition', function () {
+      // simple embeds its expressions in the condition — no separate context.
+      const criterion = refractCriterion({
+        condition: "$response.body.status == 'available'",
+      });
+
+      assert.isTrue(evaluator.evaluate(criterion, resolve));
+    });
+  });
+
   context('condition and type validation', function () {
     specify('should throw when the condition is missing', function () {
       const criterion = refractCriterion({ context: '$statusCode', type: 'regex' });
@@ -87,16 +110,6 @@ describe('CriterionEvaluator', function () {
       const criterion = refractCriterion({ context: '$statusCode', condition: '', type: 'regex' });
 
       assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError, /missing/);
-    });
-
-    specify('should throw "not yet supported" for a simple condition', function () {
-      const criterion = refractCriterion({ condition: '$statusCode == 200' });
-
-      assert.throws(
-        () => evaluator.evaluate(criterion, resolve),
-        CriterionError,
-        /not yet supported/,
-      );
     });
 
     specify('should throw "not yet supported" for a jsonpath condition', function () {

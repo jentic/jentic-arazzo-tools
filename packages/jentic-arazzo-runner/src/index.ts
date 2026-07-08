@@ -75,6 +75,7 @@ export type {
   CriterionEvaluatorOptions,
   CriterionContextResolver,
 } from './criterion/CriterionEvaluator.ts';
+export { default as SimpleCriterionEvaluator } from './criterion/SimpleCriterionEvaluator.ts';
 export { default as RegexCriterionEvaluator } from './criterion/RegexCriterionEvaluator.ts';
 
 /* Errors */
