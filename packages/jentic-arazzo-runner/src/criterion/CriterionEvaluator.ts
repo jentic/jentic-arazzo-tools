@@ -66,8 +66,9 @@ class CriterionEvaluator {
   /**
    * Evaluates a criterion element, returning whether the condition is met.
    *
-   * `resolve` produces the value a non-`simple` condition is applied to, from
-   * the criterion's `context` runtime expression.
+   * `resolve` turns a runtime expression into a value: for `simple` it resolves
+   * the expressions embedded in the condition; for the other types it resolves
+   * the criterion's `context` expression that the condition is applied to.
    */
   evaluate(criterion: CriterionElement, resolve: CriterionContextResolver): boolean {
     if (!isCriterionElement(criterion)) {

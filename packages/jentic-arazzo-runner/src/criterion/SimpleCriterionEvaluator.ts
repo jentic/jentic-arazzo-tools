@@ -16,9 +16,11 @@ import type { CriterionContextResolver } from './CriterionEvaluator.ts';
  * to `@swaggerexpert/arazzo-criterion`; each embedded runtime expression is
  * resolved through the supplied resolver.
  *
- * An operand that resolves to `undefined` (a lenient miss) fails the comparison
- * rather than throwing, so an unsatisfiable criterion is simply not met. A
- * malformed condition throws {@link CriterionError}.
+ * An operand that resolves to `undefined` (a lenient miss) does not throw; it is
+ * compared per the library's rules (e.g. `undefined == x` and relational
+ * comparisons are false, matching the spec's "null equals only null"), so a
+ * negated or disjunctive condition may still pass. A malformed condition throws
+ * {@link CriterionError}.
  * @public
  */
 class SimpleCriterionEvaluator {
