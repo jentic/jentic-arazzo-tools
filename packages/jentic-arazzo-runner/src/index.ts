@@ -77,6 +77,7 @@ export type {
 } from './criterion/CriterionEvaluator.ts';
 export { default as SimpleCriterionEvaluator } from './criterion/SimpleCriterionEvaluator.ts';
 export { default as RegexCriterionEvaluator } from './criterion/RegexCriterionEvaluator.ts';
+export { default as JSONPathCriterionEvaluator } from './criterion/JSONPathCriterionEvaluator.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
