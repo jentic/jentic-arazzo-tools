@@ -210,15 +210,9 @@ describe('RuntimeExpressionEvaluator', function () {
       assert.strictEqual(evaluator.interpolate('{"a":1}'), '{"a":1}');
     });
 
-    specify(
-      'should leave a braced body-pointer form unchanged (extract cannot recover it)',
-      function () {
-        assert.strictEqual(
-          evaluator.interpolate('id={$response.body#/pets/0/id}'),
-          'id={$response.body#/pets/0/id}',
-        );
-      },
-    );
+    specify('should interpolate a braced body-pointer expression', function () {
+      assert.strictEqual(evaluator.interpolate('id={$response.body#/pets/0/id}'), 'id=7');
+    });
 
     specify(
       'should render an unresolvable reference as empty string in non-strict mode',
