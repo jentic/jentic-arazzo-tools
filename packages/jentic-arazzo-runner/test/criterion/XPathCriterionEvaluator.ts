@@ -48,5 +48,23 @@ describe('XPathCriterionEvaluator', function () {
     specify('should throw CriterionError for a non-XML (object) context', function () {
       assert.throws(() => evaluator.evaluate('//status', { status: 'available' }), CriterionError);
     });
+
+    specify('should throw CriterionError for fatally malformed XML', function () {
+      assert.throws(() => evaluator.evaluate('//status', '<a><unclosed>'), CriterionError);
+    });
+
+    specify('should throw CriterionError for recoverably malformed XML', function () {
+      // an undefined entity is a recoverable error in xmldom — it does not throw
+      // and would otherwise yield a degraded document evaluated silently.
+      assert.throws(() => evaluator.evaluate('//status', '<a>&foo;</a>'), CriterionError);
+    });
+
+    specify('should reject a JSON object that carries a numeric nodeType as non-XML', function () {
+      // must not be mistaken for a parsed DOM node.
+      assert.throws(
+        () => evaluator.evaluate('//status', { nodeType: 3, status: 'x' }),
+        CriterionError,
+      );
+    });
   });
 });

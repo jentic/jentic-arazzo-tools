@@ -65,9 +65,28 @@ class XPathCriterionEvaluator {
       });
     }
 
+    // capture parse errors via `onError` rather than the default handler: this
+    // both suppresses the parser writing to the console and catches *recoverable*
+    // errors (e.g. an undefined entity, stray text) that do not throw but would
+    // otherwise yield a degraded document evaluated silently.
+    let parseError: unknown;
     try {
-      return new DOMParser().parseFromString(context, 'text/xml');
+      const document = new DOMParser({
+        onError: (_level, message) => {
+          parseError ??= message;
+        },
+      }).parseFromString(context, 'text/xml');
+      if (parseError !== undefined) {
+        throw new CriterionError('xpath criterion context is not valid XML', {
+          cause: parseError,
+          condition,
+          type: 'xpath',
+          reason: 'invalid-context',
+        });
+      }
+      return document;
     } catch (error: unknown) {
+      if (error instanceof CriterionError) throw error;
       throw new CriterionError('xpath criterion context is not valid XML', {
         cause: error,
         condition,
@@ -78,15 +97,15 @@ class XPathCriterionEvaluator {
   }
 
   /**
-   * Duck-types a DOM node (has a numeric `nodeType`), so a caller may pass an
-   * already-parsed document instead of an XML string.
+   * Duck-types a DOM node, so a caller may pass an already-parsed document
+   * instead of an XML string. Requires both a numeric `nodeType` and a string
+   * `nodeName` so a plain JSON value that happens to carry a `nodeType` property
+   * is not mistaken for a node (and is instead rejected as a non-XML context).
    */
   #isNode(value: unknown): boolean {
-    return (
-      typeof value === 'object' &&
-      value !== null &&
-      typeof (value as { nodeType?: unknown }).nodeType === 'number'
-    );
+    if (typeof value !== 'object' || value === null) return false;
+    const node = value as { nodeType?: unknown; nodeName?: unknown };
+    return typeof node.nodeType === 'number' && typeof node.nodeName === 'string';
   }
 }
 
