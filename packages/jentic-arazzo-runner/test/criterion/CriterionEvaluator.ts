@@ -12,7 +12,10 @@ describe('CriterionEvaluator', function () {
   // the resolver bridges a criterion's `context` to the runtime expression
   // evaluator, leniently so an unresolvable context fails the criterion.
   const runtime = new RuntimeExpressionEvaluator(
-    { response: { statusCode: 200, body: { status: 'Available', pets: [{ id: 1 }] } } },
+    {
+      response: { statusCode: 200, body: { status: 'Available', pets: [{ id: 1 }] } },
+      inputs: { xml: '<order><status>available</status></order>' },
+    },
     { strict: false },
   );
   const resolve: CriterionContextResolver = (expression) => runtime.evaluate(expression);
@@ -158,6 +161,46 @@ describe('CriterionEvaluator', function () {
     );
   });
 
+  context('xpath type', function () {
+    specify('should evaluate an xpath query against the resolved XML context', function () {
+      const criterion = refractCriterion({
+        context: '$inputs.xml',
+        condition: "//status = 'available'",
+        type: 'xpath',
+      });
+
+      assert.isTrue(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should not be met when the predicate is false', function () {
+      const criterion = refractCriterion({
+        context: '$inputs.xml',
+        condition: "//status = 'sold'",
+        type: 'xpath',
+      });
+
+      assert.isFalse(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should accept an explicit xpath-31 version', function () {
+      const criterion = refractCriterion({ context: '$inputs.xml', condition: '//status' });
+      criterion.type = new CriterionExpressionTypeElement({ type: 'xpath', version: 'xpath-31' });
+
+      assert.isTrue(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should throw for a non-xpath-31 version', function () {
+      const criterion = refractCriterion({ context: '$inputs.xml', condition: '//status' });
+      criterion.type = new CriterionExpressionTypeElement({ type: 'xpath', version: 'xpath-30' });
+
+      assert.throws(
+        () => evaluator.evaluate(criterion, resolve),
+        CriterionError,
+        /Unsupported xpath version/,
+      );
+    });
+  });
+
   context('condition and type validation', function () {
     specify('should throw when the condition is missing', function () {
       const criterion = refractCriterion({ context: '$statusCode', type: 'regex' });
@@ -169,20 +212,6 @@ describe('CriterionEvaluator', function () {
       const criterion = refractCriterion({ context: '$statusCode', condition: '', type: 'regex' });
 
       assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError, /missing/);
-    });
-
-    specify('should throw "not yet supported" for an xpath condition', function () {
-      const criterion = refractCriterion({
-        context: '$response.body',
-        condition: '/pets',
-        type: 'xpath',
-      });
-
-      assert.throws(
-        () => evaluator.evaluate(criterion, resolve),
-        CriterionError,
-        /not yet supported/,
-      );
     });
 
     specify('should throw for a present-but-malformed type rather than defaulting', function () {

@@ -65,6 +65,8 @@
     "@swaggerexpert/arazzo-runtime-expression": "^3.1.0",
     "@swaggerexpert/json-pointer": "^3.0.1",
     "@swaggerexpert/jsonpath": "^4.0.4",
+    "@xmldom/xmldom": "^0.9.10",
+    "fontoxpath": "^3.34.0",
     "type-fest": "^5.4.4"
   },
   "files": [
