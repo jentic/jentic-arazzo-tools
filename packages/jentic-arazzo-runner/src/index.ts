@@ -84,6 +84,10 @@ export { default as XPathCriterionEvaluator } from './criterion/XPathCriterionEv
 export { default as WorkflowExecutionState } from './state/WorkflowExecutionState.ts';
 export type { WorkflowExecutionStateOptions } from './state/WorkflowExecutionState.ts';
 
+/* Parameters */
+export { default as ParameterResolver } from './parameter/ParameterResolver.ts';
+export type { ParameterValueResolver } from './parameter/ParameterResolver.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
 export { default as AssemblerError } from './errors/AssemblerError.ts';
