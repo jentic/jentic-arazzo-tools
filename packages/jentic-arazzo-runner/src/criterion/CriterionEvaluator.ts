@@ -10,6 +10,7 @@ import CriterionError from '../errors/CriterionError.ts';
 import RegexCriterionEvaluator from './RegexCriterionEvaluator.ts';
 import SimpleCriterionEvaluator from './SimpleCriterionEvaluator.ts';
 import JSONPathCriterionEvaluator from './JSONPathCriterionEvaluator.ts';
+import XPathCriterionEvaluator from './XPathCriterionEvaluator.ts';
 
 /**
  * Resolves a runtime expression to a value during criterion evaluation.
@@ -41,6 +42,10 @@ export interface CriterionEvaluatorOptions {
    * JSONPath condition evaluator. Injectable for testing.
    */
   readonly jsonpath?: JSONPathCriterionEvaluator;
+  /**
+   * XPath condition evaluator. Injectable for testing.
+   */
+  readonly xpath?: XPathCriterionEvaluator;
 }
 
 /**
@@ -55,7 +60,10 @@ export interface CriterionEvaluatorOptions {
  *   JSONPath query to the resolved value (met when the query matches). Only the
  *   `rfc9535` version is supported (the spec default); an explicit other version
  *   throws.
- * - `xpath` — not yet implemented.
+ * - `xpath` — resolves the `context` runtime expression, then applies the XPath
+ *   3.1 query to the resolved XML value (met by the Effective Boolean Value).
+ *   Only the `xpath-31` version is supported (the spec default); an explicit
+ *   other version throws.
  *
  * The evaluator is agnostic about how runtime expressions are resolved: the
  * caller supplies a {@link CriterionContextResolver} per evaluation, keeping
@@ -67,11 +75,13 @@ class CriterionEvaluator {
   readonly #simple: SimpleCriterionEvaluator;
   readonly #regex: RegexCriterionEvaluator;
   readonly #jsonpath: JSONPathCriterionEvaluator;
+  readonly #xpath: XPathCriterionEvaluator;
 
   constructor(options: CriterionEvaluatorOptions = {}) {
     this.#simple = options.simple ?? new SimpleCriterionEvaluator();
     this.#regex = options.regex ?? new RegexCriterionEvaluator();
     this.#jsonpath = options.jsonpath ?? new JSONPathCriterionEvaluator();
+    this.#xpath = options.xpath ?? new XPathCriterionEvaluator();
   }
 
   /**
@@ -106,26 +116,17 @@ class CriterionEvaluator {
         return this.#simple.evaluate(condition, resolve);
       case 'regex':
         return this.#regex.evaluate(condition, this.#resolveContext(criterion, type, resolve));
-      case 'jsonpath': {
-        // only RFC 9535 is supported; the spec default (when no version is
-        // given) is rfc9535, so an omitted version is accepted. draft-goessner
-        // has different semantics and is rejected rather than mis-evaluated.
-        const version = this.#resolveVersion(criterion);
-        if (version !== undefined && version !== 'rfc9535') {
-          throw new CriterionError(`Unsupported jsonpath version "${version}" (only rfc9535)`, {
-            condition,
-            type,
-            reason: 'unsupported-version',
-          });
-        }
+      case 'jsonpath':
+        // only rfc9535 is supported; it is the spec default, so an omitted
+        // version is accepted. draft-goessner has different semantics and is
+        // rejected rather than mis-evaluated.
+        this.#requireVersion(criterion, type, condition, 'rfc9535');
         return this.#jsonpath.evaluate(condition, this.#resolveContext(criterion, type, resolve));
-      }
       case 'xpath':
-        throw new CriterionError(`Criterion type "${type}" is not yet supported`, {
-          condition,
-          type,
-          reason: 'unsupported-type',
-        });
+        // only XPath 3.1 is supported; xpath-31 is the spec default, so an
+        // omitted version is accepted. Older versions are rejected.
+        this.#requireVersion(criterion, type, condition, 'xpath-31');
+        return this.#xpath.evaluate(condition, this.#resolveContext(criterion, type, resolve));
       default:
         throw new CriterionError(`Unknown criterion type "${type}"`, {
           condition,
@@ -169,6 +170,27 @@ class CriterionEvaluator {
     throw new CriterionError('Criterion has an invalid expression type "version"', {
       reason: 'invalid-version',
     });
+  }
+
+  /**
+   * Enforces that a versioned condition type declares only the one version this
+   * runner supports. An omitted version is accepted (it is the spec default);
+   * any other declared version throws a {@link CriterionError}.
+   */
+  #requireVersion(
+    criterion: CriterionElement,
+    type: string,
+    condition: string,
+    supported: string,
+  ): void {
+    const version = this.#resolveVersion(criterion);
+    if (version !== undefined && version !== supported) {
+      throw new CriterionError(`Unsupported ${type} version "${version}" (only ${supported})`, {
+        condition,
+        type,
+        reason: 'unsupported-version',
+      });
+    }
   }
 
   /**
