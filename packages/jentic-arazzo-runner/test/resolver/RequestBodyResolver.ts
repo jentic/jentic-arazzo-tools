@@ -114,5 +114,37 @@ describe('RequestBodyResolver', function () {
         );
       },
     );
+
+    specify('should not mutate a payload aliased from a runtime expression', function () {
+      // when the payload is `$inputs.order`, the evaluator returns the live
+      // context object by reference; applying a replacement must not corrupt it.
+      const inputs = { order: { item: 'x', qty: 1 } };
+      const isolated = new RuntimeExpressionEvaluator({ inputs }, { strict: false });
+      const isolatedResolve: RequestBodyValueResolver = (expression) =>
+        isolated.evaluate(expression);
+      const requestBody = refractRequestBody({
+        payload: '$inputs.order',
+        replacements: [{ target: '/qty', value: 999 }],
+      });
+
+      const result = resolver.resolve(requestBody, isolatedResolve) as { payload: { qty: number } };
+
+      assert.strictEqual(result.payload.qty, 999);
+      assert.strictEqual(inputs.order.qty, 1, 'the source $inputs.order must be untouched');
+    });
+
+    specify('should reject a prototype-polluting target', function () {
+      const requestBody = refractRequestBody({
+        payload: { a: 1 },
+        replacements: [{ target: '/__proto__/polluted', value: 'yes' }],
+      });
+
+      assert.throws(
+        () => resolver.resolve(requestBody, resolve),
+        ResolverError,
+        /does not resolve/,
+      );
+      assert.isUndefined(({} as Record<string, unknown>).polluted);
+    });
   });
 });

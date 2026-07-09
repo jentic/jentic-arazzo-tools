@@ -1,3 +1,4 @@
+import { assocPath, hasPath } from 'ramda';
 import { toValue } from '@speclynx/apidom-core';
 import { isStringElement } from '@speclynx/apidom-datamodel';
 import { parse as parseJSONPointer, testJSONPointer } from '@swaggerexpert/json-pointer';
@@ -5,6 +6,12 @@ import { isPayloadReplacementElement, type RequestBodyElement } from '@speclynx/
 import { test as isRuntimeExpression } from '@swaggerexpert/arazzo-runtime-expression';
 
 import ResolverError from '../errors/ResolverError.ts';
+
+/**
+ * Matches a canonical non-negative integer (RFC 6901 array index): no leading
+ * zeros other than `0` itself.
+ */
+const ARRAY_INDEX = /^(0|[1-9][0-9]*)$/;
 
 /**
  * Resolves a runtime expression to its value, bridged to a lenient runtime
@@ -83,9 +90,11 @@ class RequestBodyResolver {
   }
 
   /**
-   * Sets `value` into `payload` at the `target` JSON Pointer, returning the
-   * updated payload. Throws {@link ResolverError} for an XPath target (not
-   * supported) or a target that does not resolve within the payload.
+   * Immutably sets `value` into `payload` at the `target` JSON Pointer,
+   * returning a new payload (the input is never mutated, so a payload aliased
+   * from a runtime expression's resolved value — e.g. `$inputs.order` — is not
+   * corrupted). Throws {@link ResolverError} for a non-JSON-Pointer target
+   * (e.g. XPath) or a target that does not resolve within the payload.
    */
   #applyReplacement(payload: unknown, target: string, value: unknown): unknown {
     if (!testJSONPointer(target)) {
@@ -98,12 +107,13 @@ class RequestBodyResolver {
       );
     }
 
-    const tokens = parseJSONPointer(target).tree as string[];
-
-    // whole-document replacement: an empty pointer targets the payload root.
+    // an empty pointer targets the payload root — replace the whole payload.
+    const tokens = this.#pathTokens(target);
     if (tokens.length === 0) return value;
 
-    if (typeof payload !== 'object' || payload === null) {
+    // the target must resolve against the payload; `hasPath` also rejects
+    // prototype-chain tokens (e.g. `__proto__`) since they are not own paths.
+    if (!hasPath(tokens, payload as object)) {
       throw new ResolverError(
         `requestBody replacement target "${target}" does not resolve in the payload`,
         {
@@ -113,23 +123,18 @@ class RequestBodyResolver {
       );
     }
 
-    let current = payload as Record<string, unknown> | unknown[];
-    for (let index = 0; index < tokens.length - 1; index += 1) {
-      const next = (current as Record<string, unknown>)[tokens[index]];
-      if (typeof next !== 'object' || next === null) {
-        throw new ResolverError(
-          `requestBody replacement target "${target}" does not resolve in the payload`,
-          {
-            target,
-            reason: 'unresolved-target',
-          },
-        );
-      }
-      current = next as Record<string, unknown> | unknown[];
-    }
-    (current as Record<string, unknown>)[tokens[tokens.length - 1]] = value;
+    return assocPath(tokens, value, payload as object);
+  }
 
-    return payload;
+  /**
+   * Parses a JSON Pointer into path tokens, coercing an array-index token to a
+   * number so it indexes an array rather than converting it to an object key
+   * (Ramda's `assocPath` distinguishes numeric from string keys).
+   */
+  #pathTokens(target: string): (string | number)[] {
+    return (parseJSONPointer(target).tree as string[]).map((token) =>
+      ARRAY_INDEX.test(token) ? Number(token) : token,
+    );
   }
 }
 
