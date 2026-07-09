@@ -80,6 +80,10 @@ export { default as RegexCriterionEvaluator } from './criterion/RegexCriterionEv
 export { default as JSONPathCriterionEvaluator } from './criterion/JSONPathCriterionEvaluator.ts';
 export { default as XPathCriterionEvaluator } from './criterion/XPathCriterionEvaluator.ts';
 
+/* Execution State */
+export { default as WorkflowExecutionState } from './state/WorkflowExecutionState.ts';
+export type { WorkflowExecutionStateOptions } from './state/WorkflowExecutionState.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
 export { default as AssemblerError } from './errors/AssemblerError.ts';
