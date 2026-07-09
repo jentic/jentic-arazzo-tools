@@ -64,6 +64,7 @@
     "@swaggerexpert/arazzo-criterion": "^1.0.1",
     "@swaggerexpert/arazzo-runtime-expression": "^3.1.0",
     "@swaggerexpert/json-pointer": "^3.0.1",
+    "@swaggerexpert/jsonpath": "^4.0.4",
     "type-fest": "^5.4.4"
   },
   "files": [

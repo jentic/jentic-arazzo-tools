@@ -9,6 +9,7 @@ import {
 import CriterionError from '../errors/CriterionError.ts';
 import RegexCriterionEvaluator from './RegexCriterionEvaluator.ts';
 import SimpleCriterionEvaluator from './SimpleCriterionEvaluator.ts';
+import JSONPathCriterionEvaluator from './JSONPathCriterionEvaluator.ts';
 
 /**
  * Resolves a runtime expression to a value during criterion evaluation.
@@ -36,6 +37,10 @@ export interface CriterionEvaluatorOptions {
    * Regex condition evaluator. Injectable for testing.
    */
   readonly regex?: RegexCriterionEvaluator;
+  /**
+   * JSONPath condition evaluator. Injectable for testing.
+   */
+  readonly jsonpath?: JSONPathCriterionEvaluator;
 }
 
 /**
@@ -46,7 +51,11 @@ export interface CriterionEvaluatorOptions {
  *   expressions embedded in it.
  * - `regex` — resolves the `context` runtime expression, then applies the
  *   pattern to the resolved value.
- * - `jsonpath`, `xpath` — not yet implemented.
+ * - `jsonpath` — resolves the `context` runtime expression, then applies the
+ *   JSONPath query to the resolved value (met when the query matches). Only the
+ *   `rfc9535` version is supported (the spec default); an explicit other version
+ *   throws.
+ * - `xpath` — not yet implemented.
  *
  * The evaluator is agnostic about how runtime expressions are resolved: the
  * caller supplies a {@link CriterionContextResolver} per evaluation, keeping
@@ -57,10 +66,12 @@ export interface CriterionEvaluatorOptions {
 class CriterionEvaluator {
   readonly #simple: SimpleCriterionEvaluator;
   readonly #regex: RegexCriterionEvaluator;
+  readonly #jsonpath: JSONPathCriterionEvaluator;
 
   constructor(options: CriterionEvaluatorOptions = {}) {
     this.#simple = options.simple ?? new SimpleCriterionEvaluator();
     this.#regex = options.regex ?? new RegexCriterionEvaluator();
+    this.#jsonpath = options.jsonpath ?? new JSONPathCriterionEvaluator();
   }
 
   /**
@@ -95,7 +106,20 @@ class CriterionEvaluator {
         return this.#simple.evaluate(condition, resolve);
       case 'regex':
         return this.#regex.evaluate(condition, this.#resolveContext(criterion, type, resolve));
-      case 'jsonpath':
+      case 'jsonpath': {
+        // only RFC 9535 is supported; the spec default (when no version is
+        // given) is rfc9535, so an omitted version is accepted. draft-goessner
+        // has different semantics and is rejected rather than mis-evaluated.
+        const version = this.#resolveVersion(criterion);
+        if (version !== undefined && version !== 'rfc9535') {
+          throw new CriterionError(`Unsupported jsonpath version "${version}" (only rfc9535)`, {
+            condition,
+            type,
+            reason: 'unsupported-version',
+          });
+        }
+        return this.#jsonpath.evaluate(condition, this.#resolveContext(criterion, type, resolve));
+      }
       case 'xpath':
         throw new CriterionError(`Criterion type "${type}" is not yet supported`, {
           condition,
@@ -125,6 +149,26 @@ class CriterionEvaluator {
     }
     if (isStringElement(type)) return toValue(type) as string;
     throw new CriterionError('Criterion has an invalid "type"', { reason: 'invalid-type' });
+  }
+
+  /**
+   * Extracts the expression `version` from a Criterion Expression Type Object,
+   * or `undefined` when no version is declared (a bare-string `type`, or a type
+   * object without a `version`) — in which case the spec default for the type
+   * applies. A `version` that is present but not a string is malformed and
+   * throws a {@link CriterionError} rather than silently defaulting.
+   */
+  #resolveVersion(criterion: CriterionElement): string | undefined {
+    const type = criterion.type;
+    if (!isCriterionExpressionTypeElement(type) || type.version === undefined) {
+      return undefined;
+    }
+    if (isStringElement(type.version)) {
+      return toValue(type.version) as string;
+    }
+    throw new CriterionError('Criterion has an invalid expression type "version"', {
+      reason: 'invalid-version',
+    });
   }
 
   /**

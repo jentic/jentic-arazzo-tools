@@ -12,7 +12,7 @@ describe('CriterionEvaluator', function () {
   // the resolver bridges a criterion's `context` to the runtime expression
   // evaluator, leniently so an unresolvable context fails the criterion.
   const runtime = new RuntimeExpressionEvaluator(
-    { response: { statusCode: 200, body: { status: 'Available' } } },
+    { response: { statusCode: 200, body: { status: 'Available', pets: [{ id: 1 }] } } },
     { strict: false },
   );
   const resolve: CriterionContextResolver = (expression) => runtime.evaluate(expression);
@@ -99,6 +99,65 @@ describe('CriterionEvaluator', function () {
     });
   });
 
+  context('jsonpath type', function () {
+    specify('should evaluate a jsonpath query against the resolved context', function () {
+      const criterion = refractCriterion({
+        context: '$response.body',
+        condition: '$.pets[*]',
+        type: 'jsonpath',
+      });
+
+      assert.isTrue(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should not be met when the query matches nothing', function () {
+      const criterion = refractCriterion({
+        context: '$response.body',
+        condition: '$.orders[*]',
+        type: 'jsonpath',
+      });
+
+      assert.isFalse(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should accept an explicit rfc9535 version', function () {
+      const criterion = refractCriterion({ context: '$response.body', condition: '$.pets[*]' });
+      criterion.type = new CriterionExpressionTypeElement({ type: 'jsonpath', version: 'rfc9535' });
+
+      assert.isTrue(evaluator.evaluate(criterion, resolve));
+    });
+
+    specify('should throw for a non-rfc9535 jsonpath version', function () {
+      const criterion = refractCriterion({ context: '$response.body', condition: '$.pets[*]' });
+      criterion.type = new CriterionExpressionTypeElement({
+        type: 'jsonpath',
+        version: 'draft-goessner-dispatch-jsonpath-00',
+      });
+
+      assert.throws(
+        () => evaluator.evaluate(criterion, resolve),
+        CriterionError,
+        /Unsupported jsonpath version/,
+      );
+    });
+
+    specify(
+      'should throw for a present-but-non-string version rather than defaulting',
+      function () {
+        const criterion = refractCriterion({ context: '$response.body', condition: '$.pets[*]' });
+        // a version that is present but not a string is malformed — it must not
+        // silently fall back to the default rfc9535.
+        criterion.type = new CriterionExpressionTypeElement({ type: 'jsonpath', version: 42 });
+
+        assert.throws(
+          () => evaluator.evaluate(criterion, resolve),
+          CriterionError,
+          /invalid expression type "version"/,
+        );
+      },
+    );
+  });
+
   context('condition and type validation', function () {
     specify('should throw when the condition is missing', function () {
       const criterion = refractCriterion({ context: '$statusCode', type: 'regex' });
@@ -112,11 +171,11 @@ describe('CriterionEvaluator', function () {
       assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError, /missing/);
     });
 
-    specify('should throw "not yet supported" for a jsonpath condition', function () {
+    specify('should throw "not yet supported" for an xpath condition', function () {
       const criterion = refractCriterion({
         context: '$response.body',
-        condition: '$[?count(@.pets) > 0]',
-        type: 'jsonpath',
+        condition: '/pets',
+        type: 'xpath',
       });
 
       assert.throws(
@@ -134,5 +193,24 @@ describe('CriterionEvaluator', function () {
 
       assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError, /invalid "type"/);
     });
+
+    specify(
+      'should throw "unknown type" for jsonpointer (a version value, not a type)',
+      function () {
+        // jsonpointer is an allowed expression-type *version* value, not one of the
+        // criterion `type` options (simple/regex/jsonpath/xpath).
+        const criterion = refractCriterion({
+          context: '$response.body',
+          condition: '/pets',
+          type: 'jsonpointer',
+        });
+
+        assert.throws(
+          () => evaluator.evaluate(criterion, resolve),
+          CriterionError,
+          /Unknown criterion type/,
+        );
+      },
+    );
   });
 });
