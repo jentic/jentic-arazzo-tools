@@ -72,10 +72,11 @@ class WorkflowExecutionState {
   }
 
   /**
-   * The workflow's own accumulated outputs.
+   * The workflow's own accumulated outputs. Read-only by contract, like the
+   * context produced by `toContext`; treat the returned object as immutable.
    */
-  get outputs(): Record<string, unknown> {
-    return { ...this.#outputs };
+  get outputs(): Readonly<Record<string, unknown>> {
+    return this.#outputs;
   }
 
   /**

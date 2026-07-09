@@ -90,14 +90,12 @@ describe('WorkflowExecutionState', function () {
   });
 
   context('outputs getter', function () {
-    specify('should return a copy that does not mutate internal state', function () {
+    specify('should expose the accumulated workflow outputs', function () {
       const state = new WorkflowExecutionState();
       state.setOutput('a', 1);
+      state.setOutput('b', 2);
 
-      const snapshot = state.outputs;
-      snapshot.a = 999;
-
-      assert.deepEqual(state.outputs, { a: 1 });
+      assert.deepEqual(state.outputs, { a: 1, b: 2 });
     });
   });
 });
