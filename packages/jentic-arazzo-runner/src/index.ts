@@ -84,9 +84,16 @@ export { default as XPathCriterionEvaluator } from './criterion/XPathCriterionEv
 export { default as WorkflowExecutionState } from './state/WorkflowExecutionState.ts';
 export type { WorkflowExecutionStateOptions } from './state/WorkflowExecutionState.ts';
 
-/* Parameters */
-export { default as ParameterResolver } from './parameter/ParameterResolver.ts';
-export type { ParameterValueResolver } from './parameter/ParameterResolver.ts';
+/* Resolvers */
+export { default as ParameterResolver } from './resolver/ParameterResolver.ts';
+export type { ParameterValueResolver } from './resolver/ParameterResolver.ts';
+export { default as OutputResolver } from './resolver/OutputResolver.ts';
+export type { OutputValueResolver } from './resolver/OutputResolver.ts';
+export { default as RequestBodyResolver } from './resolver/RequestBodyResolver.ts';
+export type {
+  RequestBodyValueResolver,
+  ResolvedRequestBody,
+} from './resolver/RequestBodyResolver.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
@@ -98,3 +105,4 @@ export { default as InvalidEntryDocumentError } from './errors/InvalidEntryDocum
 export { default as UnmatchedProviderError } from './errors/UnmatchedProviderError.ts';
 export { default as RuntimeExpressionError } from './errors/RuntimeExpressionError.ts';
 export { default as CriterionError } from './errors/CriterionError.ts';
+export { default as ResolverError } from './errors/ResolverError.ts';
