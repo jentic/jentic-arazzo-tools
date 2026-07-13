@@ -101,6 +101,13 @@ export interface StepExecutionResult {
  * @public
  */
 class StepExecutor {
+  /**
+   * The mutually exclusive fields by which a step names its target. A step may
+   * declare at most one. Extend this as the Arazzo Specification adds targets
+   * (e.g. `channelPath` in 1.1.0) so the exclusivity check stays complete.
+   */
+  static readonly #TARGET_FIELDS = ['operationId', 'operationPath', 'workflowId'] as const;
+
   readonly #document: ArazzoDocument;
   readonly #registry: DocumentRegistry;
   readonly #clientFactory: OpenAPIClientFactory;
@@ -136,14 +143,14 @@ class StepExecutor {
   ): Promise<StepExecutionResult> {
     const stepId = toValue(step.stepId) as string;
 
-    // operationId, operationPath, and workflowId are mutually exclusive; a step
-    // declaring more than one is malformed and has no defined resolution.
-    const targets = [step.operationId, step.operationPath, step.workflowId].filter((field) =>
-      isStringElement(field),
+    // a step's target fields are mutually exclusive; declaring more than one is
+    // malformed and has no defined resolution.
+    const declaredTargets = StepExecutor.#TARGET_FIELDS.filter((field) =>
+      isStringElement(step[field]),
     );
-    if (targets.length > 1) {
+    if (declaredTargets.length > 1) {
       throw new ExecutionError(
-        `Step "${stepId}" declares more than one of operationId, operationPath, workflowId (mutually exclusive)`,
+        `Step "${stepId}" declares more than one of ${StepExecutor.#TARGET_FIELDS.join(', ')} (mutually exclusive)`,
         { stepId, reason: 'ambiguous-target' },
       );
     }
@@ -178,9 +185,19 @@ class StepExecutor {
       this.#evaluate(preContext, expression),
     );
 
-    const response = await client.execute(
-      this.#buildExecuteOptions(executeOptions, locator, parameters, requestBody),
-    );
+    // Arazzo-derived options (the operation JSON Pointer, parameters, and
+    // request body) are spread after the opaque executeOptions bag so they
+    // always take precedence. the locator's JSON Pointer selects the operation
+    // in the assembled document (the assembler preserves its path/method) and is
+    // passed as operationPath; operationId is cleared so an executeOptions
+    // passthrough cannot hijack the operation.
+    const response = await client.execute({
+      ...executeOptions,
+      operationId: undefined,
+      operationPath: locator.jsonPointer,
+      parameters,
+      ...this.#requestBodyOptions(requestBody),
+    });
 
     // evaluate criteria, outputs, and the next action against the post-request
     // context (with $request / $url / $method and $response / $statusCode).
@@ -198,36 +215,21 @@ class StepExecutor {
   }
 
   /**
-   * Builds the client execute options.
+   * The request-body execute options for the step, as a typed partial to spread
+   * into the client options.
    *
-   * The Arazzo-derived options (the operation JSON Pointer, parameters, and
-   * request body) are applied after the opaque `executeOptions` bag so they
-   * always take precedence. The locator's JSON Pointer selects the operation in
-   * the assembled document (the assembler preserves its path/method) and is
-   * passed as `operationPath`; `operationId` is cleared so an `executeOptions`
-   * passthrough cannot hijack the operation.
+   * Empty when the step has no request body; the `requestContentType` key is
+   * present only when a content type was resolved, so it is omitted rather than
+   * spread as `undefined`.
    */
-  #buildExecuteOptions(
-    executeOptions: Record<string, unknown>,
-    locator: OpenAPIOperationLocator,
-    parameters: Record<string, unknown>,
+  #requestBodyOptions(
     requestBody: ResolvedRequestBody | undefined,
-  ): OpenAPIOperationExecuteOptions {
-    const options: Record<string, unknown> = {
-      ...executeOptions,
-      operationId: undefined,
-      operationPath: locator.jsonPointer,
-      parameters,
-    };
+  ): Partial<OpenAPIOperationExecuteOptions> {
+    if (requestBody === undefined) return {};
 
-    if (requestBody !== undefined) {
-      options.requestBody = requestBody.payload;
-      if (requestBody.contentType !== undefined) {
-        options.requestContentType = requestBody.contentType;
-      }
-    }
-
-    return options;
+    return requestBody.contentType === undefined
+      ? { requestBody: requestBody.payload }
+      : { requestBody: requestBody.payload, requestContentType: requestBody.contentType };
   }
 
   async #locateOperation(step: StepElement, stepId: string): Promise<OpenAPIOperationLocator> {

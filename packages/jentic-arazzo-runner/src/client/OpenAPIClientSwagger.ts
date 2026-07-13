@@ -19,8 +19,8 @@ export interface SwaggerOpenAPIOperationExecuteOptions extends OpenAPIOperationE
   readonly server?: string;
   readonly serverVariables?: Record<string, string>;
   readonly userFetch?: (url: string, request: Record<string, unknown>) => Promise<Response>;
-  readonly requestInterceptor?: (request: unknown) => unknown;
-  readonly responseInterceptor?: (response: unknown) => unknown;
+  readonly requestInterceptor?: (request: unknown) => unknown | Promise<unknown>;
+  readonly responseInterceptor?: (response: unknown) => unknown | Promise<unknown>;
 }
 
 /**
@@ -49,18 +49,19 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
 
     // capture the request swagger-client builds (its final url, method, headers,
     // and body) so `$url` / `$method` / `$request.*` can be evaluated after
-    // execution, while still invoking any caller-supplied interceptor.
+    // execution. a caller-supplied interceptor is composed first — it runs
+    // before capture, so the captured request reflects its edits — and may be
+    // synchronous or asynchronous (swagger-client allows either).
     let request: OpenAPIOperationRequestInfo | undefined;
-    const captureInterceptor = (built: Record<string, unknown>): unknown => {
-      const forwarded = requestInterceptor ? requestInterceptor(built) : built;
-      const effective = (forwarded ?? built) as Record<string, unknown>;
+    const captureInterceptor = async (built: Record<string, unknown>): Promise<unknown> => {
+      const effective = ((await requestInterceptor?.(built)) ?? built) as Record<string, unknown>;
       request = {
         url: effective.url as string | undefined,
         method: effective.method as string | undefined,
         headers: effective.headers as Record<string, string> | undefined,
         body: effective.body,
       };
-      return forwarded;
+      return effective;
     };
     const request_ = { ...rest, requestInterceptor: captureInterceptor };
     let rawResponse: Record<string, unknown>;

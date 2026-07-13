@@ -248,6 +248,34 @@ describe('OpenAPIClientSwagger', function () {
       assert.strictEqual(response.request!.method, 'GET');
     });
 
+    specify(
+      'should compose with an async caller requestInterceptor and capture its edits',
+      async function () {
+        const operation = extractAs30(extractor, openapiDoc, 'getPetById');
+        const normalized = await normalizer.normalize(operation, openapiDoc);
+        const assembled = assembler.assemble(normalized, openapiDoc);
+        const client = new OpenAPIClientSwagger(assembled);
+        const { mockFetch } = createMockFetch();
+
+        const response = await client.execute({
+          operationId: 'getPetById',
+          parameters: { petId: 42 },
+          contextUrl: 'https://petstore3.swagger.io',
+          // an async interceptor that adds a header — the captured request must
+          // reflect the awaited result, not a pending promise.
+          requestInterceptor: async (request: unknown) => {
+            const req = request as Record<string, unknown>;
+            const headers = (req.headers ?? {}) as Record<string, string>;
+            return { ...req, headers: { ...headers, 'x-trace': 'abc' } };
+          },
+          userFetch: mockFetch,
+        });
+
+        assert.isDefined(response.request);
+        assert.strictEqual(response.request!.headers?.['x-trace'], 'abc');
+      },
+    );
+
     specify('should capture the request even on a non-2xx response', async function () {
       const operation = extractAs30(extractor, openapiDoc, 'getPetById');
       const normalized = await normalizer.normalize(operation, openapiDoc);
