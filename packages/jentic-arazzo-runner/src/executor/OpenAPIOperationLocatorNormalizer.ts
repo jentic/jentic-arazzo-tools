@@ -75,21 +75,22 @@ class OpenAPIOperationLocatorNormalizer {
    * Normalizes an `operationPath` —
    * `{$sourceDescriptions.{name}.url}#/json/pointer` — to a canonical locator.
    *
-   * The embedded runtime expression is interpolated (resolving
-   * `{$sourceDescriptions.{name}.url}` to the source's URL) into a URI reference;
-   * its fragment is the JSON Pointer to the operation (decoded from the URI
-   * fragment representation) and the part before the fragment is the source
-   * document to acquire.
+   * The reference is interpolated (resolving
+   * `{$sourceDescriptions.{name}.url}` to the source's URL) into a URI
+   * reference; its fragment is the JSON Pointer to the operation (decoded from
+   * the URI fragment representation) and the part before the fragment is the
+   * source document to acquire.
+   *
+   * The runner only needs a URL and a JSON Pointer, so it does not enforce that
+   * the source description is identified by a runtime expression rather than a
+   * literal URL (a literal URL interpolates to itself and still resolves) — that
+   * is a conformance concern for the validator. It fails only when the URL does
+   * not resolve to an OpenAPI source or the JSON Pointer is invalid.
    */
   async normalizeOperationPath(
     operationPath: string,
     document: ArazzoDocument,
   ): Promise<OpenAPIOperationLocator> {
-    // interpolate the reference, resolving any embedded
-    // `{$sourceDescriptions.{name}.url}` to the source's URL. a literal URL
-    // interpolates to itself and still resolves; whether the source description
-    // MUST be a runtime expression is a conformance concern for the validator,
-    // not the runner — the runner only needs a URL and a JSON Pointer.
     const evaluator = new RuntimeExpressionEvaluator(
       {},
       { strict: false, document, registry: this.#registry },
