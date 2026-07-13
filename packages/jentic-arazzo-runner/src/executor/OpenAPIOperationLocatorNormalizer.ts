@@ -85,16 +85,11 @@ class OpenAPIOperationLocatorNormalizer {
     operationPath: string,
     document: ArazzoDocument,
   ): Promise<OpenAPIOperationLocator> {
-    const hashIndex = operationPath.indexOf('#');
-    if (hashIndex === -1) {
-      throw new ExtractionError(`operationPath "${operationPath}" is missing a JSON Pointer`, {
-        pointer: operationPath,
-        uri: document.uri,
-      });
-    }
-
-    // interpolate the whole reference via the evaluator, resolving the embedded
-    // `{$sourceDescriptions.{name}.url}` to the source's URL.
+    // interpolate the reference, resolving any embedded
+    // `{$sourceDescriptions.{name}.url}` to the source's URL. a literal URL
+    // interpolates to itself and still resolves; whether the source description
+    // MUST be a runtime expression is a conformance concern for the validator,
+    // not the runner — the runner only needs a URL and a JSON Pointer.
     const evaluator = new RuntimeExpressionEvaluator(
       {},
       { strict: false, document, registry: this.#registry },
