@@ -54,7 +54,10 @@ export { default as OpenAPI31DocumentAssembler } from './assembler/OpenAPI31Docu
 /* Clients */
 export { default as OpenAPIClient } from './client/OpenAPIClient.ts';
 export type { OpenAPIOperationExecuteOptions } from './client/OpenAPIClient.ts';
-export { default as OpenAPIOperationResponse } from './client/OpenAPIOperationResponse.ts';
+export {
+  default as OpenAPIOperationResponse,
+  type OpenAPIOperationRequestInfo,
+} from './client/OpenAPIOperationResponse.ts';
 export { default as OpenAPIClientSwagger } from './client/OpenAPIClientSwagger.ts';
 export type { SwaggerOpenAPIOperationExecuteOptions } from './client/OpenAPIClientSwagger.ts';
 
@@ -99,6 +102,17 @@ export type {
 export { default as ActionResolver } from './action/ActionResolver.ts';
 export type { CriterionPredicate, SelectedAction } from './action/ActionResolver.ts';
 
+/* Executor */
+export { default as StepExecutor } from './executor/StepExecutor.ts';
+export type {
+  StepExecutorOptions,
+  StepExecutionResult,
+  ContextSource,
+  OpenAPIClientFactory,
+} from './executor/StepExecutor.ts';
+export { default as OpenAPIOperationLocatorNormalizer } from './executor/OpenAPIOperationLocatorNormalizer.ts';
+export type { OpenAPIOperationLocator } from './executor/OpenAPIOperationLocatorNormalizer.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
 export { default as AssemblerError } from './errors/AssemblerError.ts';
@@ -110,3 +124,4 @@ export { default as UnmatchedProviderError } from './errors/UnmatchedProviderErr
 export { default as RuntimeExpressionError } from './errors/RuntimeExpressionError.ts';
 export { default as CriterionError } from './errors/CriterionError.ts';
 export { default as ResolverError } from './errors/ResolverError.ts';
+export { default as ExecutionError } from './errors/ExecutionError.ts';

@@ -12,6 +12,11 @@ export interface OpenAPIOperationExecuteOptions {
   readonly operationPath?: string;
   readonly parameters?: Record<string, unknown>;
   readonly requestBody?: unknown;
+  /**
+   * The media type of the request body (the Arazzo `requestBody.contentType`).
+   * Client implementations map it to their own wire representation.
+   */
+  readonly requestContentType?: string;
   readonly signal?: AbortSignal;
 }
 

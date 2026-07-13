@@ -327,6 +327,31 @@ describe('RuntimeExpressionEvaluator', function () {
     });
 
     specify(
+      'should resolve the url field to the source URI, resolved to absolute form',
+      function () {
+        const evaluator = new RuntimeExpressionEvaluator(
+          {},
+          { document: entryDoc, registry, strict: false },
+        );
+        const resolved = evaluator.evaluate('$sourceDescriptions.petstoreAPI.url');
+
+        // the fixture declares a relative url (`./petstore.openapi.json`); it
+        // must resolve against the entry document's base URI to an absolute URI.
+        assert.notStrictEqual(resolved, './petstore.openapi.json');
+        assert.match(resolved as string, /\/fixtures\/petstore\.openapi\.json$/);
+        assert.strictEqual(resolved, entryDoc.resolveSourceDescriptionURI('petstoreAPI'));
+      },
+    );
+
+    specify('should resolve the type field to its literal value', function () {
+      const evaluator = new RuntimeExpressionEvaluator(
+        {},
+        { document: entryDoc, registry, strict: false },
+      );
+      assert.strictEqual(evaluator.evaluate('$sourceDescriptions.petstoreAPI.type'), 'openapi');
+    });
+
+    specify(
       'should return undefined when the referenced document is not loaded',
       async function () {
         const freshRegistry = new DocumentRegistry();
