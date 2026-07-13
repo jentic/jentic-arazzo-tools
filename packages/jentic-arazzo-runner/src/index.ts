@@ -99,6 +99,17 @@ export type {
 export { default as ActionResolver } from './action/ActionResolver.ts';
 export type { CriterionPredicate, SelectedAction } from './action/ActionResolver.ts';
 
+/* Executor */
+export { default as StepExecutor } from './executor/StepExecutor.ts';
+export type {
+  StepExecutorOptions,
+  StepExecutionResult,
+  ContextSource,
+  OpenAPIClientFactory,
+} from './executor/StepExecutor.ts';
+export { default as OpenAPIOperationTargetResolver } from './executor/OpenAPIOperationTargetResolver.ts';
+export type { OpenAPIOperationTarget } from './executor/OpenAPIOperationTargetResolver.ts';
+
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
 export { default as AssemblerError } from './errors/AssemblerError.ts';
@@ -110,3 +121,4 @@ export { default as UnmatchedProviderError } from './errors/UnmatchedProviderErr
 export { default as RuntimeExpressionError } from './errors/RuntimeExpressionError.ts';
 export { default as CriterionError } from './errors/CriterionError.ts';
 export { default as ResolverError } from './errors/ResolverError.ts';
+export { default as ExecutionError } from './errors/ExecutionError.ts';

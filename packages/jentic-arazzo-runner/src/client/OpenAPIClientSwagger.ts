@@ -48,7 +48,7 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
     let rawResponse: Record<string, unknown>;
 
     if (operationId) {
-      rawResponse = await execute({ spec: this.#spec, operationId, ...rest });
+      rawResponse = await this.#execute({ spec: this.#spec, operationId, ...rest });
     } else if (operationPath) {
       if (!testJSONPointer(operationPath)) {
         throw new ClientError(`Invalid operationPath: "${operationPath}"`, { operationPath });
@@ -61,7 +61,7 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
         );
       }
       const [, pathName, method] = tokens;
-      rawResponse = await execute({ spec: this.#spec, pathName, method, ...rest });
+      rawResponse = await this.#execute({ spec: this.#spec, pathName, method, ...rest });
     } else {
       throw new ClientError('Either operationId or operationPath must be provided');
     }
@@ -75,6 +75,25 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
       text: rawResponse.text as string,
       body: rawResponse.body,
     });
+  }
+
+  /**
+   * Invokes swagger-client's `execute`, recovering a non-2xx response.
+   *
+   * swagger-client rejects on a non-2xx status, but the rejection carries the
+   * HTTP `response`. A non-2xx is a valid outcome in Arazzo (it is judged by a
+   * step's `successCriteria`), so the response is returned rather than thrown.
+   * A rejection without a response is a genuine transport failure and is
+   * wrapped as a {@link ClientError}.
+   */
+  async #execute(request: Record<string, unknown>): Promise<Record<string, unknown>> {
+    try {
+      return await execute(request);
+    } catch (error: unknown) {
+      const response = (error as { response?: Record<string, unknown> })?.response;
+      if (response !== undefined && response !== null) return response;
+      throw new ClientError('OpenAPI operation request failed', { cause: error });
+    }
   }
 }
 

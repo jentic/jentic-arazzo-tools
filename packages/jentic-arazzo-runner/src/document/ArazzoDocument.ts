@@ -1,7 +1,7 @@
 import type { ParseResultElement } from '@jentic/arazzo-parser';
 import { toValue } from '@speclynx/apidom-core';
 import { isStringElement } from '@speclynx/apidom-datamodel';
-import { find } from '@speclynx/apidom-traverse';
+import { find, filter } from '@speclynx/apidom-traverse';
 import {
   isSourceDescriptionElement,
   type SourceDescriptionElement,
@@ -61,6 +61,23 @@ class ArazzoDocument extends APIDocument {
 
     return url.sanitize(
       url.stripHash(url.resolve(this.uri, toValue(sourceDescription.url) as string)),
+    );
+  }
+
+  /**
+   * The canonical URIs of this document's source descriptions, resolved against
+   * this document's base URI, in declaration order.
+   */
+  sourceDescriptionURIs(): string[] {
+    return filter(
+      this.parseResult,
+      (path) => isSourceDescriptionElement(path.node) && isStringElement(path.node.url),
+    ).map((path) =>
+      url.sanitize(
+        url.stripHash(
+          url.resolve(this.uri, toValue((path.node as SourceDescriptionElement).url) as string),
+        ),
+      ),
     );
   }
 }
