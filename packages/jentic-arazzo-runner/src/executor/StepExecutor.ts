@@ -17,11 +17,12 @@ import ParameterResolver from '../resolver/ParameterResolver.ts';
 import RequestBodyResolver from '../resolver/RequestBodyResolver.ts';
 import OutputResolver from '../resolver/OutputResolver.ts';
 import ActionResolver, { type SelectedAction } from '../action/ActionResolver.ts';
+import OpenAPIOperationExtractor from '../extractor/OpenAPIOperationExtractor.ts';
 import OpenAPIOperationNormalizer from '../normalizer/OpenAPIOperationNormalizer.ts';
 import OpenAPIDocumentAssembler from '../assembler/OpenAPIDocumentAssembler.ts';
-import OpenAPIOperationTargetResolver, {
-  type OpenAPIOperationTarget,
-} from './OpenAPIOperationTargetResolver.ts';
+import OpenAPIOperationLocatorNormalizer, {
+  type OpenAPIOperationLocator,
+} from './OpenAPIOperationLocatorNormalizer.ts';
 import ExecutionError from '../errors/ExecutionError.ts';
 
 /**
@@ -53,7 +54,7 @@ export type OpenAPIClientFactory = (document: OpenAPIDocument) => OpenAPIClient;
 export interface StepExecutorOptions {
   /**
    * The entry Arazzo document the step belongs to; used to resolve the step's
-   * operation target against its source descriptions, and to resolve
+   * operation locator against its source descriptions, and to resolve
    * `$components` / `$sourceDescriptions` in expressions.
    */
   readonly document: ArazzoDocument;
@@ -82,8 +83,8 @@ export interface StepExecutionResult {
 /**
  * Executes a single Arazzo step that invokes an OpenAPI operation.
  *
- * The pipeline resolves the step's operation target (`operationId` /
- * `operationPath`), assembles a standalone OpenAPI document for it, resolves the
+ * The pipeline locates the step's operation (`operationId` / `operationPath`),
+ * assembles a standalone OpenAPI document for it, resolves the
  * step's parameters and request body against the pre-request context, executes
  * the operation, then evaluates `successCriteria`, resolves `outputs`, and
  * selects the `onSuccess`/`onFailure` action against the post-request context.
@@ -101,7 +102,8 @@ class StepExecutor {
   readonly #document: ArazzoDocument;
   readonly #registry: DocumentRegistry;
   readonly #clientFactory: OpenAPIClientFactory;
-  readonly #targetResolver: OpenAPIOperationTargetResolver;
+  readonly #locatorNormalizer: OpenAPIOperationLocatorNormalizer;
+  readonly #operationExtractor = new OpenAPIOperationExtractor();
   readonly #operationNormalizer = new OpenAPIOperationNormalizer();
   readonly #documentAssembler = new OpenAPIDocumentAssembler();
   readonly #parameterResolver = new ParameterResolver();
@@ -114,7 +116,7 @@ class StepExecutor {
     this.#document = options.document;
     this.#registry = options.registry;
     this.#clientFactory = options.clientFactory;
-    this.#targetResolver = new OpenAPIOperationTargetResolver(options.registry);
+    this.#locatorNormalizer = new OpenAPIOperationLocatorNormalizer(options.registry);
   }
 
   /**
@@ -151,13 +153,18 @@ class StepExecutor {
       });
     }
 
-    // resolve which operation the step invokes and assemble a standalone doc.
-    const target = await this.#resolveTarget(step, stepId);
-    const normalizedOperation = await this.#operationNormalizer.normalize(
-      target.operation,
-      target.document,
+    // locate which operation the step invokes — reduced to (document, JSON
+    // Pointer) — then extract, normalize, and assemble a standalone doc.
+    const locator = await this.#locateOperation(step, stepId);
+    const operation = this.#operationExtractor.extractByPointer(
+      locator.document,
+      locator.jsonPointer,
     );
-    const assembled = this.#documentAssembler.assemble(normalizedOperation, target.document);
+    const normalizedOperation = await this.#operationNormalizer.normalize(
+      operation,
+      locator.document,
+    );
+    const assembled = this.#documentAssembler.assemble(normalizedOperation, locator.document);
     const client = this.#clientFactory(assembled);
 
     // resolve parameters and request body against the pre-request context.
@@ -169,17 +176,16 @@ class StepExecutor {
       this.#evaluate(preContext, expression),
     );
 
-    // Arazzo-derived options (the resolved operationPath, parameters, and
+    // Arazzo-derived options (the operation JSON Pointer, parameters, and
     // request body) are spread last so they always override the opaque
-    // executeOptions bag. every step form — plain operationId,
-    // `$sourceDescriptions` expression, or operationPath — is normalized by the
-    // resolver to a single client mechanism: the operationPath JSON Pointer. it
-    // comes from the resolved target, not the raw step field, and operationId is
-    // cleared so an executeOptions passthrough cannot hijack the target.
+    // executeOptions bag. the locator's JSON Pointer selects the operation in the
+    // assembled document (the assembler preserves its path/method), and it is
+    // passed as the client's operationPath. operationId is cleared so an
+    // executeOptions passthrough cannot hijack the operation.
     const response = await client.execute({
       ...executeOptions,
       operationId: undefined,
-      operationPath: target.operationPath,
+      operationPath: locator.jsonPointer,
       parameters,
       ...(requestBody === undefined
         ? {}
@@ -203,15 +209,15 @@ class StepExecutor {
     return { stepId, response, successful, outputs, action };
   }
 
-  async #resolveTarget(step: StepElement, stepId: string): Promise<OpenAPIOperationTarget> {
+  async #locateOperation(step: StepElement, stepId: string): Promise<OpenAPIOperationLocator> {
     if (isStringElement(step.operationId)) {
-      return this.#targetResolver.resolveOperationId(
+      return this.#locatorNormalizer.normalizeOperationId(
         toValue(step.operationId) as string,
         this.#document,
       );
     }
     if (isStringElement(step.operationPath)) {
-      return this.#targetResolver.resolveOperationPath(
+      return this.#locatorNormalizer.normalizeOperationPath(
         toValue(step.operationPath) as string,
         this.#document,
       );

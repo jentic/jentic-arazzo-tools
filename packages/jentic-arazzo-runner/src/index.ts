@@ -107,8 +107,8 @@ export type {
   ContextSource,
   OpenAPIClientFactory,
 } from './executor/StepExecutor.ts';
-export { default as OpenAPIOperationTargetResolver } from './executor/OpenAPIOperationTargetResolver.ts';
-export type { OpenAPIOperationTarget } from './executor/OpenAPIOperationTargetResolver.ts';
+export { default as OpenAPIOperationLocatorNormalizer } from './executor/OpenAPIOperationLocatorNormalizer.ts';
+export type { OpenAPIOperationLocator } from './executor/OpenAPIOperationLocatorNormalizer.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';

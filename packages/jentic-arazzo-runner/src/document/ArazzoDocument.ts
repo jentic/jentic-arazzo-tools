@@ -39,12 +39,9 @@ class ArazzoDocument extends APIDocument {
   }
 
   /**
-   * Resolves a source description name to its canonical URI.
-   *
-   * Looks up the name in this document's sourceDescriptions array
-   * and resolves the url against this document's base URI.
+   * Finds a source description element by name.
    */
-  resolveSourceDescriptionURI(sourceDescriptionName: string): string | undefined {
+  #findSourceDescription(sourceDescriptionName: string): SourceDescriptionElement | undefined {
     const sourceDescriptionPath = find(this.parseResult, (path) => {
       return (
         isSourceDescriptionElement(path.node) &&
@@ -53,15 +50,40 @@ class ArazzoDocument extends APIDocument {
       );
     });
 
-    if (!sourceDescriptionPath) return;
+    return sourceDescriptionPath?.node as SourceDescriptionElement | undefined;
+  }
 
-    const sourceDescription = sourceDescriptionPath.node as SourceDescriptionElement;
+  /**
+   * Resolves a source description name to its canonical URI.
+   *
+   * Looks up the name in this document's sourceDescriptions array
+   * and resolves the url against this document's base URI.
+   */
+  resolveSourceDescriptionURI(sourceDescriptionName: string): string | undefined {
+    const sourceDescription = this.#findSourceDescription(sourceDescriptionName);
 
-    if (!isStringElement(sourceDescription.url)) return;
+    if (sourceDescription === undefined || !isStringElement(sourceDescription.url)) return;
 
     return url.sanitize(
       url.stripHash(url.resolve(this.uri, toValue(sourceDescription.url) as string)),
     );
+  }
+
+  /**
+   * Resolves a field of a source description object (e.g. `url`, `type`).
+   *
+   * The `url` field resolves to the canonical URI (resolved against this
+   * document's base URI, as `resolveSourceDescriptionURI` does); every other
+   * field resolves to its literal value. Returns `undefined` when the source
+   * description or the field is absent.
+   */
+  resolveSourceDescriptionField(sourceDescriptionName: string, field: string): unknown {
+    if (field === 'url') return this.resolveSourceDescriptionURI(sourceDescriptionName);
+
+    const sourceDescription = this.#findSourceDescription(sourceDescriptionName);
+    if (sourceDescription === undefined) return undefined;
+
+    return toValue(sourceDescription.get(field));
   }
 
   /**

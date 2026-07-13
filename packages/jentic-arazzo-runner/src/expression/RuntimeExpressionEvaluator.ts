@@ -256,30 +256,35 @@ class RuntimeExpressionEvaluator {
   }
 
   /**
-   * Resolves `$sourceDescriptions.{name}.{reference}` to the referenced
-   * operation or workflow.
+   * Resolves `$sourceDescriptions.{name}.{reference}` with the resolution
+   * priority defined by the Arazzo Specification:
    *
-   * The source name is resolved to an external document URI via the evaluator's
-   * document, the already-loaded document is read from the registry, and the
-   * reference is looked up as an operationId (OpenAPI) or workflowId (Arazzo).
-   * Returns `undefined` when the document, registry, source, or reference is
-   * absent.
+   * 1. `{reference}` is matched as an operationId (OpenAPI source) or workflowId
+   *    (Arazzo source) in the referenced document, resolving to that operation
+   *    or workflow.
+   * 2. failing that, `{reference}` is matched as a field of the Source
+   *    Description Object itself (e.g. `url`, `type`) — so
+   *    `$sourceDescriptions.{name}.url` yields the source's URL. An operationId
+   *    that collides with a field name takes precedence (tier 1 wins).
+   *
+   * Returns `undefined` when nothing matches.
    */
   #sourceDescription(sourceName: string, reference: string): unknown {
     const uri = this.#document?.resolveSourceDescriptionURI(sourceName);
-    if (uri === undefined) return undefined;
 
-    const apiDocument = this.#registry?.get(uri);
-    if (apiDocument === undefined) return undefined;
+    // tier 1: operationId / workflowId in the referenced document.
+    const apiDocument = uri === undefined ? undefined : this.#registry?.get(uri);
+    if (apiDocument !== undefined) {
+      const pointer = OpenAPIDocument.is(apiDocument)
+        ? apiDocument.operationIndex.get(reference)
+        : ArazzoDocument.is(apiDocument)
+          ? apiDocument.workflowIndex.get(reference)
+          : undefined;
+      if (pointer !== undefined) return this.#drillDocument(apiDocument, pointer);
+    }
 
-    const pointer = OpenAPIDocument.is(apiDocument)
-      ? apiDocument.operationIndex.get(reference)
-      : ArazzoDocument.is(apiDocument)
-        ? apiDocument.workflowIndex.get(reference)
-        : undefined;
-    if (pointer === undefined) return undefined;
-
-    return this.#drillDocument(apiDocument, pointer);
+    // tier 2: a field of the Source Description Object (url, type, ...).
+    return this.#document?.resolveSourceDescriptionField(sourceName, reference);
   }
 
   /**

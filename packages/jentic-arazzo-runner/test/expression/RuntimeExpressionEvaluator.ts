@@ -326,6 +326,25 @@ describe('RuntimeExpressionEvaluator', function () {
       assert.isUndefined(evaluator.evaluate('$sourceDescriptions.petstoreAPI.doesNotExist'));
     });
 
+    specify('should resolve the url field to the source canonical URI', function () {
+      const evaluator = new RuntimeExpressionEvaluator(
+        {},
+        { document: entryDoc, registry, strict: false },
+      );
+      assert.strictEqual(
+        evaluator.evaluate('$sourceDescriptions.petstoreAPI.url'),
+        entryDoc.resolveSourceDescriptionURI('petstoreAPI'),
+      );
+    });
+
+    specify('should resolve the type field to its literal value', function () {
+      const evaluator = new RuntimeExpressionEvaluator(
+        {},
+        { document: entryDoc, registry, strict: false },
+      );
+      assert.strictEqual(evaluator.evaluate('$sourceDescriptions.petstoreAPI.type'), 'openapi');
+    });
+
     specify(
       'should return undefined when the referenced document is not loaded',
       async function () {
