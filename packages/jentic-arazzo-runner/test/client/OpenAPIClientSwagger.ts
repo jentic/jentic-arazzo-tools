@@ -203,4 +203,68 @@ describe('OpenAPIClientSwagger', function () {
       assert.strictEqual((thrown as ClientError).cause, cause);
     });
   });
+
+  context('captured request', function () {
+    specify('should expose the sent request on the response', async function () {
+      const operation = extractAs30(extractor, openapiDoc, 'getPetById');
+      const normalized = await normalizer.normalize(operation, openapiDoc);
+      const assembled = assembler.assemble(normalized, openapiDoc);
+      const client = new OpenAPIClientSwagger(assembled);
+      const { mockFetch } = createMockFetch();
+
+      const response = await client.execute({
+        operationId: 'getPetById',
+        parameters: { petId: 42 },
+        contextUrl: 'https://petstore3.swagger.io',
+        userFetch: mockFetch,
+      });
+
+      assert.isDefined(response.request);
+      assert.include(response.request!.url!, 'https://petstore3.swagger.io/api/v3/pet/42');
+      assert.strictEqual(response.request!.method, 'GET');
+    });
+
+    specify('should still invoke a caller-supplied requestInterceptor', async function () {
+      const operation = extractAs30(extractor, openapiDoc, 'getPetById');
+      const normalized = await normalizer.normalize(operation, openapiDoc);
+      const assembled = assembler.assemble(normalized, openapiDoc);
+      const client = new OpenAPIClientSwagger(assembled);
+      const { mockFetch } = createMockFetch();
+      let intercepted = false;
+
+      const response = await client.execute({
+        operationId: 'getPetById',
+        parameters: { petId: 42 },
+        contextUrl: 'https://petstore3.swagger.io',
+        requestInterceptor: (request) => {
+          intercepted = true;
+          return request;
+        },
+        userFetch: mockFetch,
+      });
+
+      assert.isTrue(intercepted);
+      assert.isDefined(response.request);
+      assert.strictEqual(response.request!.method, 'GET');
+    });
+
+    specify('should capture the request even on a non-2xx response', async function () {
+      const operation = extractAs30(extractor, openapiDoc, 'getPetById');
+      const normalized = await normalizer.normalize(operation, openapiDoc);
+      const assembled = assembler.assemble(normalized, openapiDoc);
+      const client = new OpenAPIClientSwagger(assembled);
+
+      const response = await client.execute({
+        operationId: 'getPetById',
+        parameters: { petId: 42 },
+        contextUrl: 'https://petstore3.swagger.io',
+        userFetch: async () =>
+          new Response('boom', { status: 500, statusText: 'Internal Server Error', headers: {} }),
+      });
+
+      assert.strictEqual(response.status, 500);
+      assert.isDefined(response.request);
+      assert.strictEqual(response.request!.method, 'GET');
+    });
+  });
 });

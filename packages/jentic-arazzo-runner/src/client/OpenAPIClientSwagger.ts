@@ -4,7 +4,9 @@ import { parse, testJSONPointer } from '@speclynx/apidom-json-pointer';
 import { execute } from '../vendor/swagger-client.mjs';
 import type OpenAPIDocument from '../document/OpenAPIDocument.ts';
 import OpenAPIClient, { type OpenAPIOperationExecuteOptions } from './OpenAPIClient.ts';
-import OpenAPIOperationResponse from './OpenAPIOperationResponse.ts';
+import OpenAPIOperationResponse, {
+  type OpenAPIOperationRequestInfo,
+} from './OpenAPIOperationResponse.ts';
 import ClientError from '../errors/ClientError.ts';
 
 /**
@@ -12,7 +14,6 @@ import ClientError from '../errors/ClientError.ts';
  * @public
  */
 export interface SwaggerOpenAPIOperationExecuteOptions extends OpenAPIOperationExecuteOptions {
-  readonly requestContentType?: string;
   readonly responseContentType?: string;
   readonly contextUrl?: string;
   readonly server?: string;
@@ -44,11 +45,28 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
    * Options must include either operationId or operationPath.
    */
   async execute(options: SwaggerOpenAPIOperationExecuteOptions): Promise<OpenAPIOperationResponse> {
-    const { operationId, operationPath, ...rest } = options;
+    const { operationId, operationPath, requestInterceptor, ...rest } = options;
+
+    // capture the request swagger-client builds (its final url, method, headers,
+    // and body) so `$url` / `$method` / `$request.*` can be evaluated after
+    // execution, while still invoking any caller-supplied interceptor.
+    let request: OpenAPIOperationRequestInfo | undefined;
+    const captureInterceptor = (built: Record<string, unknown>): unknown => {
+      const forwarded = requestInterceptor ? requestInterceptor(built) : built;
+      const effective = (forwarded ?? built) as Record<string, unknown>;
+      request = {
+        url: effective.url as string | undefined,
+        method: effective.method as string | undefined,
+        headers: effective.headers as Record<string, string> | undefined,
+        body: effective.body,
+      };
+      return forwarded;
+    };
+    const request_ = { ...rest, requestInterceptor: captureInterceptor };
     let rawResponse: Record<string, unknown>;
 
     if (operationId) {
-      rawResponse = await this.#execute({ spec: this.#spec, operationId, ...rest });
+      rawResponse = await this.#execute({ spec: this.#spec, operationId, ...request_ });
     } else if (operationPath) {
       if (!testJSONPointer(operationPath)) {
         throw new ClientError(`Invalid operationPath: "${operationPath}"`, { operationPath });
@@ -61,7 +79,7 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
         );
       }
       const [, pathName, method] = tokens;
-      rawResponse = await this.#execute({ spec: this.#spec, pathName, method, ...rest });
+      rawResponse = await this.#execute({ spec: this.#spec, pathName, method, ...request_ });
     } else {
       throw new ClientError('Either operationId or operationPath must be provided');
     }
@@ -74,6 +92,7 @@ class OpenAPIClientSwagger extends OpenAPIClient<SwaggerOpenAPIOperationExecuteO
       headers: rawResponse.headers as Record<string, string>,
       text: rawResponse.text as string,
       body: rawResponse.body,
+      request,
     });
   }
 

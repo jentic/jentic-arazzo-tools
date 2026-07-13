@@ -212,9 +212,7 @@ describe('StepExecutor', function () {
 
       await executor.execute(step, state());
 
-      const call = clients[0].calls[0] as OpenAPIOperationExecuteOptions & {
-        requestContentType?: string;
-      };
+      const call = clients[0].calls[0];
       assert.deepEqual(call.requestBody, { petId: 42, quantity: 1 });
       assert.strictEqual(call.requestContentType, 'application/json');
     });
@@ -234,6 +232,36 @@ describe('StepExecutor', function () {
       assert.isTrue(result.successful);
       assert.deepEqual(result.outputs.pets, [{ id: 7 }]);
       assert.strictEqual(result.outputs.status, 200);
+    });
+
+    specify('should expose the sent request via $url / $method / $request', async function () {
+      const withRequest: CannedResponse = {
+        ...okResponse,
+        request: {
+          url: 'https://petstore3.swagger.io/api/v3/pet/findByStatus?status=available',
+          method: 'GET',
+          headers: { accept: 'application/json' },
+          body: undefined,
+        },
+      };
+      const step = refractStep({
+        stepId: 'findPets',
+        operationId: 'findPetsByStatus',
+        parameters: [{ name: 'status', in: 'query', value: 'available' }],
+        successCriteria: [{ condition: "$method == 'GET'" }],
+        outputs: { calledUrl: '$url', verb: '$method', accept: '$request.header.accept' },
+      }) as StepElement;
+      const { executor } = makeExecutor(withRequest);
+
+      const result = await executor.execute(step, state());
+
+      assert.isTrue(result.successful);
+      assert.strictEqual(
+        result.outputs.calledUrl,
+        'https://petstore3.swagger.io/api/v3/pet/findByStatus?status=available',
+      );
+      assert.strictEqual(result.outputs.verb, 'GET');
+      assert.strictEqual(result.outputs.accept, 'application/json');
     });
 
     specify('should not be successful when a successCriterion fails', async function () {

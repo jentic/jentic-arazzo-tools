@@ -54,7 +54,10 @@ export { default as OpenAPI31DocumentAssembler } from './assembler/OpenAPI31Docu
 /* Clients */
 export { default as OpenAPIClient } from './client/OpenAPIClient.ts';
 export type { OpenAPIOperationExecuteOptions } from './client/OpenAPIClient.ts';
-export { default as OpenAPIOperationResponse } from './client/OpenAPIOperationResponse.ts';
+export {
+  default as OpenAPIOperationResponse,
+  type OpenAPIOperationRequestInfo,
+} from './client/OpenAPIOperationResponse.ts';
 export { default as OpenAPIClientSwagger } from './client/OpenAPIClientSwagger.ts';
 export type { SwaggerOpenAPIOperationExecuteOptions } from './client/OpenAPIClientSwagger.ts';
 

@@ -9,6 +9,7 @@ import type OpenAPIDocument from '../document/OpenAPIDocument.ts';
 import type OpenAPIOperationResponse from '../client/OpenAPIOperationResponse.ts';
 import type {
   RuntimeExpressionContext,
+  RuntimeExpressionRequestContext,
   RuntimeExpressionResponseContext,
 } from '../expression/RuntimeExpressionContext.ts';
 import RuntimeExpressionEvaluator from '../expression/RuntimeExpressionEvaluator.ts';
@@ -198,8 +199,11 @@ class StepExecutor {
     });
 
     // evaluate criteria, outputs, and the next action against the post-request
-    // context (with $response / $statusCode).
-    const postContext = state.toContext(undefined, this.#responseContext(response));
+    // context (with $request / $url / $method and $response / $statusCode).
+    const postContext = state.toContext(
+      this.#requestContext(response),
+      this.#responseContext(response),
+    );
     const successful = this.#evaluateCriteria(step, postContext);
     const outputs = this.#outputResolver.resolve(step.outputs, (expression) =>
       this.#evaluate(postContext, expression),
@@ -281,6 +285,22 @@ class StepExecutor {
       statusCode: response.status,
       header: response.headers,
       body: response.body,
+    };
+  }
+
+  /**
+   * The request context (`$url`, `$method`, `$request.header.*`,
+   * `$request.body`) from the request the client actually sent, or `undefined`
+   * when the client did not report one.
+   */
+  #requestContext(response: OpenAPIOperationResponse): RuntimeExpressionRequestContext | undefined {
+    const request = response.request;
+    if (request === undefined) return undefined;
+    return {
+      url: request.url,
+      method: request.method,
+      header: request.headers,
+      body: request.body,
     };
   }
 }
