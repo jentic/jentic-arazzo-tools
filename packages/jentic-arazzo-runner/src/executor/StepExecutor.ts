@@ -1,10 +1,11 @@
 import { toValue } from '@speclynx/apidom-core';
-import { isStringElement } from '@speclynx/apidom-datamodel';
+import { isArrayElement, isStringElement } from '@speclynx/apidom-datamodel';
 import { isCriterionElement, type StepElement } from '@speclynx/apidom-ns-arazzo-1';
 
 import type ArazzoDocument from '../document/ArazzoDocument.ts';
 import type DocumentRegistry from '../registry/DocumentRegistry.ts';
 import type OpenAPIClient from '../client/OpenAPIClient.ts';
+import type { OpenAPIOperationExecuteOptions } from '../client/OpenAPIClient.ts';
 import type OpenAPIDocument from '../document/OpenAPIDocument.ts';
 import type OpenAPIOperationResponse from '../client/OpenAPIOperationResponse.ts';
 import type {
@@ -15,7 +16,7 @@ import type {
 import RuntimeExpressionEvaluator from '../expression/RuntimeExpressionEvaluator.ts';
 import CriterionEvaluator from '../criterion/CriterionEvaluator.ts';
 import ParameterResolver from '../resolver/ParameterResolver.ts';
-import RequestBodyResolver from '../resolver/RequestBodyResolver.ts';
+import RequestBodyResolver, { type ResolvedRequestBody } from '../resolver/RequestBodyResolver.ts';
 import OutputResolver from '../resolver/OutputResolver.ts';
 import ActionResolver, { type SelectedAction } from '../action/ActionResolver.ts';
 import OpenAPIOperationExtractor from '../extractor/OpenAPIOperationExtractor.ts';
@@ -177,26 +178,9 @@ class StepExecutor {
       this.#evaluate(preContext, expression),
     );
 
-    // Arazzo-derived options (the operation JSON Pointer, parameters, and
-    // request body) are spread last so they always override the opaque
-    // executeOptions bag. the locator's JSON Pointer selects the operation in the
-    // assembled document (the assembler preserves its path/method), and it is
-    // passed as the client's operationPath. operationId is cleared so an
-    // executeOptions passthrough cannot hijack the operation.
-    const response = await client.execute({
-      ...executeOptions,
-      operationId: undefined,
-      operationPath: locator.jsonPointer,
-      parameters,
-      ...(requestBody === undefined
-        ? {}
-        : {
-            requestBody: requestBody.payload,
-            ...(requestBody.contentType === undefined
-              ? {}
-              : { requestContentType: requestBody.contentType }),
-          }),
-    });
+    const response = await client.execute(
+      this.#buildExecuteOptions(executeOptions, locator, parameters, requestBody),
+    );
 
     // evaluate criteria, outputs, and the next action against the post-request
     // context (with $request / $url / $method and $response / $statusCode).
@@ -211,6 +195,39 @@ class StepExecutor {
     const action = this.#selectAction(step, successful, postContext);
 
     return { stepId, response, successful, outputs, action };
+  }
+
+  /**
+   * Builds the client execute options.
+   *
+   * The Arazzo-derived options (the operation JSON Pointer, parameters, and
+   * request body) are applied after the opaque `executeOptions` bag so they
+   * always take precedence. The locator's JSON Pointer selects the operation in
+   * the assembled document (the assembler preserves its path/method) and is
+   * passed as `operationPath`; `operationId` is cleared so an `executeOptions`
+   * passthrough cannot hijack the operation.
+   */
+  #buildExecuteOptions(
+    executeOptions: Record<string, unknown>,
+    locator: OpenAPIOperationLocator,
+    parameters: Record<string, unknown>,
+    requestBody: ResolvedRequestBody | undefined,
+  ): OpenAPIOperationExecuteOptions {
+    const options: Record<string, unknown> = {
+      ...executeOptions,
+      operationId: undefined,
+      operationPath: locator.jsonPointer,
+      parameters,
+    };
+
+    if (requestBody !== undefined) {
+      options.requestBody = requestBody.payload;
+      if (requestBody.contentType !== undefined) {
+        options.requestContentType = requestBody.contentType;
+      }
+    }
+
+    return options;
   }
 
   async #locateOperation(step: StepElement, stepId: string): Promise<OpenAPIOperationLocator> {
@@ -238,7 +255,8 @@ class StepExecutor {
    */
   #evaluateCriteria(step: StepElement, context: RuntimeExpressionContext): boolean {
     const criteria = step.successCriteria;
-    if (criteria === undefined) return true;
+    // no (or non-array) successCriteria: the step succeeds on a received response.
+    if (!isArrayElement(criteria)) return true;
 
     for (const criterion of criteria) {
       if (!isCriterionElement(criterion)) continue;
