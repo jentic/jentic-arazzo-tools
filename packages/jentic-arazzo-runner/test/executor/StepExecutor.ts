@@ -123,6 +123,9 @@ describe('StepExecutor', function () {
       assert.strictEqual(clients.length, 1);
       // the resolved parameter reached the client.
       assert.deepEqual(clients[0].calls[0].parameters, { status: 'available' });
+      // a plain operationId is normalized to the operation's JSON Pointer.
+      assert.strictEqual(clients[0].calls[0].operationPath, '/paths/~1pet~1findByStatus/get');
+      assert.isUndefined(clients[0].calls[0].operationId);
     });
 
     specify(
@@ -138,10 +141,10 @@ describe('StepExecutor', function () {
         const result = await executor.execute(step, state());
 
         assert.strictEqual(result.response.status, 200);
-        // the raw expression must be resolved to the concrete operationId, not
+        // the raw expression is normalized to the operation's JSON Pointer, not
         // forwarded to the client verbatim.
-        assert.strictEqual(clients[0].calls[0].operationId, 'findPetsByStatus');
-        assert.isUndefined(clients[0].calls[0].operationPath);
+        assert.strictEqual(clients[0].calls[0].operationPath, '/paths/~1pet~1findByStatus/get');
+        assert.isUndefined(clients[0].calls[0].operationId);
       },
     );
 
@@ -283,11 +286,11 @@ describe('StepExecutor', function () {
           contextUrl?: string;
         };
         assert.strictEqual(call.contextUrl, 'https://example.com');
-        // the Arazzo-derived selector wins: the operationId passthrough is
-        // overridden and the operationPath passthrough is cleared, so
-        // executeOptions cannot hijack the target.
-        assert.strictEqual(call.operationId, 'findPetsByStatus');
-        assert.isUndefined(call.operationPath);
+        // the Arazzo-derived operationPath wins: the operationPath passthrough is
+        // overridden and the operationId passthrough is cleared, so executeOptions
+        // cannot hijack the target.
+        assert.strictEqual(call.operationPath, '/paths/~1pet~1findByStatus/get');
+        assert.isUndefined(call.operationId);
       },
     );
   });

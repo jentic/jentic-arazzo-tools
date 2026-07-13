@@ -169,14 +169,17 @@ class StepExecutor {
       this.#evaluate(preContext, expression),
     );
 
-    // Arazzo-derived options (the resolved operation selector, parameters, and
+    // Arazzo-derived options (the resolved operationPath, parameters, and
     // request body) are spread last so they always override the opaque
-    // executeOptions bag. the selector comes from the resolved target — not the
-    // raw step field — so a `$sourceDescriptions` expression or an operationPath
-    // reaches the client as the concrete operationId / JSON Pointer.
+    // executeOptions bag. every step form — plain operationId,
+    // `$sourceDescriptions` expression, or operationPath — is normalized by the
+    // resolver to a single client mechanism: the operationPath JSON Pointer. it
+    // comes from the resolved target, not the raw step field, and operationId is
+    // cleared so an executeOptions passthrough cannot hijack the target.
     const response = await client.execute({
       ...executeOptions,
-      ...target.selector,
+      operationId: undefined,
+      operationPath: target.operationPath,
       parameters,
       ...(requestBody === undefined
         ? {}

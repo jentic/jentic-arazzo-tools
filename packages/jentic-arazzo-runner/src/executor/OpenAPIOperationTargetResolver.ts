@@ -1,3 +1,4 @@
+import { toValue } from '@speclynx/apidom-core';
 import {
   test as isRuntimeExpression,
   parse as parseRuntimeExpression,
@@ -12,25 +13,19 @@ import OpenAPIOperationExtractor from '../extractor/OpenAPIOperationExtractor.ts
 import ExtractionError from '../errors/ExtractionError.ts';
 
 /**
- * The concrete selector the client uses to execute the resolved operation —
- * either its `operationId` or a JSON Pointer `operationPath` to it in the
- * assembled document. Exactly one is set. Steps name their operation with a
- * runtime expression or a plain id; this is the resolved, client-ready form.
- * @public
- */
-export type OpenAPIOperationSelector =
-  | { readonly operationId: string; readonly operationPath?: undefined }
-  | { readonly operationId?: undefined; readonly operationPath: string };
-
-/**
  * A resolved operation target: the OpenAPI document that owns the operation, the
- * extracted operation element, and the client-ready selector for it.
+ * extracted operation element, and its `operationPath` — a JSON Pointer to the
+ * operation in the (assembled) document.
+ *
+ * However a step names its operation — a plain `operationId`, a
+ * `$sourceDescriptions` runtime expression, or an `operationPath` — the resolver
+ * normalizes it to a single client-ready mechanism: the `operationPath` pointer.
  * @public
  */
 export interface OpenAPIOperationTarget {
   readonly document: OpenAPIDocument;
   readonly operation: OpenAPIOperationElement;
-  readonly selector: OpenAPIOperationSelector;
+  readonly operationPath: string;
 }
 
 /**
@@ -98,13 +93,23 @@ class OpenAPIOperationTargetResolver {
     const openapiDocument = await this.#resolveSourceDocument(sourceExpression, document);
     const operation = this.#operationExtractor.extractByPointer(openapiDocument, pointer);
 
-    // the assembler preserves the operation at the same path/method, so the
-    // pointer selects it in the assembled document too.
-    return {
-      document: openapiDocument,
-      operation,
-      selector: { operationId: undefined, operationPath: pointer },
-    };
+    return this.#toTarget(openapiDocument, operation);
+  }
+
+  /**
+   * Builds a target from an extracted operation, reading the JSON Pointer the
+   * extractor stamped onto it. The assembler preserves the operation at the same
+   * path/method, so this pointer selects it in the assembled document too — the
+   * single client-ready mechanism every resolution path normalizes to.
+   */
+  #toTarget(document: OpenAPIDocument, operation: OpenAPIOperationElement): OpenAPIOperationTarget {
+    const operationPath = toValue(operation.meta.get('pointer'));
+    if (typeof operationPath !== 'string') {
+      throw new ExtractionError('Extracted operation is missing its pointer metadata', {
+        uri: document.uri,
+      });
+    }
+    return { document, operation, operationPath };
   }
 
   /**
@@ -133,13 +138,7 @@ class OpenAPIOperationTargetResolver {
       this.#parseSourceDescriptionsExpression(expression);
     const openapiDocument = await this.#sourceDocument(sourceName, document);
     const operation = this.#operationExtractor.extract(openapiDocument, operationId);
-    // the parsed reference is the concrete operationId; the raw expression must
-    // not reach the client.
-    return {
-      document: openapiDocument,
-      operation,
-      selector: { operationId, operationPath: undefined },
-    };
+    return this.#toTarget(openapiDocument, operation);
   }
 
   /**
@@ -156,11 +155,7 @@ class OpenAPIOperationTargetResolver {
       const source = await this.#registry.acquire(uri);
       if (!OpenAPIDocument.is(source)) continue;
       if (source.operationIndex.has(operationId)) {
-        return {
-          document: source,
-          operation: this.#operationExtractor.extract(source, operationId),
-          selector: { operationId, operationPath: undefined },
-        };
+        return this.#toTarget(source, this.#operationExtractor.extract(source, operationId));
       }
     }
 

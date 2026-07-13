@@ -108,10 +108,7 @@ export type {
   OpenAPIClientFactory,
 } from './executor/StepExecutor.ts';
 export { default as OpenAPIOperationTargetResolver } from './executor/OpenAPIOperationTargetResolver.ts';
-export type {
-  OpenAPIOperationTarget,
-  OpenAPIOperationSelector,
-} from './executor/OpenAPIOperationTargetResolver.ts';
+export type { OpenAPIOperationTarget } from './executor/OpenAPIOperationTargetResolver.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
