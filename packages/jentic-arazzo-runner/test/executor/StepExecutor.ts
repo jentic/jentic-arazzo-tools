@@ -133,11 +133,15 @@ describe('StepExecutor', function () {
           operationId: '$sourceDescriptions.petstoreAPI.findPetsByStatus',
           parameters: [{ name: 'status', in: 'query', value: 'available' }],
         }) as StepElement;
-        const { executor } = makeExecutor(okResponse);
+        const { executor, clients } = makeExecutor(okResponse);
 
         const result = await executor.execute(step, state());
 
         assert.strictEqual(result.response.status, 200);
+        // the raw expression must be resolved to the concrete operationId, not
+        // forwarded to the client verbatim.
+        assert.strictEqual(clients[0].calls[0].operationId, 'findPetsByStatus');
+        assert.isUndefined(clients[0].calls[0].operationPath);
       },
     );
 
@@ -147,11 +151,14 @@ describe('StepExecutor', function () {
         operationPath: '{$sourceDescriptions.petstoreAPI.url}#/paths/~1pet~1findByStatus/get',
         parameters: [{ name: 'status', in: 'query', value: 'available' }],
       }) as StepElement;
-      const { executor } = makeExecutor(okResponse);
+      const { executor, clients } = makeExecutor(okResponse);
 
       const result = await executor.execute(step, state());
 
       assert.strictEqual(result.response.status, 200);
+      // the client receives the JSON Pointer selector, not an operationId.
+      assert.strictEqual(clients[0].calls[0].operationPath, '/paths/~1pet~1findByStatus/get');
+      assert.isUndefined(clients[0].calls[0].operationId);
     });
 
     specify('should throw for an operationId found in no source description', async function () {
@@ -192,6 +199,23 @@ describe('StepExecutor', function () {
   });
 
   context('outcome', function () {
+    specify('should forward the resolved request body and content type', async function () {
+      const step = refractStep({
+        stepId: 'order',
+        operationId: 'placeOrder',
+        requestBody: { contentType: 'application/json', payload: { petId: 42, quantity: 1 } },
+      }) as StepElement;
+      const { executor, clients } = makeExecutor(okResponse);
+
+      await executor.execute(step, state());
+
+      const call = clients[0].calls[0] as OpenAPIOperationExecuteOptions & {
+        requestContentType?: string;
+      };
+      assert.deepEqual(call.requestBody, { petId: 42, quantity: 1 });
+      assert.strictEqual(call.requestContentType, 'application/json');
+    });
+
     specify('should be successful when successCriteria pass', async function () {
       const step = refractStep({
         stepId: 'findPets',
@@ -252,14 +276,18 @@ describe('StepExecutor', function () {
         await executor.execute(step, state(), {
           contextUrl: 'https://example.com',
           operationId: 'HIJACK',
+          operationPath: '/paths/~1hijacked/get',
         });
 
         const call = clients[0].calls[0] as OpenAPIOperationExecuteOptions & {
           contextUrl?: string;
         };
         assert.strictEqual(call.contextUrl, 'https://example.com');
-        // the Arazzo-derived operationId wins over a passthrough attempt.
+        // the Arazzo-derived selector wins: the operationId passthrough is
+        // overridden and the operationPath passthrough is cleared, so
+        // executeOptions cannot hijack the target.
         assert.strictEqual(call.operationId, 'findPetsByStatus');
+        assert.isUndefined(call.operationPath);
       },
     );
   });

@@ -12,13 +12,25 @@ import OpenAPIOperationExtractor from '../extractor/OpenAPIOperationExtractor.ts
 import ExtractionError from '../errors/ExtractionError.ts';
 
 /**
- * A resolved operation target: the OpenAPI document that owns the operation and
- * the extracted operation element.
+ * The concrete selector the client uses to execute the resolved operation —
+ * either its `operationId` or a JSON Pointer `operationPath` to it in the
+ * assembled document. Exactly one is set. Steps name their operation with a
+ * runtime expression or a plain id; this is the resolved, client-ready form.
+ * @public
+ */
+export type OpenAPIOperationSelector =
+  | { readonly operationId: string; readonly operationPath?: undefined }
+  | { readonly operationId?: undefined; readonly operationPath: string };
+
+/**
+ * A resolved operation target: the OpenAPI document that owns the operation, the
+ * extracted operation element, and the client-ready selector for it.
  * @public
  */
 export interface OpenAPIOperationTarget {
   readonly document: OpenAPIDocument;
   readonly operation: OpenAPIOperationElement;
+  readonly selector: OpenAPIOperationSelector;
 }
 
 /**
@@ -86,7 +98,13 @@ class OpenAPIOperationTargetResolver {
     const openapiDocument = await this.#resolveSourceDocument(sourceExpression, document);
     const operation = this.#operationExtractor.extractByPointer(openapiDocument, pointer);
 
-    return { document: openapiDocument, operation };
+    // the assembler preserves the operation at the same path/method, so the
+    // pointer selects it in the assembled document too.
+    return {
+      document: openapiDocument,
+      operation,
+      selector: { operationId: undefined, operationPath: pointer },
+    };
   }
 
   /**
@@ -115,7 +133,13 @@ class OpenAPIOperationTargetResolver {
       this.#parseSourceDescriptionsExpression(expression);
     const openapiDocument = await this.#sourceDocument(sourceName, document);
     const operation = this.#operationExtractor.extract(openapiDocument, operationId);
-    return { document: openapiDocument, operation };
+    // the parsed reference is the concrete operationId; the raw expression must
+    // not reach the client.
+    return {
+      document: openapiDocument,
+      operation,
+      selector: { operationId, operationPath: undefined },
+    };
   }
 
   /**
@@ -135,6 +159,7 @@ class OpenAPIOperationTargetResolver {
         return {
           document: source,
           operation: this.#operationExtractor.extract(source, operationId),
+          selector: { operationId, operationPath: undefined },
         };
       }
     }
