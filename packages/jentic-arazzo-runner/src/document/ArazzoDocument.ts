@@ -66,19 +66,17 @@ class ArazzoDocument extends APIDocument {
 
   /**
    * The canonical URIs of this document's source descriptions, resolved against
-   * this document's base URI, in declaration order.
+   * this document's base URI, in declaration order. Sources without a resolvable
+   * url are omitted.
    */
   sourceDescriptionURIs(): string[] {
     return filter(
       this.parseResult,
-      (path) => isSourceDescriptionElement(path.node) && isStringElement(path.node.url),
-    ).map((path) =>
-      url.sanitize(
-        url.stripHash(
-          url.resolve(this.uri, toValue((path.node as SourceDescriptionElement).url) as string),
-        ),
-      ),
-    );
+      (path) => isSourceDescriptionElement(path.node) && isStringElement(path.node.name),
+    )
+      .map((path) => toValue((path.node as SourceDescriptionElement).name) as string)
+      .map((name) => this.resolveSourceDescriptionURI(name))
+      .filter((uri): uri is string => uri !== undefined);
   }
 }
 
