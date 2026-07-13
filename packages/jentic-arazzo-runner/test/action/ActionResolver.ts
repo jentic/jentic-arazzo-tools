@@ -5,11 +5,13 @@ import {
   refractSuccessAction,
   refractFailureAction,
   isCriterionElement,
+  isSuccessActionElement,
+  isFailureActionElement,
   type CriterionElement,
 } from '@speclynx/apidom-ns-arazzo-1';
 import { toValue } from '@speclynx/apidom-core';
 
-import { ActionResolver, type CriterionPredicate } from '../../src/index.ts';
+import { ActionResolver, type CriterionPredicate, type SelectedAction } from '../../src/index.ts';
 
 describe('ActionResolver', function () {
   let resolver: ActionResolver;
@@ -18,8 +20,7 @@ describe('ActionResolver', function () {
     resolver = new ActionResolver();
   });
 
-  // a predicate that treats a criterion whose condition is the string 'pass' as
-  // met and anything else as not met — enough to drive selection.
+  // a predicate that treats a criterion whose condition is 'pass' as met.
   const byCondition: CriterionPredicate = (criterion: CriterionElement) =>
     isCriterionElement(criterion) && toValue(criterion.condition) === 'pass';
   const always: CriterionPredicate = () => true;
@@ -37,11 +38,9 @@ describe('ActionResolver', function () {
         { name: 'c', type: 'goto', stepId: 'third', criteria: [{ condition: 'pass' }] },
       );
 
-      assert.deepEqual(resolver.resolve(actions, byCondition), {
-        type: 'goto',
-        workflowId: undefined,
-        stepId: 'second',
-      });
+      const selected = resolver.resolve(actions, byCondition);
+      assert.isTrue(isSuccessActionElement(selected));
+      assert.strictEqual(toValue(selected?.stepId), 'second');
     });
 
     specify('should require all of an action criteria to pass', function () {
@@ -55,9 +54,18 @@ describe('ActionResolver', function () {
     });
 
     specify('should treat an action with no criteria as always matching', function () {
-      const actions = onSuccess({ name: 'a', type: 'end' });
+      const selected = resolver.resolve(onSuccess({ name: 'a', type: 'end' }), byCondition);
 
-      assert.deepEqual(resolver.resolve(actions, byCondition), { type: 'end' });
+      assert.strictEqual(toValue(selected?.type), 'end');
+    });
+
+    specify('should treat an action with an empty criteria list as matching', function () {
+      const selected = resolver.resolve(
+        onSuccess({ name: 'a', type: 'end', criteria: [] }),
+        byCondition,
+      );
+
+      assert.strictEqual(toValue(selected?.type), 'end');
     });
 
     specify('should return undefined when no action matches', function () {
@@ -71,48 +79,33 @@ describe('ActionResolver', function () {
     });
   });
 
-  context('normalization', function () {
-    specify('should normalize an end action', function () {
-      assert.deepEqual(resolver.resolve(onSuccess({ name: 'a', type: 'end' }), always), {
-        type: 'end',
-      });
+  context('selected action element', function () {
+    const select = (action: unknown, predicate = always): SelectedAction | undefined =>
+      resolver.resolve(onFailure(action), predicate);
+
+    specify('should return the goto action element with its target', function () {
+      const selected = resolver.resolve(
+        onSuccess({ name: 'a', type: 'goto', stepId: 'next' }),
+        always,
+      );
+
+      assert.strictEqual(toValue(selected?.type), 'goto');
+      assert.strictEqual(toValue(selected?.stepId), 'next');
     });
 
-    specify('should normalize a goto to a stepId', function () {
-      assert.deepEqual(
-        resolver.resolve(onSuccess({ name: 'a', type: 'goto', stepId: 'next' }), always),
-        { type: 'goto', workflowId: undefined, stepId: 'next' },
-      );
+    specify('should return the retry action element with its bounds', function () {
+      const selected = select({ name: 'a', type: 'retry', retryAfter: 3, retryLimit: 5 });
+
+      assert.isTrue(isFailureActionElement(selected));
+      assert.strictEqual(toValue(selected?.type), 'retry');
+      assert.strictEqual(toValue((selected as { retryAfter?: unknown }).retryAfter), 3);
+      assert.strictEqual(toValue((selected as { retryLimit?: unknown }).retryLimit), 5);
     });
 
-    specify('should normalize a goto to a workflowId', function () {
-      assert.deepEqual(
-        resolver.resolve(onFailure({ name: 'a', type: 'goto', workflowId: 'wf' }), always),
-        { type: 'goto', workflowId: 'wf', stepId: undefined },
-      );
-    });
+    specify('should return the workflow-transfer action element', function () {
+      const selected = select({ name: 'a', type: 'goto', workflowId: 'wf' });
 
-    specify('should normalize a retry with its bounds', function () {
-      assert.deepEqual(
-        resolver.resolve(
-          onFailure({ name: 'a', type: 'retry', retryAfter: 3, retryLimit: 5 }),
-          always,
-        ),
-        { type: 'retry', workflowId: undefined, stepId: undefined, retryAfter: 3, retryLimit: 5 },
-      );
-    });
-
-    specify('should normalize a retry that transfers to a workflow', function () {
-      assert.deepEqual(
-        resolver.resolve(onFailure({ name: 'a', type: 'retry', workflowId: 'wf' }), always),
-        {
-          type: 'retry',
-          workflowId: 'wf',
-          stepId: undefined,
-          retryAfter: undefined,
-          retryLimit: undefined,
-        },
-      );
+      assert.strictEqual(toValue(selected?.workflowId), 'wf');
     });
   });
 });

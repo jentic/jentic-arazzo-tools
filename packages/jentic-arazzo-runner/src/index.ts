@@ -97,7 +97,7 @@ export type {
 
 /* Actions */
 export { default as ActionResolver } from './action/ActionResolver.ts';
-export type { CriterionPredicate, ResolvedAction } from './action/ActionResolver.ts';
+export type { CriterionPredicate, SelectedAction } from './action/ActionResolver.ts';
 
 /* Errors */
 export { default as ArazzoRunnerError } from './errors/ArazzoRunnerError.ts';
