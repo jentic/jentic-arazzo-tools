@@ -60,44 +60,31 @@ flowchart TD
 
 Each layer reads run state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
 
-## `OpenAPIOperationExecutor`
+## `DocumentRegistry`
 
-Executes a single OpenAPI operation and returns its raw response. It is **Arazzo-agnostic**: it neither locates the operation nor resolves runtime expressions. Given a canonical locator (`{ document, jsonPointer }`) it extracts the operation from its owning document, normalizes it, assembles a minimal standalone OpenAPI document containing just that operation, builds a client for the assembled document, and executes it.
-
-`OpenAPIOperationExecutor` is the seam between the runner and any OpenAPI client implementation. It builds its client through the injected `clientFactory`, so a different HTTP stack (or a deterministic stub in tests) can be dropped in without touching the runner.
-
-Because it is Arazzo-agnostic, it can be used **standalone** — with only an OpenAPI document and an `operationId`, no Arazzo workflow involved. The operation index on the loaded document maps an `operationId` to its JSON Pointer, which is all a locator needs:
+Loads and caches Arazzo and OpenAPI documents, so a source description referenced by many steps is fetched and parsed once.
 
 ```js
-import {
-  DocumentRegistry,
-  OpenAPIOperationExecutor,
-  OpenAPIClientSwagger,
-} from '@jentic/arazzo-runner';
+import { DocumentRegistry } from '@jentic/arazzo-runner';
 
 const registry = new DocumentRegistry();
-const openapiDoc = await registry.acquire('https://petstore3.swagger.io/api/v3/openapi.json');
 
-// build a canonical { document, jsonPointer } locator straight from the OpenAPI
-// document — the operation index resolves an operationId to its JSON Pointer.
-const locator = {
-  document: openapiDoc,
-  jsonPointer: openapiDoc.operationIndex.get('findPetsByStatus'),
-};
+// the entry Arazzo document.
+const arazzoDoc = await registry.acquireEntryDocument('https://example.com/workflow.arazzo.yaml');
 
-const executor = new OpenAPIOperationExecutor({
-  clientFactory: (document) => new OpenAPIClientSwagger(document),
-});
+// a source description, resolved by name to an absolute URI, then acquired.
+const uri = arazzoDoc.resolveSourceDescriptionURI('petstoreAPI');
+const openapiDoc = await registry.acquire(uri);
 
-const response = await executor.execute(locator, {
-  parameters: { status: 'available' },
-  contextUrl: 'https://petstore3.swagger.io', // base URL for the operation's relative server
-});
-
-console.log(response.status, response.body);
+registry.clear(); // drop cached documents to reclaim memory
 ```
 
-A non-2xx response is returned as data, not thrown — whether it counts as success is judged (by a step's `successCriteria`) one level up. Only malformed input (an unlocatable operation, an unsupported OpenAPI version) throws.
+## `WorkflowExecutor`
+
+> [!WARNING]  
+> Not yet implemented — work in progress. The sections below describe the current building blocks; `WorkflowExecutor` is the next one.
+
+`WorkflowExecutor` will be the stateful orchestrator that runs a whole workflow: it iterates a workflow's steps, calling `StepExecutor` per step, and owns the run state (a `WorkflowExecutionState`) that accumulates each step's outputs so later steps can read `$steps.*.outputs`. It interprets the control-flow actions `StepExecutor` only _selects_ — `goto`, `retry`, and `end` — applies workflow-level defaults (`successActions` / `failureActions`, `parameters`), resolves workflow `inputs` / `outputs`, and calls sub-workflows.
 
 ## `StepExecutor`
 
@@ -155,41 +142,45 @@ The two are deliberately distinct:
 - A **received response with unmet criteria** is a normal outcome — `successful: false`, no throw.
 - **Malformed input** throws an `ExecutionError` (a step with no operation target, more than one mutually-exclusive target, a `workflowId` step, or an operation that cannot be located).
 
-## `DocumentRegistry`
+## `OpenAPIOperationExecutor`
 
-Loads and caches Arazzo and OpenAPI documents, so a source description referenced by many steps is fetched and parsed once.
+Executes a single OpenAPI operation and returns its raw response. It is **Arazzo-agnostic**: it neither locates the operation nor resolves runtime expressions. Given a canonical locator (`{ document, jsonPointer }`) it extracts the operation from its owning document, normalizes it, assembles a minimal standalone OpenAPI document containing just that operation, builds a client for the assembled document, and executes it.
+
+`OpenAPIOperationExecutor` is the seam between the runner and any OpenAPI client implementation. It builds its client through the injected `clientFactory`, so a different HTTP stack (or a deterministic stub in tests) can be dropped in without touching the runner.
+
+Because it is Arazzo-agnostic, it can be used **standalone** — with only an OpenAPI document and an `operationId`, no Arazzo workflow involved. The operation index on the loaded document maps an `operationId` to its JSON Pointer, which is all a locator needs:
 
 ```js
-import { DocumentRegistry } from '@jentic/arazzo-runner';
+import {
+  DocumentRegistry,
+  OpenAPIOperationExecutor,
+  OpenAPIClientSwagger,
+} from '@jentic/arazzo-runner';
 
 const registry = new DocumentRegistry();
+const openapiDoc = await registry.acquire('https://petstore3.swagger.io/api/v3/openapi.json');
 
-// the entry Arazzo document.
-const arazzoDoc = await registry.acquireEntryDocument('https://example.com/workflow.arazzo.yaml');
+// build a canonical { document, jsonPointer } locator straight from the OpenAPI
+// document — the operation index resolves an operationId to its JSON Pointer.
+const locator = {
+  document: openapiDoc,
+  jsonPointer: openapiDoc.operationIndex.get('findPetsByStatus'),
+};
 
-// a source description, resolved by name to an absolute URI, then acquired.
-const uri = arazzoDoc.resolveSourceDescriptionURI('petstoreAPI');
-const openapiDoc = await registry.acquire(uri);
+const executor = new OpenAPIOperationExecutor({
+  clientFactory: (document) => new OpenAPIClientSwagger(document),
+});
 
-registry.clear(); // drop cached documents to reclaim memory
+const response = await executor.execute(locator, {
+  parameters: { status: 'available' },
+  contextUrl: 'https://petstore3.swagger.io', // base URL for the operation's relative server
+});
+
+console.log(response.status, response.body);
 ```
 
-## `WorkflowExecutionState`
-
-Accumulates workflow-scoped run state and produces the context a runtime expression is evaluated against (`$inputs`, `$steps.{id}.outputs`, `$workflows.{id}.{inputs,outputs}`, and the workflow's own `$outputs`). Control-flow position, retries, and traces are the executor's concern, not this state's.
-
-```js
-import { WorkflowExecutionState } from '@jentic/arazzo-runner';
-
-const state = new WorkflowExecutionState({ inputs: { userId: 42 } });
-state.setStepOutputs('login', { token: 'abc' }); // read later via $steps.login.outputs.token
-state.setOutput('finalToken', 'abc'); // read via $outputs.finalToken
-```
+A non-2xx response is returned as data, not thrown — whether it counts as success is judged (by a step's `successCriteria`) one level up. Only malformed input (an unlocatable operation, an unsupported OpenAPI version) throws.
 
 ## Runtime expressions
 
 Steps reference run state and responses through [Arazzo runtime expressions](https://spec.openapis.org/arazzo/latest.html#runtime-expressions). `RuntimeExpressionEvaluator` resolves them against the current context; the supported roots include `$inputs`, `$outputs`, `$steps.*`, `$workflows.*`, `$statusCode`, `$response.*`, `$request.*`, `$url`, `$method`, `$components.*`, and `$sourceDescriptions.*`. Criteria are evaluated by version-aware evaluators (`simple`, `regex`, `jsonpath`, `xpath`).
-
-## Roadmap
-
-`StepExecutor` runs a single step. A stateful `WorkflowExecutor` that iterates a workflow's steps — recording outputs into `WorkflowExecutionState`, interpreting the returned control-flow actions (`goto`, `retry`, `end`), applying workflow-level defaults, and calling sub-workflows — is the next major building block.
