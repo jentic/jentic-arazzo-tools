@@ -112,6 +112,7 @@ export type {
 export { default as OpenAPIOperationExecutor } from './executor/OpenAPIOperationExecutor.ts';
 export type {
   OpenAPIOperationExecutorOptions,
+  OpenAPIOperationExecuteOptionsBag,
   OpenAPIClientFactory,
 } from './executor/OpenAPIOperationExecutor.ts';
 export { default as OpenAPIOperationLocatorNormalizer } from './executor/OpenAPIOperationLocatorNormalizer.ts';

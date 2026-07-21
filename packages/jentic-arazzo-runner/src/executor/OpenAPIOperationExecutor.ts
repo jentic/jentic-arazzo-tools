@@ -1,4 +1,5 @@
 import type OpenAPIClient from '../client/OpenAPIClient.ts';
+import type { OpenAPIOperationExecuteOptions } from '../client/OpenAPIClient.ts';
 import type OpenAPIDocument from '../document/OpenAPIDocument.ts';
 import type OpenAPIOperationResponse from '../client/OpenAPIOperationResponse.ts';
 import OpenAPIOperationExtractor from '../extractor/OpenAPIOperationExtractor.ts';
@@ -11,6 +12,20 @@ import type { OpenAPIOperationLocator } from './OpenAPIOperationLocatorNormalize
  * @public
  */
 export type OpenAPIClientFactory = (document: OpenAPIDocument) => OpenAPIClient;
+
+/**
+ * The client execute options forwarded to {@link OpenAPIOperationExecutor.execute}.
+ *
+ * The base {@link OpenAPIOperationExecuteOptions} fields (`parameters`,
+ * `requestBody`, `requestContentType`, `signal`, …) are surfaced for
+ * type-checked callers, while the open `Record` tail keeps the bag opaque so a
+ * concrete client's extra options (e.g. a swagger client's `contextUrl`) pass
+ * through untouched. The operation target (`operationId` / `operationPath`) is
+ * always overridden by the executor, so setting it here has no effect.
+ * @public
+ */
+export type OpenAPIOperationExecuteOptionsBag = Partial<OpenAPIOperationExecuteOptions> &
+  Record<string, unknown>;
 
 /**
  * Options for the OpenAPIOperationExecutor.
@@ -81,7 +96,7 @@ class OpenAPIOperationExecutor {
    */
   async execute(
     locator: OpenAPIOperationLocator,
-    executeOptions: Record<string, unknown> = {},
+    executeOptions: OpenAPIOperationExecuteOptionsBag = {},
   ): Promise<OpenAPIOperationResponse> {
     const operation = this.#operationExtractor.extractByPointer(
       locator.document,
