@@ -54,22 +54,6 @@ flowchart TD
 
 The dependency direction is one-way: `WorkflowExecutor → StepExecutor → OpenAPIOperationExecutor → OpenAPIClient`. Each layer reads state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
 
-Inside `StepExecutor`, the per-step work is delegated to focused collaborators:
-
-```
-StepExecutor                         (Arazzo step → outcome)
-  ├─ OpenAPIOperationLocatorNormalizer   (operationId / operationPath → { document, jsonPointer })
-  ├─ ParameterResolver / RequestBodyResolver  (runtime expressions → request inputs)
-  ├─ OpenAPIOperationExecutor          (run one OpenAPI operation)
-  │    ├─ OpenAPIOperationExtractor        (locate the operation element)
-  │    ├─ OpenAPIOperationNormalizer       (inline servers / parameters / security)
-  │    ├─ OpenAPIDocumentAssembler         (minimal standalone OpenAPI document)
-  │    └─ OpenAPIClient                    (execute against the live API)
-  ├─ CriterionEvaluator                (evaluate successCriteria)
-  ├─ OutputResolver                    (resolve step outputs)
-  └─ ActionResolver                    (select the onSuccess / onFailure action)
-```
-
 ## `OpenAPIOperationExecutor`
 
 Executes a single OpenAPI operation and returns its raw response. It is **Arazzo-agnostic**: it neither locates the operation nor resolves runtime expressions. Given a canonical locator (`{ document, jsonPointer }`) it extracts the operation from its owning document, normalizes it, assembles a minimal standalone OpenAPI document containing just that operation, builds a client for the assembled document, and executes it.
