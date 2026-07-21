@@ -61,8 +61,7 @@ const okResponse: CannedResponse = {
  */
 const rejects = async (
   promise: Promise<unknown>,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  errorType?: new (...args: any[]) => Error,
+  errorType?: typeof ExtractionError,
 ): Promise<void> => {
   try {
     await promise;
@@ -170,7 +169,7 @@ describe('OpenAPIOperationExecutor', function () {
     assert.strictEqual(call.requestContentType, 'application/json');
   });
 
-  specify('should propagate a failure from the pipeline', async function () {
+  specify('should propagate a synchronous extraction failure', async function () {
     const { executor, clients } = makeExecutor();
 
     // a locator pointing at no operation: extraction fails before any client is
@@ -179,6 +178,27 @@ describe('OpenAPIOperationExecutor', function () {
       executor.execute({ document: locator.document, jsonPointer: '/paths/~1nope/get' }),
       ExtractionError,
     );
+    assert.strictEqual(clients.length, 0);
+  });
+
+  specify('should propagate an asynchronous normalization failure', async function () {
+    const clients: StubClient[] = [];
+    const operationNormalizer = new OpenAPIOperationNormalizer();
+    // the sole awaited step in the pipeline: a rejection here must surface from
+    // execute, and no client should be built.
+    operationNormalizer.normalize = async () => {
+      throw new Error('normalize failed');
+    };
+    const executor = new OpenAPIOperationExecutor({
+      operationNormalizer,
+      clientFactory: (document) => {
+        const client = new StubClient(document, okResponse);
+        clients.push(client);
+        return client;
+      },
+    });
+
+    await rejects(executor.execute(locator));
     assert.strictEqual(clients.length, 0);
   });
 
