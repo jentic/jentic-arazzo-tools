@@ -19,7 +19,10 @@ It builds on [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models a
 
 ## Installation
 
-You can install this package via [npm](https://npmjs.org/) CLI by running the following command:
+> [!NOTE]  
+> This package is not yet published to npm. It is developed within the [`jentic-arazzo-tools`](https://github.com/jentic/jentic-arazzo-tools) monorepo and will be publicly installable once its API stabilizes.
+
+Once published, it will be installable via the [npm](https://npmjs.org/) CLI:
 
 ```sh
 npm install @jentic/arazzo-runner
