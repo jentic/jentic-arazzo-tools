@@ -10,7 +10,7 @@ node 16.14
 last 1 Chrome versions
 last 1 FireFox versions
 last 1 Safari versions
-node 24.10.0
+node 26.3.1
 
 [browser-production]
 last 3 chrome versions
