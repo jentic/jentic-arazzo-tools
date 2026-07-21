@@ -24,7 +24,37 @@ It builds on [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models a
 
 ## Architecture
 
-Running an Arazzo workflow is a pipeline of small, single-responsibility building blocks. Documents are loaded once and cached by a **`DocumentRegistry`**; each Arazzo step is run by a **`StepExecutor`**, which resolves the step's inputs and delegates the actual HTTP call to an **`OpenAPIOperationExecutor`**.
+Running an Arazzo workflow is a pipeline of small, single-responsibility building blocks organized into four main components:
+
+- **`DocumentRegistry`** — loads and caches the Arazzo entry document and its OpenAPI source descriptions, so each is fetched and parsed once.
+- **`WorkflowExecutor`** _(planned — see [Roadmap](#roadmap))_ — iterates a workflow's steps, owns the run state, and interprets control-flow actions (`goto`, `retry`, `end`).
+- **`StepExecutor`** — runs a single Arazzo step: locates its operation, resolves inputs, evaluates criteria and outputs, and selects the next action.
+- **`OpenAPIOperationExecutor`** — runs a single OpenAPI operation and returns its raw response; the Arazzo-agnostic seam between the runner and any `OpenAPIClient`.
+
+```mermaid
+flowchart TD
+    Registry[("DocumentRegistry<br/><i>load & cache documents</i>")]
+
+    WF["WorkflowExecutor<br/><i>(planned)</i><br/>iterate steps · own state · control flow"]
+    Step["StepExecutor<br/>run one Arazzo step"]
+    Op["OpenAPIOperationExecutor<br/>run one OpenAPI operation"]
+    Client["OpenAPIClient<br/>execute against the live API"]
+
+    WF -->|"execute(step, state)"| Step
+    Step -->|"execute(locator, options)"| Op
+    Op -->|"clientFactory(document)"| Client
+
+    Registry -.->|documents| WF
+    Registry -.->|documents| Step
+    Registry -.->|documents| Op
+
+    classDef planned stroke-dasharray: 5 5;
+    class WF planned;
+```
+
+The dependency direction is one-way: `WorkflowExecutor → StepExecutor → OpenAPIOperationExecutor → OpenAPIClient`. Each layer reads state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
+
+Inside `StepExecutor`, the per-step work is delegated to focused collaborators:
 
 ```
 StepExecutor                         (Arazzo step → outcome)
@@ -39,8 +69,6 @@ StepExecutor                         (Arazzo step → outcome)
   ├─ OutputResolver                    (resolve step outputs)
   └─ ActionResolver                    (select the onSuccess / onFailure action)
 ```
-
-The dependency direction is one-way: `StepExecutor → OpenAPIOperationExecutor → OpenAPIClient`. Each layer reads state but never mutates it — the caller (a future `WorkflowExecutor`) is the single writer that records outputs and interprets the returned control-flow action.
 
 ## `OpenAPIOperationExecutor`
 
