@@ -66,22 +66,27 @@ Executes a single OpenAPI operation and returns its raw response. It is **Arazzo
 
 `OpenAPIOperationExecutor` is the seam between the runner and any OpenAPI client implementation. It builds its client through the injected `clientFactory`, so a different HTTP stack (or a deterministic stub in tests) can be dropped in without touching the runner.
 
+Because it is Arazzo-agnostic, it can be used **standalone** — with only an OpenAPI document and an `operationId`, no Arazzo workflow involved. The operation index on the loaded document maps an `operationId` to its JSON Pointer, which is all a locator needs:
+
 ```js
 import {
   DocumentRegistry,
-  OpenAPIOperationLocatorNormalizer,
+  OpenAPIDocument,
   OpenAPIOperationExecutor,
   OpenAPIClientSwagger,
 } from '@jentic/arazzo-runner';
 
 const registry = new DocumentRegistry();
-const arazzoDoc = await registry.acquireEntryDocument('https://example.com/workflow.arazzo.yaml');
-
-// resolve a step's operationId to a canonical { document, jsonPointer } locator.
-const locator = await new OpenAPIOperationLocatorNormalizer(registry).normalizeOperationId(
-  'findPetsByStatus',
-  arazzoDoc,
+const openapiDoc = /** @type {OpenAPIDocument} */ (
+  await registry.acquire('https://petstore3.swagger.io/api/v3/openapi.json')
 );
+
+// build a canonical { document, jsonPointer } locator straight from the OpenAPI
+// document — the operation index resolves an operationId to its JSON Pointer.
+const locator = {
+  document: openapiDoc,
+  jsonPointer: openapiDoc.operationIndex.get('findPetsByStatus'),
+};
 
 const executor = new OpenAPIOperationExecutor({
   clientFactory: (document) => new OpenAPIClientSwagger(document),
@@ -89,10 +94,21 @@ const executor = new OpenAPIOperationExecutor({
 
 const response = await executor.execute(locator, {
   parameters: { status: 'available' },
-  contextUrl: 'https://petstore3.swagger.io',
+  contextUrl: 'https://petstore3.swagger.io', // base URL for the operation's relative server
 });
 
 console.log(response.status, response.body);
+```
+
+When the operation is named by an Arazzo step instead (a plain `operationId`, a `$sourceDescriptions` expression, or an `operationPath`), resolve the locator with `OpenAPIOperationLocatorNormalizer` rather than building it by hand:
+
+```js
+import { OpenAPIOperationLocatorNormalizer } from '@jentic/arazzo-runner';
+
+const locator = await new OpenAPIOperationLocatorNormalizer(registry).normalizeOperationId(
+  'findPetsByStatus',
+  arazzoDoc,
+);
 ```
 
 ### Options
