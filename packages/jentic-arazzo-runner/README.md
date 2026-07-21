@@ -27,7 +27,7 @@ It builds on [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models a
 Running an Arazzo workflow is a pipeline of small, single-responsibility building blocks organized into four main components:
 
 - **`DocumentRegistry`** — loads and caches the Arazzo entry document and its OpenAPI source descriptions, so each is fetched and parsed once.
-- **`WorkflowExecutor`** _(planned — see [Roadmap](#roadmap))_ — iterates a workflow's steps, owns the run state, and interprets control-flow actions (`goto`, `retry`, `end`).
+- **`WorkflowExecutor`** — iterates a workflow's steps, owns the run state, and interprets control-flow actions (`goto`, `retry`, `end`).
 - **`StepExecutor`** — runs a single Arazzo step: locates its operation, resolves inputs, evaluates criteria and outputs, and selects the next action.
 - **`OpenAPIOperationExecutor`** — runs a single OpenAPI operation and returns its raw response; the Arazzo-agnostic seam between the runner and any `OpenAPIClient`.
 
@@ -35,7 +35,7 @@ Running an Arazzo workflow is a pipeline of small, single-responsibility buildin
 flowchart TD
     Registry[("DocumentRegistry<br/><i>load & cache documents</i>")]
 
-    WF["WorkflowExecutor<br/><i>(planned)</i><br/>iterate steps · own state · control flow"]
+    WF["WorkflowExecutor<br/>iterate steps · own state · control flow"]
     Step["StepExecutor<br/>run one Arazzo step"]
     Op["OpenAPIOperationExecutor<br/>run one OpenAPI operation"]
     Client["OpenAPIClient<br/>execute against the live API"]
@@ -52,12 +52,10 @@ flowchart TD
     classDef arazzo fill:#94C83D,stroke:#6BA543,stroke-width:1px,color:#231F20;
     classDef openapi fill:#6BA543,stroke:#4D5A31,color:#fff;
     classDef neutral fill:#424143,stroke:#231F20,color:#fff;
-    classDef planned stroke-dasharray: 5 5;
 
     class WF,Step arazzo;
     class Op,Client openapi;
     class Registry neutral;
-    class WF planned;
 ```
 
 Each layer reads run state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
