@@ -97,23 +97,7 @@ const response = await executor.execute(locator, {
 console.log(response.status, response.body);
 ```
 
-### Options
-
-```ts
-new OpenAPIOperationExecutor({
-  clientFactory, // (document: OpenAPIDocument) => OpenAPIClient  — required
-  operationExtractor, // optional; defaults to a fresh OpenAPIOperationExtractor
-  operationNormalizer, // optional; defaults to a fresh OpenAPIOperationNormalizer
-  documentAssembler, // optional; defaults to a fresh OpenAPIDocumentAssembler
-});
-```
-
-### `execute(locator, executeOptions?)`
-
-- **`locator`** — a canonical `OpenAPIOperationLocator` (`{ document, jsonPointer }`), typically produced by `OpenAPIOperationLocatorNormalizer`.
-- **`executeOptions`** — an opaque bag of client execute options (e.g. resolved `parameters`, a `requestBody` and its `requestContentType`, or a swagger client's `contextUrl`). The **operation target always takes precedence** over this bag: the locator's JSON Pointer is forced as `operationPath` and `operationId` is cleared, so a caller-supplied `executeOptions.operationPath` / `.operationId` cannot hijack which operation runs.
-
-Returns an `OpenAPIOperationResponse` (`ok`, `status`, `statusText`, `headers`, `body`, `text`, and the sent `request`). A non-2xx response is returned as data, not thrown — whether it counts as success is judged by the step's `successCriteria`. Only malformed input (an unlocatable operation, an unsupported OpenAPI version) throws.
+A non-2xx response is returned as data, not thrown — whether it counts as success is judged (by a step's `successCriteria`) one level up. Only malformed input (an unlocatable operation, an unsupported OpenAPI version) throws.
 
 ## `StepExecutor`
 
@@ -129,14 +113,19 @@ Executes a single Arazzo step that invokes an OpenAPI operation, returning its o
 ```js
 import {
   DocumentRegistry,
+  ArazzoWorkflowExtractor,
+  ArazzoStepExtractor,
   WorkflowExecutionState,
   StepExecutor,
   OpenAPIClientSwagger,
 } from '@jentic/arazzo-runner';
-import { refractStep } from '@speclynx/apidom-ns-arazzo-1';
 
 const registry = new DocumentRegistry();
 const arazzoDoc = await registry.acquireEntryDocument('https://example.com/workflow.arazzo.yaml');
+
+// pull a step out of the loaded Arazzo document by workflow + step id.
+const workflow = new ArazzoWorkflowExtractor().extract(arazzoDoc, 'authenticateAndOrderPet');
+const step = new ArazzoStepExtractor().extract(workflow, 'findAvailablePets');
 
 const executor = new StepExecutor({
   document: arazzoDoc,
@@ -147,51 +136,17 @@ const executor = new StepExecutor({
 // run state carries $inputs and accumulates $steps.*.outputs across a run.
 const state = new WorkflowExecutionState({ inputs: { preferredPetStatus: 'available' } });
 
-const step = refractStep({
-  stepId: 'findAvailablePets',
-  operationId: 'findPetsByStatus',
-  parameters: [{ name: 'status', in: 'query', value: '$inputs.preferredPetStatus' }],
-  successCriteria: [{ condition: '$statusCode == 200' }],
-  outputs: { pets: '$response.body' },
-});
-
 const outcome = await executor.execute(step, state, {
   contextUrl: 'https://petstore3.swagger.io',
 });
 
 console.log(outcome.successful); // true when every successCriterion passed
-console.log(outcome.outputs); // { pets: [...] } — resolved step outputs
+console.log(outcome.outputs); // resolved step outputs, keyed by name
 console.log(outcome.action); // the selected onSuccess / onFailure action, or undefined
 
-// a caller records the outputs so a later step can read $steps.findAvailablePets.outputs.pets
+// a caller records the outputs so a later step can read $steps.findAvailablePets.outputs.*
 state.setStepOutputs(outcome.stepId, outcome.outputs);
 ```
-
-### Options
-
-```ts
-new StepExecutor({
-  document, // ArazzoDocument — the entry document the step belongs to
-  registry, // DocumentRegistry — holds the already-loaded source documents
-  clientFactory, // (document: OpenAPIDocument) => OpenAPIClient
-});
-```
-
-### `execute(step, state, executeOptions?)`
-
-- **`step`** — a `StepElement` (from `@speclynx/apidom-ns-arazzo-1`).
-- **`state`** — a read-only `ContextSource`; `WorkflowExecutionState` implements it and provides the `$`-expression context.
-- **`executeOptions`** — the same opaque client bag forwarded to `OpenAPIOperationExecutor`. The step's resolved `parameters` and `requestBody` take precedence over it, and the operation target takes precedence over everything.
-
-Returns a `StepExecutionResult`:
-
-| Field        | Description                                                                                             |
-| ------------ | ------------------------------------------------------------------------------------------------------- |
-| `stepId`     | the executed step's id                                                                                  |
-| `response`   | the `OpenAPIOperationResponse`                                                                          |
-| `successful` | `true` when every `successCriterion` passed (a step with no criteria succeeds on any received response) |
-| `outputs`    | the resolved step `outputs`, keyed by name                                                              |
-| `action`     | the selected `onSuccess` / `onFailure` action element, or `undefined` when none matched                 |
 
 ### Authoring errors vs. failed steps
 
