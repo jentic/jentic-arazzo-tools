@@ -1,7 +1,7 @@
 # @jentic/arazzo-runner
 
-> [!WARNING]
-> This package is under heavy development. APIs may change without notice.
+> [!WARNING]  
+> This package is under heavy development and is not yet published to npm. It is developed within the [`jentic-arazzo-tools`](https://github.com/jentic/jentic-arazzo-tools) monorepo and will be publicly installable once its API stabilizes; until then, APIs may change without notice.
 
 `@jentic/arazzo-runner` executes [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) workflows against live APIs described by [OpenAPI Specification](https://spec.openapis.org/oas/latest.html) source descriptions.
 It builds on [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models and reuses the loading, resolution, and normalization primitives shared across [`@jentic/arazzo-parser`](https://www.npmjs.com/package/@jentic/arazzo-parser) and [`@jentic/arazzo-resolver`](https://www.npmjs.com/package/@jentic/arazzo-resolver).
@@ -16,11 +16,6 @@ It builds on [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models a
 - [OpenAPI 2.0](https://spec.openapis.org/oas/v2.0)
 - [OpenAPI 3.0.x](https://spec.openapis.org/oas/v3.0.4)
 - [OpenAPI 3.1.x](https://spec.openapis.org/oas/v3.1.2)
-
-## Installation
-
-> [!NOTE]
-> This package is not yet published to npm. It is developed within the [`jentic-arazzo-tools`](https://github.com/jentic/jentic-arazzo-tools) monorepo and will be publicly installable once its API stabilizes.
 
 ## Architecture
 
@@ -70,7 +65,9 @@ import { DocumentRegistry } from '@jentic/arazzo-runner';
 const registry = new DocumentRegistry();
 
 // the entry Arazzo document.
-const arazzoDoc = await registry.acquireEntryDocument('https://example.com/workflow.arazzo.yaml');
+const arazzoDoc = await registry.acquireEntryDocument(
+  'https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml',
+);
 
 // a source description, resolved by name to an absolute URI, then acquired.
 const uri = arazzoDoc.resolveSourceDescriptionURI('petstoreAPI');
@@ -108,7 +105,9 @@ import {
 } from '@jentic/arazzo-runner';
 
 const registry = new DocumentRegistry();
-const arazzoDoc = await registry.acquireEntryDocument('https://example.com/workflow.arazzo.yaml');
+const arazzoDoc = await registry.acquireEntryDocument(
+  'https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml',
+);
 
 // pull a step out of the loaded Arazzo document by workflow + step id.
 const workflow = new ArazzoWorkflowExtractor().extract(arazzoDoc, 'authenticateAndOrderPet');
