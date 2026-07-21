@@ -22,12 +22,6 @@ It builds on [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models a
 > [!NOTE]  
 > This package is not yet published to npm. It is developed within the [`jentic-arazzo-tools`](https://github.com/jentic/jentic-arazzo-tools) monorepo and will be publicly installable once its API stabilizes.
 
-Once published, it will be installable via the [npm](https://npmjs.org/) CLI:
-
-```sh
-npm install @jentic/arazzo-runner
-```
-
 ## Architecture
 
 Running an Arazzo workflow is a pipeline of small, single-responsibility building blocks. Documents are loaded once and cached by a **`DocumentRegistry`**; each Arazzo step is run by a **`StepExecutor`**, which resolves the step's inputs and delegates the actual HTTP call to an **`OpenAPIOperationExecutor`**.
