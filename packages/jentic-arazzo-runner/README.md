@@ -40,9 +40,9 @@ flowchart TD
     Op["OpenAPIOperationExecutor<br/>run one OpenAPI operation"]
     Client["OpenAPIClient<br/>execute against the live API"]
 
-    WF -->|"execute(step, state)"| Step
-    Step -->|"execute(locator, options)"| Op
-    Op -->|"clientFactory(document)"| Client
+    WF -->|"execute step"| Step
+    Step -->|"execute OpenAPI operation"| Op
+    Op -->|"execute HTTP request"| Client
 
     Registry -.->|documents| WF
     Registry -.->|documents| Step
