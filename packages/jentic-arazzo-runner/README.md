@@ -49,7 +49,7 @@ flowchart TD
     Registry -.->|documents| Op
 
     %% brand colors: Arazzo green, OpenAPI green, neutral registry grey
-    classDef arazzo fill:#94C83D,stroke:#6BA543,color:#231F20;
+    classDef arazzo fill:#94C83D,stroke:#6BA543,stroke-width:1px,color:#231F20;
     classDef openapi fill:#6BA543,stroke:#4D5A31,color:#fff;
     classDef neutral fill:#424143,stroke:#231F20,color:#fff;
     classDef planned stroke-dasharray: 5 5;
