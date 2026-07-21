@@ -48,7 +48,7 @@
   "author": "Jentic <hello@jentic.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@babel/runtime-corejs3": "^7.28.4",
+    "@babel/runtime-corejs3": "^8.0.0",
     "@jentic/arazzo-parser": "1.0.0-alpha.31",
     "@speclynx/apidom-datamodel": "^5.0.1",
     "@speclynx/apidom-error": "^5.0.1",
