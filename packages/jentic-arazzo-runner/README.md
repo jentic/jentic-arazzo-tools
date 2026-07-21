@@ -178,4 +178,4 @@ const response = await executor.execute(locator, {
 console.log(response.status, response.body);
 ```
 
-A non-2xx response is returned as data, not thrown — whether it counts as success is judged (by a step's `successCriteria`) one level up. Only malformed input (an unlocatable operation, an unsupported OpenAPI version) throws.
+A non-2xx response is returned as data, not thrown — whether it counts as success is judged (by a step's `successCriteria`) one level up. Malformed input (an unlocatable operation, an unsupported OpenAPI version) throws, as do genuine transport failures surfaced by the client (`OpenAPIClientSwagger` raises a `ClientError` when no response comes back at all).

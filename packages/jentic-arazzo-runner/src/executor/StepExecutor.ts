@@ -151,9 +151,9 @@ class StepExecutor {
       });
     }
 
-    // locate which operation the step invokes — reduced to (document, JSON
-    // Pointer). the operation executor extracts, normalizes, and assembles a
-    // standalone doc, then runs it.
+    // locate which operation the step invokes — reduced to a (document, JSON
+    // Pointer) locator that the operation executor extracts, normalizes,
+    // assembles into a standalone doc, and runs.
     const locator = await this.#locateOperation(step, stepId);
 
     // resolve parameters and request body against the pre-request context.
@@ -165,9 +165,9 @@ class StepExecutor {
       this.#evaluate(preContext, expression),
     );
 
-    // the Arazzo-derived parameters and request body are forwarded to the
-    // operation executor, which spreads them after the opaque executeOptions bag
-    // so they take precedence and forces the operation target.
+    // the Arazzo-derived parameters and request body are spread after the opaque
+    // executeOptions bag so they take precedence over it. the operation executor
+    // then forces the operation target on top of this before executing.
     const response = await this.#operationExecutor.execute(locator, {
       ...executeOptions,
       parameters,
