@@ -108,8 +108,13 @@ export type {
   StepExecutorOptions,
   StepExecutionResult,
   ContextSource,
-  OpenAPIClientFactory,
 } from './executor/StepExecutor.ts';
+export { default as OpenAPIOperationExecutor } from './executor/OpenAPIOperationExecutor.ts';
+export type {
+  OpenAPIOperationExecutorOptions,
+  OpenAPIOperationExecuteOptionsBag,
+  OpenAPIClientFactory,
+} from './executor/OpenAPIOperationExecutor.ts';
 export { default as OpenAPIOperationLocatorNormalizer } from './executor/OpenAPIOperationLocatorNormalizer.ts';
 export type { OpenAPIOperationLocator } from './executor/OpenAPIOperationLocatorNormalizer.ts';
 
