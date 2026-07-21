@@ -179,7 +179,3 @@ console.log(response.status, response.body);
 ```
 
 A non-2xx response is returned as data, not thrown — whether it counts as success is judged (by a step's `successCriteria`) one level up. Only malformed input (an unlocatable operation, an unsupported OpenAPI version) throws.
-
-## Runtime expressions
-
-Steps reference run state and responses through [Arazzo runtime expressions](https://spec.openapis.org/arazzo/latest.html#runtime-expressions). `RuntimeExpressionEvaluator` resolves them against the current context; the supported roots include `$inputs`, `$outputs`, `$steps.*`, `$workflows.*`, `$statusCode`, `$response.*`, `$request.*`, `$url`, `$method`, `$components.*`, and `$sourceDescriptions.*`. Criteria are evaluated by version-aware evaluators (`simple`, `regex`, `jsonpath`, `xpath`).
