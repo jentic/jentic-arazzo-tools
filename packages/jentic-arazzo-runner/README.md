@@ -60,7 +60,7 @@ flowchart TD
     class WF planned;
 ```
 
-The dependency direction is one-way: `WorkflowExecutor → StepExecutor → OpenAPIOperationExecutor → OpenAPIClient`. Each layer reads state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
+Each layer reads run state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
 
 ## `OpenAPIOperationExecutor`
 
