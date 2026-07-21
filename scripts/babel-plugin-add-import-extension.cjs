@@ -83,7 +83,7 @@ const makeDeclaration =
     }
 
 module.exports = declare((api, options) => {
-  api.assertVersion(7)
+  api.assertVersion(8)
 
   return {
     name: 'add-import-extension',

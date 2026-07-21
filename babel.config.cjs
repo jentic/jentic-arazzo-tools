@@ -12,8 +12,6 @@ module.exports = {
           {
             debug: false,
             modules: 'commonjs',
-            loose: true,
-            useBuiltIns: false,
             forceAllTransforms: false,
             ignoreBrowserslistConfig: false,
             exclude: ['transform-function-name'],
@@ -22,7 +20,7 @@ module.exports = {
         [
           '@babel/preset-typescript',
           {
-            allowDeclareFields: true,
+            onlyRemoveTypeImports: false,
           },
         ],
       ],
@@ -30,11 +28,9 @@ module.exports = {
         [
           '@babel/plugin-transform-runtime',
           {
-            corejs: { version: 3, proposals: false },
+            moduleName: '@babel/runtime-corejs3',
             absoluteRuntime: false,
-            helpers: true,
-            regenerator: false,
-            version: '^7.22.15',
+            version: '^8.0.0',
           },
         ],
         process.env.NODE_ENV !== 'test'
@@ -53,7 +49,6 @@ module.exports = {
           {
             debug: false,
             modules: false,
-            useBuiltIns: false,
             forceAllTransforms: false,
             ignoreBrowserslistConfig: false,
             exclude: ['transform-function-name'], // this is here because of https://github.com/babel/babel/discussions/12874
@@ -62,7 +57,7 @@ module.exports = {
         [
           '@babel/preset-typescript',
           {
-            allowDeclareFields: true,
+            onlyRemoveTypeImports: false,
           },
         ],
       ],
@@ -70,12 +65,9 @@ module.exports = {
         [
           '@babel/plugin-transform-runtime',
           {
-            corejs: { version: 3, proposals: false },
+            moduleName: '@babel/runtime-corejs3',
             absoluteRuntime: false,
-            helpers: true,
-            regenerator: false,
-            useESModules: true,
-            version: '^7.22.15',
+            version: '^8.0.0',
           },
         ],
         [
@@ -92,7 +84,6 @@ module.exports = {
           {
             debug: false,
             modules: 'auto',
-            useBuiltIns: false,
             forceAllTransforms: false,
             ignoreBrowserslistConfig: false,
             exclude: ['transform-function-name'], // this is here because of https://github.com/babel/babel/discussions/12874
@@ -101,7 +92,7 @@ module.exports = {
         [
           '@babel/preset-typescript',
           {
-            allowDeclareFields: true,
+            onlyRemoveTypeImports: false,
           },
         ],
       ],
@@ -109,11 +100,9 @@ module.exports = {
         [
           '@babel/plugin-transform-runtime',
           {
-            corejs: { version: 3, proposals: false },
+            moduleName: '@babel/runtime-corejs3',
             absoluteRuntime: false,
-            helpers: true,
-            regenerator: false,
-            version: '^7.22.15',
+            version: '^8.0.0',
           },
         ],
       ],
