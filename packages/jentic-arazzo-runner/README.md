@@ -100,17 +100,6 @@ const response = await executor.execute(locator, {
 console.log(response.status, response.body);
 ```
 
-When the operation is named by an Arazzo step instead (a plain `operationId`, a `$sourceDescriptions` expression, or an `operationPath`), resolve the locator with `OpenAPIOperationLocatorNormalizer` rather than building it by hand:
-
-```js
-import { OpenAPIOperationLocatorNormalizer } from '@jentic/arazzo-runner';
-
-const locator = await new OpenAPIOperationLocatorNormalizer(registry).normalizeOperationId(
-  'findPetsByStatus',
-  arazzoDoc,
-);
-```
-
 ### Options
 
 ```ts
