@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.32](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.31...v1.0.0-alpha.32) (2026-07-21)
+
+### Bug Fixes
+
+- **validator:** bump @speclynx/apidom-ls to 2.11.6 ([#282](https://github.com/jentic/jentic-arazzo-tools/issues/282)) ([ec63fe6](https://github.com/jentic/jentic-arazzo-tools/commit/ec63fe6bfa3698663e5ad4087f6abdfe813294f2))
+
+### Features
+
+- **runner:** add jsonpath criterion evaluator ([#264](https://github.com/jentic/jentic-arazzo-tools/issues/264)) ([8f1fb9f](https://github.com/jentic/jentic-arazzo-tools/commit/8f1fb9f55a07fe83d673557304654f36bd55eb81))
+- **runner:** add output and request body resolvers ([#272](https://github.com/jentic/jentic-arazzo-tools/issues/272)) ([666381b](https://github.com/jentic/jentic-arazzo-tools/commit/666381bf8c61c0f53c6f62465bfd884d81a694fa))
+- **runner:** add xpath criterion evaluator ([#269](https://github.com/jentic/jentic-arazzo-tools/issues/269)) ([dff9c6a](https://github.com/jentic/jentic-arazzo-tools/commit/dff9c6a17f767685c5a86f0601da1e92d8af2946))
+
 # [1.0.0-alpha.31](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.30...v1.0.0-alpha.31) (2026-05-19)
 
 ### Bug Fixes
