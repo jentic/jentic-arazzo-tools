@@ -1,6 +1,6 @@
 # @jentic/arazzo-runner
 
-> [!WARNING]  
+> [!WARNING]
 > This package is under heavy development. APIs may change without notice.
 
 `@jentic/arazzo-runner` executes [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) workflows against live APIs described by [OpenAPI Specification](https://spec.openapis.org/oas/latest.html) source descriptions.
@@ -19,7 +19,7 @@ It builds on [SpecLynx ApiDOM](https://github.com/speclynx/apidom) data models a
 
 ## Installation
 
-> [!NOTE]  
+> [!NOTE]
 > This package is not yet published to npm. It is developed within the [`jentic-arazzo-tools`](https://github.com/jentic/jentic-arazzo-tools) monorepo and will be publicly installable once its API stabilizes.
 
 ## Architecture
@@ -48,9 +48,19 @@ flowchart TD
     Registry -.->|documents| Step
     Registry -.->|documents| Op
 
+    %% brand colors: Arazzo blue, OpenAPI green, neutral registry grey
+    classDef arazzo fill:#44ADE2,stroke:#2B8CBE,color:#fff;
+    classDef openapi fill:#6BA43A,stroke:#4D5A31,color:#fff;
+    classDef neutral fill:#424143,stroke:#231F20,color:#fff;
     classDef planned stroke-dasharray: 5 5;
+
+    class WF,Step arazzo;
+    class Op,Client openapi;
+    class Registry neutral;
     class WF planned;
 ```
+
+Nodes are colored by specification: **Arazzo** components (`WorkflowExecutor`, `StepExecutor`) in [Arazzo](https://spec.openapis.org/arazzo/latest.html) blue, **OpenAPI** components (`OpenAPIOperationExecutor`, `OpenAPIClient`) in [OpenAPI](https://spec.openapis.org/oas/latest.html) green, and the shared `DocumentRegistry` in neutral grey.
 
 The dependency direction is one-way: `WorkflowExecutor → StepExecutor → OpenAPIOperationExecutor → OpenAPIClient`. Each layer reads state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
 
