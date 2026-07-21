@@ -71,15 +71,12 @@ Because it is Arazzo-agnostic, it can be used **standalone** — with only an Op
 ```js
 import {
   DocumentRegistry,
-  OpenAPIDocument,
   OpenAPIOperationExecutor,
   OpenAPIClientSwagger,
 } from '@jentic/arazzo-runner';
 
 const registry = new DocumentRegistry();
-const openapiDoc = /** @type {OpenAPIDocument} */ (
-  await registry.acquire('https://petstore3.swagger.io/api/v3/openapi.json')
-);
+const openapiDoc = await registry.acquire('https://petstore3.swagger.io/api/v3/openapi.json');
 
 // build a canonical { document, jsonPointer } locator straight from the OpenAPI
 // document — the operation index resolves an operationId to its JSON Pointer.
