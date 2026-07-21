@@ -60,8 +60,6 @@ flowchart TD
     class WF planned;
 ```
 
-Nodes are colored by specification: **Arazzo** components (`WorkflowExecutor`, `StepExecutor`) in [Arazzo](https://spec.openapis.org/arazzo/latest.html) green, **OpenAPI** components (`OpenAPIOperationExecutor`, `OpenAPIClient`) in [OpenAPI](https://spec.openapis.org/oas/latest.html) green, and the shared `DocumentRegistry` in neutral grey.
-
 The dependency direction is one-way: `WorkflowExecutor → StepExecutor → OpenAPIOperationExecutor → OpenAPIClient`. Each layer reads state but never mutates it — the `WorkflowExecutor` is the single writer that records outputs and interprets the returned control-flow action.
 
 ## `OpenAPIOperationExecutor`
