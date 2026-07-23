@@ -393,9 +393,10 @@ describe('WorkflowExecutor', function () {
       assert.strictEqual(result.outputs.status, 200);
     });
 
-    specify('should default retryLimit to 1 when unset', async function () {
-      // getInventory always 500; retry has no retryLimit → a single retry.
-      const { executor, calls } = makeExecutor([serverErrorResponse]);
+    specify('should default retryLimit to 1 when unset, without sleeping', async function () {
+      // getInventory always 500; retry has no retryLimit → a single retry, and
+      // no retryAfter → no sleep (not even a sleep(0) event-loop yield).
+      const { executor, calls, sleeps } = makeExecutor([serverErrorResponse]);
 
       const result = await executor.execute('retryDefaultLimit');
 
@@ -403,6 +404,7 @@ describe('WorkflowExecutor', function () {
       assert.strictEqual(calls.length, 2);
       assert.strictEqual(result.steps[0].attempts, 2);
       assert.strictEqual(result.status, 'failed');
+      assert.deepEqual(sleeps, []); // no retryAfter → sleep never called
     });
 
     specify('should proceed to the following step after a retry succeeds', async function () {

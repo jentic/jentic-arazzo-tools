@@ -411,7 +411,11 @@ class WorkflowExecutor {
 
         this.#rejectRetryReference(action, stepId, workflowId);
         retriesSpent.set(action, spent + 1);
-        await this.#sleep(this.#retryAfterMs(action));
+        // only sleep for a real, positive delay — skip the event-loop yield of
+        // sleep(0) for immediate retries, and never hand a custom sleep a
+        // zero/negative/NaN value.
+        const delayMs = this.#retryAfterMs(action);
+        if (delayMs > 0) await this.#sleep(delayMs);
         fired = true;
         break;
       }
@@ -441,10 +445,14 @@ class WorkflowExecutor {
 
   /**
    * The delay before a retry, in milliseconds — the action's `retryAfter`
-   * (seconds) converted, or 0 when unset or non-numeric.
+   * (seconds) converted. `0` when unset, non-numeric, or not a finite positive
+   * value (a negative or `NaN` `retryAfter` means "no wait", never a bad value
+   * handed to `sleep`).
    */
   #retryAfterMs(action: FailureActionElement): number {
-    return isNumberElement(action.retryAfter) ? (toValue(action.retryAfter) as number) * 1000 : 0;
+    if (!isNumberElement(action.retryAfter)) return 0;
+    const ms = (toValue(action.retryAfter) as number) * 1000;
+    return Number.isFinite(ms) && ms > 0 ? ms : 0;
   }
 
   /**
