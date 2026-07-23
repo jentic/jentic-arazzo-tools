@@ -78,13 +78,13 @@ export interface WorkflowExecutionResult {
  * advances after interpreting the step's {@link SelectedAction}.
  *
  * `next` runs the following step (the success default, or a matched `goto` that
- * targets the next step); `goto-step` jumps to a step by id within the current
+ * targets the next step); `goto` jumps to a step by id within the current
  * workflow; `end` stops the run with `status: ended`; `break` stops with
  * `status: failed` (the failure default).
  */
 type Transition =
   | { readonly kind: 'next' }
-  | { readonly kind: 'goto-step'; readonly stepId: string }
+  | { readonly kind: 'goto'; readonly stepId: string }
   | { readonly kind: 'end' }
   | { readonly kind: 'break' };
 
@@ -189,7 +189,7 @@ class WorkflowExecutor {
       const transition = this.#interpret(outcome.action, outcome.successful, workflowId, stepId);
       if (transition.kind === 'next') {
         index += 1;
-      } else if (transition.kind === 'goto-step') {
+      } else if (transition.kind === 'goto') {
         index = this.#indexOfStep(steps, transition.stepId, workflowId);
       } else if (transition.kind === 'end') {
         status = 'ended';
@@ -293,7 +293,7 @@ class WorkflowExecutor {
         );
       }
       if (isStringElement(action.stepId)) {
-        return { kind: 'goto-step', stepId: toValue(action.stepId) as string };
+        return { kind: 'goto', stepId: toValue(action.stepId) as string };
       }
       throw new ExecutionError(
         `goto action on step "${stepId}" in workflow "${workflowId}" has neither stepId nor workflowId`,
