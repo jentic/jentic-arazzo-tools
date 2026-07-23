@@ -1,0 +1,319 @@
+arazzo: "1.0.1"
+info:
+  title: Control-flow test workflows
+  version: "1.0.0"
+  summary: >-
+    Minimal workflows exercising WorkflowExecutor control flow (linear, goto,
+    end, break, and the not-yet-supported actions) against the petstore API.
+sourceDescriptions:
+  - name: petstoreAPI
+    url: ./petstore.openapi.json
+    type: openapi
+workflows:
+  # steps run in order; a later step reads an earlier step's output, and the
+  # workflow outputs resolve against the final state.
+  - workflowId: linear
+    inputs:
+      type: object
+      properties:
+        status:
+          type: string
+    steps:
+      - stepId: findPets
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: $inputs.status
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          petId: $response.body#/id
+      - stepId: getPet
+        operationId: getPetById
+        parameters:
+          - name: petId
+            in: path
+            value: $steps.findPets.outputs.petId
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          petName: $response.body#/name
+    outputs:
+      name: $steps.getPet.outputs.petName
+      id: $steps.findPets.outputs.petId
+
+  # the first step's onSuccess goto jumps over the second step to the third.
+  - workflowId: gotoStep
+    steps:
+      - stepId: first
+        operationId: getInventory
+        onSuccess:
+          - name: skipSecond
+            type: goto
+            stepId: third
+      - stepId: second
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          ran: $statusCode
+      - stepId: third
+        operationId: getPetById
+        parameters:
+          - name: petId
+            in: path
+            value: "7"
+        outputs:
+          reached: $statusCode
+    outputs:
+      secondRan: $steps.second.outputs.ran
+      thirdReached: $steps.third.outputs.reached
+
+  # the first step's onSuccess end stops the run before the second step.
+  - workflowId: endEarly
+    steps:
+      - stepId: first
+        operationId: getInventory
+        outputs:
+          firstStatus: $statusCode
+        onSuccess:
+          - name: stop
+            type: end
+      - stepId: second
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          secondStatus: $statusCode
+    outputs:
+      first: $steps.first.outputs.firstStatus
+      second: $steps.second.outputs.secondStatus
+
+  # the first step fails its successCriteria with no onFailure, so the run
+  # breaks and the second step never executes.
+  - workflowId: failBreak
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+      - stepId: never
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          ran: $statusCode
+    outputs:
+      neverRan: $steps.never.outputs.ran
+
+  # the only step gotos itself forever — bounded by the step budget.
+  - workflowId: infiniteGoto
+    steps:
+      - stepId: loop
+        operationId: getInventory
+        onSuccess:
+          - name: again
+            type: goto
+            stepId: loop
+
+  # goto targets a step that does not exist in this workflow.
+  - workflowId: gotoMissing
+    steps:
+      - stepId: only
+        operationId: getInventory
+        onSuccess:
+          - name: bad
+            type: goto
+            stepId: nonexistent
+
+  # goto targets a workflowId — not yet supported.
+  - workflowId: gotoWorkflowUnsupported
+    steps:
+      - stepId: only
+        operationId: getInventory
+        onSuccess:
+          - name: jump
+            type: goto
+            workflowId: linear
+
+  # the step fails and selects a retry action — not yet supported.
+  - workflowId: retryUnsupported
+    steps:
+      - stepId: only
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 2
+
+  # a sub-workflow (workflowId) step — not yet supported.
+  - workflowId: subWorkflowStep
+    steps:
+      - stepId: callSub
+        workflowId: linear
+
+  # the step declares no onFailure, so it inherits the workflow-level
+  # failureActions (end). Driven by a 500 so the step fails.
+  - workflowId: inheritsFailureActions
+    failureActions:
+      - name: stopOnFailure
+        type: end
+    steps:
+      - stepId: only
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        outputs:
+          status: $statusCode
+      - stepId: unreached
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          ran: $statusCode
+
+  # the step's own onFailure (break-by-omission: a goto to a later step)
+  # overrides the workflow-level failureActions wholesale — the workflow's
+  # "end" is not applied. Driven by a 500 so the step fails.
+  - workflowId: overridesFailureActions
+    failureActions:
+      - name: stopOnFailure
+        type: end
+    steps:
+      - stepId: failing
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: recover
+            type: goto
+            stepId: recovery
+      - stepId: recovery
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          recovered: $statusCode
+
+  # the workflow declares successActions (end after the first step); the step
+  # declares no onSuccess, so it inherits them and the run ends early.
+  - workflowId: inheritsSuccessActions
+    successActions:
+      - name: stopOnSuccess
+        type: end
+    steps:
+      - stepId: first
+        operationId: getInventory
+        outputs:
+          firstStatus: $statusCode
+      - stepId: second
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          secondStatus: $statusCode
+    outputs:
+      first: $steps.first.outputs.firstStatus
+      second: $steps.second.outputs.secondStatus
+
+  # the first step declares an EMPTY onSuccess list, which overrides (suppresses)
+  # the workflow-level successActions wholesale — the workflow "end" must NOT
+  # apply, so the run proceeds to the second step rather than ending early.
+  - workflowId: emptyOnSuccessSuppressesDefault
+    successActions:
+      - name: stopOnSuccess
+        type: end
+    steps:
+      - stepId: first
+        operationId: getInventory
+        onSuccess: []
+        outputs:
+          firstStatus: $statusCode
+      # also suppresses the default, so the run completes instead of the last
+      # step re-triggering the inherited end.
+      - stepId: second
+        operationId: findPetsByStatus
+        onSuccess: []
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          secondStatus: $statusCode
+    outputs:
+      first: $steps.first.outputs.firstStatus
+      second: $steps.second.outputs.secondStatus
+
+  # the step overrides onSuccess (goto) but declares no onFailure, so success and
+  # failure fall back independently: on success the step's own goto wins; the
+  # workflow-level failureActions remain available to it. Driven by a 200 so the
+  # success path (goto) is exercised, skipping the middle step.
+  - workflowId: overrideSuccessInheritFailure
+    failureActions:
+      - name: stopOnFailure
+        type: end
+    steps:
+      - stepId: first
+        operationId: getInventory
+        onSuccess:
+          - name: jump
+            type: goto
+            stepId: third
+        outputs:
+          firstStatus: $statusCode
+      - stepId: second
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          secondStatus: $statusCode
+      - stepId: third
+        operationId: getPetById
+        parameters:
+          - name: petId
+            in: path
+            value: "7"
+        outputs:
+          thirdStatus: $statusCode
+    outputs:
+      second: $steps.second.outputs.secondStatus
+      third: $steps.third.outputs.thirdStatus
+
+  # a goto action naming neither stepId nor workflowId — malformed control flow.
+  - workflowId: gotoNoTarget
+    steps:
+      - stepId: only
+        operationId: getInventory
+        onSuccess:
+          - name: bad
+            type: goto
+
+  # an action with an unknown type — malformed input, not a defined control flow.
+  - workflowId: unknownActionType
+    steps:
+      - stepId: only
+        operationId: getInventory
+        onSuccess:
+          - name: bogus
+            type: teleport
+
+  # a workflow with no steps at all — a completed, no-op run.
+  - workflowId: emptyWorkflow
+    steps: []

@@ -4,6 +4,8 @@ import {
   isCriterionElement,
   type StepOnSuccessElement,
   type StepOnFailureElement,
+  type WorkflowSuccessActionsElement,
+  type WorkflowFailureActionsElement,
   type SuccessActionElement,
   type FailureActionElement,
   type CriterionElement,
@@ -48,7 +50,12 @@ class ActionResolver {
    * none match.
    */
   resolve(
-    actions: StepOnSuccessElement | StepOnFailureElement | undefined,
+    actions:
+      | StepOnSuccessElement
+      | StepOnFailureElement
+      | WorkflowSuccessActionsElement
+      | WorkflowFailureActionsElement
+      | undefined,
     isCriterionMet: CriterionPredicate,
   ): SelectedAction | undefined {
     if (actions === undefined) return undefined;

@@ -8,6 +8,7 @@ import {
   DocumentRegistry,
   ArazzoDocument,
   StepExecutor,
+  OpenAPIOperationExecutor,
   WorkflowExecutionState,
   OpenAPIClient,
   OpenAPIOperationResponse,
@@ -93,15 +94,14 @@ describe('StepExecutor', function () {
     canned: CannedResponse,
   ): { executor: StepExecutor; clients: StubClient[] } => {
     const clients: StubClient[] = [];
-    const executor = new StepExecutor({
-      document: entry,
-      registry,
+    const operationExecutor = new OpenAPIOperationExecutor({
       clientFactory: (document) => {
         const client = new StubClient(document, canned);
         clients.push(client);
         return client;
       },
     });
+    const executor = new StepExecutor({ document: entry, registry, operationExecutor });
     return { executor, clients };
   };
 

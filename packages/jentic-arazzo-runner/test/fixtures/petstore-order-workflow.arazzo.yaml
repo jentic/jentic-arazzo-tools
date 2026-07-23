@@ -76,9 +76,8 @@ workflows:
             type: simple
         outputs:
           availablePets: $response.body
-          petCount: $response.body.length
-          bestMatchPet: $response.body[0]
-          bestMatchPetId: $response.body[0].id
+          bestMatchPet: $response.body#/0
+          bestMatchPetId: $response.body#/0/id
         onFailure:
           - name: noPetsAvailable
             type: end
@@ -99,11 +98,11 @@ workflows:
             context: response
             type: simple
         outputs:
-          orderId: $response.body.id
-          orderStatus: $response.body.status
-          orderQuantity: $response.body.quantity
-          orderShipDate: $response.body.shipDate
-          orderComplete: $response.body.complete
+          orderId: $response.body#/id
+          orderStatus: $response.body#/status
+          orderQuantity: $response.body#/quantity
+          orderShipDate: $response.body#/shipDate
+          orderComplete: $response.body#/complete
       - stepId: retrieveOrderedPetDetails
         description: Fetch complete details of the ordered pet to enrich order summary
         operationId: getPetById
@@ -114,12 +113,12 @@ workflows:
         successCriteria:
           - condition: $statusCode == 200
         outputs:
-          petName: $response.body.name
-          petCategory: $response.body.category.name
-          petId: $response.body.id
-          petStatus: $response.body.status
-          petPhotoUrls: $response.body.photoUrls
-          petTags: $response.body.tags
+          petName: $response.body#/name
+          petCategory: $response.body#/category/name
+          petId: $response.body#/id
+          petStatus: $response.body#/status
+          petPhotoUrls: $response.body#/photoUrls
+          petTags: $response.body#/tags
       - stepId: verifyOrderConfirmation
         description: Retrieve and validate the placed order to ensure successful processing
         operationId: getOrderById
@@ -131,10 +130,10 @@ workflows:
           - condition: $statusCode == 200
           - condition: "$response.body.status == 'placed'"
         outputs:
-          confirmedOrderId: $response.body.id
-          confirmedOrderStatus: $response.body.status
-          confirmedPetId: $response.body.petId
-          confirmedQuantity: $response.body.quantity
+          confirmedOrderId: $response.body#/id
+          confirmedOrderStatus: $response.body#/status
+          confirmedPetId: $response.body#/petId
+          confirmedQuantity: $response.body#/quantity
     outputs:
       petName: $steps.retrieveOrderedPetDetails.outputs.petName
       petCategory: $steps.retrieveOrderedPetDetails.outputs.petCategory
