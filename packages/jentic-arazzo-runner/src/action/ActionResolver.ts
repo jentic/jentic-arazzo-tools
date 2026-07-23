@@ -58,16 +58,38 @@ class ActionResolver {
       | undefined,
     isCriterionMet: CriterionPredicate,
   ): SelectedAction | undefined {
-    if (actions === undefined) return undefined;
+    return this.resolveAll(actions, isCriterionMet)[0];
+  }
 
+  /**
+   * Returns every action whose criteria are all met, in list order.
+   *
+   * Where {@link ActionResolver.resolve} yields only the first match, this
+   * surfaces the whole matching chain — the caller that must honor "retryLimit
+   * exhausted prior to subsequent failure actions" walks it, falling from an
+   * exhausted `retry` to the next matching action without re-evaluating criteria.
+   * Empty when the list is absent or nothing matches.
+   */
+  resolveAll(
+    actions:
+      | StepOnSuccessElement
+      | StepOnFailureElement
+      | WorkflowSuccessActionsElement
+      | WorkflowFailureActionsElement
+      | undefined,
+    isCriterionMet: CriterionPredicate,
+  ): SelectedAction[] {
+    if (actions === undefined) return [];
+
+    const matched: SelectedAction[] = [];
     for (const action of actions) {
       if (!isSuccessActionElement(action) && !isFailureActionElement(action)) continue;
       if (this.#criteriaMet(action, isCriterionMet)) {
-        return action;
+        matched.push(action);
       }
     }
 
-    return undefined;
+    return matched;
   }
 
   /**

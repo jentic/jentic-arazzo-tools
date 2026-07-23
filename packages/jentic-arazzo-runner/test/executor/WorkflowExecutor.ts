@@ -20,21 +20,25 @@ const fixturesPath = path.join(__dirname, '..', 'fixtures');
 const entryPath = path.join(fixturesPath, 'workflow-control-flow.arazzo.yaml');
 
 /**
- * A stub client that records the execute options it receives and returns a
- * canned response — deterministic, no network.
+ * A stub client that records the execute options it receives and returns canned
+ * responses in sequence — deterministic, no network. Call N gets `sequence[N]`;
+ * once the list is exhausted every further call repeats the last entry, so a
+ * single-element sequence is a constant response and a longer one drives "fails
+ * twice, then succeeds".
  */
 class StubClient extends OpenAPIClient {
   constructor(
     document: ConstructorParameters<typeof OpenAPIClient>[0],
-    readonly canned: ConstructorParameters<typeof OpenAPIOperationResponse>[0],
+    readonly sequence: readonly ConstructorParameters<typeof OpenAPIOperationResponse>[0][],
     readonly calls: OpenAPIOperationExecuteOptions[],
   ) {
     super(document);
   }
 
   async execute(options: OpenAPIOperationExecuteOptions): Promise<OpenAPIOperationResponse> {
+    const canned = this.sequence[Math.min(this.calls.length, this.sequence.length - 1)];
     this.calls.push(options);
-    return new OpenAPIOperationResponse(this.canned);
+    return new OpenAPIOperationResponse(canned);
   }
 }
 
@@ -88,37 +92,49 @@ describe('WorkflowExecutor', function () {
   });
 
   /**
-   * Builds a step executor whose every client returns the same canned response,
-   * recording the client calls (in execution order) for assertions.
+   * Builds a step executor whose stub client returns `sequence` responses in
+   * order, recording the client calls (in execution order) into `calls`.
    */
   const makeStepExecutor = (
-    canned: CannedResponse,
+    sequence: readonly CannedResponse[],
     calls: OpenAPIOperationExecuteOptions[],
   ): StepExecutor =>
     new StepExecutor({
       document: entry,
       registry,
       operationExecutor: new OpenAPIOperationExecutor({
-        clientFactory: (document) => new StubClient(document, canned, calls),
+        clientFactory: (document) => new StubClient(document, sequence, calls),
       }),
     });
 
   /**
-   * Builds a workflow executor over such a step executor, exposing the recorded
-   * client calls.
+   * Builds a workflow executor whose client returns `responses` in sequence,
+   * exposing the recorded client `calls` and the `sleeps` its (no-op) retry
+   * timer was asked to wait — so retry behavior is deterministic and `retryAfter`
+   * timing is assertable without real waiting. A single response is a constant;
+   * a longer sequence drives retry ("fails twice, then succeeds").
    */
   const makeExecutor = (
-    canned: CannedResponse = okResponse,
+    responses: CannedResponse | readonly CannedResponse[] = okResponse,
     options: { maxSteps?: number } = {},
-  ): { executor: WorkflowExecutor; calls: OpenAPIOperationExecuteOptions[] } => {
+  ): {
+    executor: WorkflowExecutor;
+    calls: OpenAPIOperationExecuteOptions[];
+    sleeps: number[];
+  } => {
+    const sequence = Array.isArray(responses) ? responses : [responses as CannedResponse];
     const calls: OpenAPIOperationExecuteOptions[] = [];
+    const sleeps: number[] = [];
     const executor = new WorkflowExecutor({
       document: entry,
       registry,
-      stepExecutor: makeStepExecutor(canned, calls),
+      stepExecutor: makeStepExecutor(sequence, calls),
+      sleep: async (ms) => {
+        sleeps.push(ms);
+      },
       ...options,
     });
-    return { executor, calls };
+    return { executor, calls, sleeps };
   };
 
   context('linear flow', function () {
@@ -356,13 +372,92 @@ describe('WorkflowExecutor', function () {
     });
   });
 
+  context('retry', function () {
+    specify('should retry a failing step until it succeeds', async function () {
+      // fails twice (500), then succeeds (200) — within a retryLimit of 3.
+      const { executor, calls, sleeps } = makeExecutor([
+        serverErrorResponse,
+        serverErrorResponse,
+        okResponse,
+      ]);
+
+      const result = await executor.execute('retryThenSucceed');
+
+      assert.strictEqual(result.status, 'completed');
+      // 3 attempts: initial + 2 retries.
+      assert.strictEqual(calls.length, 3);
+      assert.strictEqual(result.steps[0].attempts, 3);
+      assert.isTrue(result.steps[0].successful);
+      // slept before each of the 2 retries, retryAfter: 2s → 2000ms.
+      assert.deepEqual(sleeps, [2000, 2000]);
+      assert.strictEqual(result.outputs.status, 200);
+    });
+
+    specify('should default retryLimit to 1 when unset', async function () {
+      // getInventory always 500; retry has no retryLimit → a single retry.
+      const { executor, calls } = makeExecutor([serverErrorResponse]);
+
+      const result = await executor.execute('retryDefaultLimit');
+
+      // initial + 1 default retry = 2 attempts, then break-default.
+      assert.strictEqual(calls.length, 2);
+      assert.strictEqual(result.steps[0].attempts, 2);
+      assert.strictEqual(result.status, 'failed');
+    });
+
+    specify('should exhaust retries before firing a subsequent failure action', async function () {
+      // always 500: retry (limit 2) is exhausted, then the subsequent end fires.
+      const { executor, calls, sleeps } = makeExecutor([serverErrorResponse]);
+
+      const result = await executor.execute('retryExhaustedThenEnd');
+
+      assert.strictEqual(result.status, 'ended');
+      // initial + 2 retries = 3 attempts on the doomed step; unreached never ran.
+      assert.strictEqual(calls.length, 3);
+      assert.deepEqual(
+        result.steps.map((step) => step.stepId),
+        ['doomed'],
+      );
+      assert.strictEqual(result.steps[0].attempts, 3);
+      assert.deepEqual(sleeps, [1000, 1000]);
+    });
+
+    specify(
+      'should fall to the break-default when retries exhaust with no next action',
+      async function () {
+        const { executor } = makeExecutor([serverErrorResponse]);
+
+        const result = await executor.execute('retryExhaustedThenBreak');
+
+        assert.strictEqual(result.status, 'failed');
+        assert.strictEqual(result.steps[0].attempts, 3); // initial + 2 retries
+        assert.isFalse(result.steps[0].successful);
+      },
+    );
+
+    specify('should give each retry in a chain its own independent budget', async function () {
+      // always 500: retryFast (limit 2) exhausts, then retrySlow (limit 3)
+      // exhausts on its own budget, then the terminal end fires.
+      const { executor, calls, sleeps } = makeExecutor([serverErrorResponse]);
+
+      const result = await executor.execute('retryChainIndependentBudgets');
+
+      assert.strictEqual(result.status, 'ended');
+      // initial + 2 (fast) + 3 (slow) = 6 attempts.
+      assert.strictEqual(calls.length, 6);
+      assert.strictEqual(result.steps[0].attempts, 6);
+      // 2 fast delays (1s) then 3 slow delays (5s).
+      assert.deepEqual(sleeps, [1000, 1000, 5000, 5000, 5000]);
+    });
+  });
+
   context('step executor injection', function () {
     specify('should delegate steps to the injected stepExecutor', async function () {
       const calls: OpenAPIOperationExecuteOptions[] = [];
       const executor = new WorkflowExecutor({
         document: entry,
         registry,
-        stepExecutor: makeStepExecutor(okResponse, calls),
+        stepExecutor: makeStepExecutor([okResponse], calls),
       });
 
       const result = await executor.execute('linear', { status: 'available' });
@@ -391,14 +486,15 @@ describe('WorkflowExecutor', function () {
       );
     });
 
-    specify('should throw for a retry action', async function () {
-      // the 500 makes the step fail so its onFailure retry is selected.
-      const { executor } = makeExecutor(serverErrorResponse);
+    specify('should throw for a retry carrying a stepId/workflowId reference', async function () {
+      // the 500 makes the step fail so its onFailure retry (with a stepId
+      // reference) is selected — the reference form is not yet supported.
+      const { executor } = makeExecutor([serverErrorResponse]);
 
       await rejects(
-        executor.execute('retryUnsupported'),
+        executor.execute('retryWithReference'),
         ExecutionError,
-        /retry action .* is not supported yet/,
+        /carries a stepId\/workflowId reference; not supported yet/,
       );
     });
 

@@ -143,10 +143,29 @@ workflows:
             type: goto
             workflowId: linear
 
-  # the step fails and selects a retry action — not yet supported.
-  - workflowId: retryUnsupported
+  # the step fails then succeeds within the retry budget: the operation is
+  # re-run until a 200 arrives, and the run completes.
+  - workflowId: retryThenSucceed
     steps:
-      - stepId: only
+      - stepId: flaky
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 3
+            retryAfter: 2
+        outputs:
+          status: $statusCode
+    outputs:
+      status: $steps.flaky.outputs.status
+
+  # retries are exhausted, then the SUBSEQUENT failure action (end) fires — per
+  # spec, retryLimit must be exhausted prior to executing subsequent actions.
+  - workflowId: retryExhaustedThenEnd
+    steps:
+      - stepId: doomed
         operationId: getInventory
         successCriteria:
           - condition: $statusCode == 200
@@ -154,6 +173,74 @@ workflows:
           - name: tryAgain
             type: retry
             retryLimit: 2
+            retryAfter: 1
+          - name: giveUp
+            type: end
+      - stepId: unreached
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+
+  # retries are exhausted and there is no subsequent failure action, so the run
+  # falls to the break-default (status: failed).
+  - workflowId: retryExhaustedThenBreak
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 2
+
+  # a retry with no retryLimit — defaults to a single retry (2 attempts total),
+  # then the break-default.
+  - workflowId: retryDefaultLimit
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+
+  # two retry actions in the chain: the first exhausts its own budget, then the
+  # second exhausts its independent budget, then the terminal end fires.
+  - workflowId: retryChainIndependentBudgets
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: retryFast
+            type: retry
+            retryLimit: 2
+            retryAfter: 1
+          - name: retrySlow
+            type: retry
+            retryLimit: 3
+            retryAfter: 5
+          - name: giveUp
+            type: end
+
+  # a retry action carrying a stepId reference to run before retrying — not yet
+  # supported.
+  - workflowId: retryWithReference
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 2
+            stepId: doomed
 
   # a sub-workflow (workflowId) step — not yet supported.
   - workflowId: subWorkflowStep
