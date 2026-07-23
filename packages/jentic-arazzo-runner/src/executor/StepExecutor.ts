@@ -1,6 +1,11 @@
 import { toValue } from '@speclynx/apidom-core';
 import { isArrayElement, isStringElement } from '@speclynx/apidom-datamodel';
-import { isCriterionElement, type StepElement } from '@speclynx/apidom-ns-arazzo-1';
+import {
+  isCriterionElement,
+  type StepElement,
+  type WorkflowSuccessActionsElement,
+  type WorkflowFailureActionsElement,
+} from '@speclynx/apidom-ns-arazzo-1';
 
 import type ArazzoDocument from '../document/ArazzoDocument.ts';
 import type DocumentRegistry from '../registry/DocumentRegistry.ts';
@@ -17,7 +22,7 @@ import ParameterResolver from '../resolver/ParameterResolver.ts';
 import RequestBodyResolver, { type ResolvedRequestBody } from '../resolver/RequestBodyResolver.ts';
 import OutputResolver from '../resolver/OutputResolver.ts';
 import ActionResolver, { type SelectedAction } from '../action/ActionResolver.ts';
-import OpenAPIOperationExecutor, { type OpenAPIClientFactory } from './OpenAPIOperationExecutor.ts';
+import OpenAPIOperationExecutor from './OpenAPIOperationExecutor.ts';
 import OpenAPIOperationLocatorNormalizer, {
   type OpenAPIOperationLocator,
 } from './OpenAPIOperationLocatorNormalizer.ts';
@@ -55,9 +60,28 @@ export interface StepExecutorOptions {
    */
   readonly registry: DocumentRegistry;
   /**
-   * Builds the client that executes the assembled operation.
+   * The operation engine each step's located operation is delegated to. Build it
+   * with the client factory (or a deterministic stub in tests) and pass it in —
+   * the step executor is agnostic to how the operation reaches the live API.
    */
-  readonly clientFactory: OpenAPIClientFactory;
+  readonly operationExecutor: OpenAPIOperationExecutor;
+}
+
+/**
+ * The workflow-level default actions a step falls back to when it declares none
+ * of its own.
+ *
+ * Per Arazzo 1.0.1 a workflow's `successActions` / `failureActions` are
+ * "applicable for all steps"; a step that declares its own `onSuccess` /
+ * `onFailure` list **overrides** the corresponding workflow list wholesale —
+ * there is no per-action merge. The two lists are independent: a step may
+ * override only its failure actions and still inherit the workflow's success
+ * actions.
+ * @public
+ */
+export interface StepDefaultActions {
+  readonly onSuccess?: WorkflowSuccessActionsElement;
+  readonly onFailure?: WorkflowFailureActionsElement;
 }
 
 /**
@@ -112,9 +136,7 @@ class StepExecutor {
     this.#document = options.document;
     this.#registry = options.registry;
     this.#locatorNormalizer = new OpenAPIOperationLocatorNormalizer(options.registry);
-    this.#operationExecutor = new OpenAPIOperationExecutor({
-      clientFactory: options.clientFactory,
-    });
+    this.#operationExecutor = options.operationExecutor;
   }
 
   /**
@@ -124,11 +146,17 @@ class StepExecutor {
    * through to the client (e.g. a swagger client's `contextUrl` base URL for a
    * relative server, or an `AbortSignal`). The Arazzo-derived options
    * (`operationId`, `parameters`, `requestBody`) always take precedence over it.
+   *
+   * `defaultActions` are the workflow-level `successActions` / `failureActions`
+   * the step falls back to when it declares no `onSuccess` / `onFailure` of its
+   * own; the workflow executor supplies them. A step's own list overrides the
+   * matching default wholesale — see {@link StepDefaultActions}.
    */
   async execute(
     step: StepElement,
     state: ContextSource,
     executeOptions: Record<string, unknown> = {},
+    defaultActions: StepDefaultActions = {},
   ): Promise<StepExecutionResult> {
     const stepId = toValue(step.stepId) as string;
 
@@ -184,7 +212,7 @@ class StepExecutor {
     const outputs = this.#outputResolver.resolve(step.outputs, (expression) =>
       this.#evaluate(postContext, expression),
     );
-    const action = this.#selectAction(step, successful, postContext);
+    const action = this.#selectAction(step, successful, postContext, defaultActions);
 
     return { stepId, response, successful, outputs, action };
   }
@@ -248,13 +276,27 @@ class StepExecutor {
   /**
    * Selects the `onSuccess` / `onFailure` action for the outcome, gating each
    * action's criteria against the context.
+   *
+   * A step's own action list overrides the workflow-level default wholesale: the
+   * step's list is used when the step *declares* it, otherwise the matching
+   * `defaultActions` list. There is no per-action merge, and success/failure fall
+   * back independently.
+   *
+   * Presence is tested with `hasKey`, not truthiness: a step that declares an
+   * empty list (`onSuccess: []`) has *overridden* the default with an empty set
+   * of actions and must not fall back to it, whereas a step that omits the key
+   * inherits the default.
    */
   #selectAction(
     step: StepElement,
     successful: boolean,
     context: RuntimeExpressionContext,
+    defaultActions: StepDefaultActions,
   ): SelectedAction | undefined {
-    const actions = successful ? step.onSuccess : step.onFailure;
+    const [stepKey, stepActions, defaultActionList] = successful
+      ? (['onSuccess', step.onSuccess, defaultActions.onSuccess] as const)
+      : (['onFailure', step.onFailure, defaultActions.onFailure] as const);
+    const actions = step.hasKey(stepKey) ? stepActions : defaultActionList;
     return this.#actionResolver.resolve(actions, (criterion) =>
       this.#criterionEvaluator.evaluate(criterion, (expression) =>
         this.#evaluate(context, expression),

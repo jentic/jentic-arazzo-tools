@@ -103,10 +103,17 @@ export { default as ActionResolver } from './action/ActionResolver.ts';
 export type { CriterionPredicate, SelectedAction } from './action/ActionResolver.ts';
 
 /* Executor */
+export { default as WorkflowExecutor } from './executor/WorkflowExecutor.ts';
+export type {
+  WorkflowExecutorOptions,
+  WorkflowExecutionResult,
+  StepRunRecord,
+} from './executor/WorkflowExecutor.ts';
 export { default as StepExecutor } from './executor/StepExecutor.ts';
 export type {
   StepExecutorOptions,
   StepExecutionResult,
+  StepDefaultActions,
   ContextSource,
 } from './executor/StepExecutor.ts';
 export { default as OpenAPIOperationExecutor } from './executor/OpenAPIOperationExecutor.ts';

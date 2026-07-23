@@ -1,6 +1,6 @@
 # @jentic/arazzo-runner
 
-> [!WARNING]  
+> [!WARNING]
 > This package is under heavy development and is not yet published to npm. It is developed within the [`jentic-arazzo-tools`](https://github.com/jentic/jentic-arazzo-tools) monorepo and will be publicly installable once its API stabilizes; until then, APIs may change without notice.
 
 `@jentic/arazzo-runner` executes [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) workflows against live APIs described by [OpenAPI Specification](https://spec.openapis.org/oas/latest.html) source descriptions.
@@ -78,10 +78,75 @@ registry.clear(); // drop cached documents to reclaim memory
 
 ## `WorkflowExecutor`
 
-> [!WARNING]  
-> Not yet implemented — work in progress. The sections below describe the current building blocks; `WorkflowExecutor` is the next one.
+> [!NOTE]
+> Under active development. The backbone below works today; retry, sub-workflow calls, `dependsOn`, and step-level `goto` to a workflow are not yet implemented and throw `ExecutionError` rather than behaving incorrectly (see [Not yet supported](#not-yet-supported)).
 
-`WorkflowExecutor` will be the stateful orchestrator that runs a whole workflow: it iterates a workflow's steps, calling `StepExecutor` per step, and owns the run state (a `WorkflowExecutionState`) that accumulates each step's outputs so later steps can read `$steps.*.outputs`. It interprets the control-flow actions `StepExecutor` only _selects_ — `goto`, `retry`, and `end` — applies workflow-level defaults (`successActions` / `failureActions`, `parameters`), resolves workflow `inputs` / `outputs`, and calls sub-workflows.
+`WorkflowExecutor` is the stateful orchestrator that runs a whole workflow. It iterates a workflow's steps in list order, calling `StepExecutor` per step, and owns the run state (a `WorkflowExecutionState`) that accumulates each step's outputs so later steps can read `$steps.*.outputs`. It interprets the control-flow actions `StepExecutor` only _selects_ — advancing to the next step, jumping via `goto`, or stopping on `end` / the failure break-default — supplies each step the workflow-level default `successActions` / `failureActions`, and resolves the workflow's `outputs` against the final state.
+
+Give it the entry document, registry, and a `StepExecutor` once; call `execute` per run with a `workflowId` and its `inputs`:
+
+```js
+import {
+  DocumentRegistry,
+  OpenAPIOperationExecutor,
+  StepExecutor,
+  WorkflowExecutor,
+  OpenAPIClientSwagger,
+} from '@jentic/arazzo-runner';
+
+const registry = new DocumentRegistry();
+const arazzoDoc = await registry.acquireEntryDocument(
+  'https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml',
+);
+
+// compose the engines bottom-up: operation executor → step executor → workflow
+// executor. Each takes its collaborator rather than building one, so a stub
+// drops in for tests at any layer.
+const operationExecutor = new OpenAPIOperationExecutor({
+  clientFactory: (document) => new OpenAPIClientSwagger(document),
+});
+const stepExecutor = new StepExecutor({ document: arazzoDoc, registry, operationExecutor });
+const executor = new WorkflowExecutor({ document: arazzoDoc, registry, stepExecutor });
+
+const result = await executor.execute(
+  'authenticateAndOrderPet',
+  { username: 'user1', password: 'secret', preferredPetStatus: 'available' },
+  { contextUrl: 'https://petstore3.swagger.io' },
+);
+
+console.log(result.status); // 'completed' | 'ended' | 'failed'
+console.log(result.outputs); // workflow $outputs, resolved against final state
+console.log(result.steps); // trace: each step's id, success, and selected action, in run order
+```
+
+The run state is created fresh per `execute` call and owned internally; the returned `result` is read-only. Every layer takes its collaborator rather than building one — `WorkflowExecutor` takes a `StepExecutor`, which takes an `OpenAPIOperationExecutor`, which takes the client factory — so each stays agnostic to how the layer beneath it reaches the live API, and a deterministic stub drops in for tests at any level.
+
+### Control flow
+
+After each step, the selected `onSuccess` / `onFailure` action determines what happens next:
+
+- **no matching action** — success falls through to the next step; failure _breaks and returns_ (`status: 'failed'`);
+- **`end`** — stops the run early with `status: 'ended'`, returning the outputs accumulated so far;
+- **`goto` a `stepId`** — jumps to that step within the current workflow.
+
+A runaway `goto` loop is bounded by `maxSteps` (default `1000`), which throws `ExecutionError` (`reason: 'step-budget'`) when exceeded.
+
+### Workflow-level default actions
+
+A workflow's `successActions` / `failureActions` apply to every step as a **default**. A step that declares its own `onSuccess` / `onFailure` **overrides** the corresponding workflow list wholesale — there is no per-action merge, and success and failure fall back independently (a step may override only its failure actions and still inherit the workflow's success actions).
+
+### Authoring errors vs. failed runs
+
+Same split as `StepExecutor`: a step whose `successCriteria` go unmet with no redirecting action is a normal `status: 'failed'` result, **not** a throw. Only authoring errors throw `ExecutionError` — an unknown `workflowId` (`workflow-not-found`), a `goto` to a step that does not exist (`goto-target-not-found`), a `goto` naming neither `stepId` nor `workflowId` (`goto-target-missing`), an action of an unknown `type` (`unknown-action-type`), a present but malformed `steps` (`malformed-steps`), or the step-budget overflow above (`step-budget`).
+
+### Not yet supported
+
+These throw `ExecutionError` today rather than behaving incorrectly, and land in later work:
+
+- **`retry` actions** (`reason: 'retry-unsupported'`);
+- **sub-workflow steps** — a step targeting a `workflowId` (`reason: 'workflow-step-unsupported'`);
+- **step-level `goto` to a `workflowId`** (`reason: 'goto-workflow-unsupported'`);
+- **`dependsOn`** between workflows.
 
 ## `StepExecutor`
 
@@ -92,7 +157,9 @@ Executes a single Arazzo step that invokes an OpenAPI operation, returning its o
 3. delegate the call to `OpenAPIOperationExecutor`;
 4. evaluate `successCriteria`, resolve `outputs`, and select the `onSuccess` / `onFailure` action against the post-request context (`$statusCode`, `$response.*`, `$request.*`, `$url`, `$method`).
 
-`StepExecutor` **reads run state and mutates nothing** — it returns the resolved outputs and the selected action for the caller to record and interpret. A step targeting a `workflowId` (a sub-workflow) is not an operation step and throws; running sub-workflows is a future `WorkflowExecutor`'s concern.
+`StepExecutor` **reads run state and mutates nothing** — it returns the resolved outputs and the selected action for the caller to record and interpret. A step targeting a `workflowId` (a sub-workflow) is not an operation step and throws; running sub-workflows is the `WorkflowExecutor`'s concern.
+
+It delegates the located operation to an injected `OpenAPIOperationExecutor` (below) rather than building one, so it stays agnostic to the operation pipeline and HTTP stack:
 
 ```js
 import {
@@ -100,6 +167,7 @@ import {
   ArazzoWorkflowExtractor,
   ArazzoStepExtractor,
   WorkflowExecutionState,
+  OpenAPIOperationExecutor,
   StepExecutor,
   OpenAPIClientSwagger,
 } from '@jentic/arazzo-runner';
@@ -113,11 +181,10 @@ const arazzoDoc = await registry.acquireEntryDocument(
 const workflow = new ArazzoWorkflowExtractor().extract(arazzoDoc, 'authenticateAndOrderPet');
 const step = new ArazzoStepExtractor().extract(workflow, 'findAvailablePets');
 
-const executor = new StepExecutor({
-  document: arazzoDoc,
-  registry,
+const operationExecutor = new OpenAPIOperationExecutor({
   clientFactory: (document) => new OpenAPIClientSwagger(document),
 });
+const executor = new StepExecutor({ document: arazzoDoc, registry, operationExecutor });
 
 // run state carries $inputs and accumulates $steps.*.outputs across a run.
 const state = new WorkflowExecutionState({ inputs: { preferredPetStatus: 'available' } });
