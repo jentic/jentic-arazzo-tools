@@ -161,6 +161,29 @@ workflows:
     outputs:
       status: $steps.flaky.outputs.status
 
+  # after a retry finally succeeds, control proceeds to the following step — a
+  # successful retry must not break the rest of the workflow.
+  - workflowId: retryThenSucceedThenNext
+    steps:
+      - stepId: flaky
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 3
+      - stepId: after
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          ran: $statusCode
+    outputs:
+      after: $steps.after.outputs.ran
+
   # retries are exhausted, then the SUBSEQUENT failure action (end) fires — per
   # spec, retryLimit must be exhausted prior to executing subsequent actions.
   - workflowId: retryExhaustedThenEnd

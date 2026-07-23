@@ -130,7 +130,7 @@ After each step, the selected `onSuccess` / `onFailure` action determines what h
 - **`goto` a `stepId`** — jumps to that step within the current workflow;
 - **`retry`** — re-runs the step's operation up to the action's `retryLimit` (default `1`), waiting `retryAfter` seconds between attempts. Per spec, `retryLimit` is exhausted _before_ subsequent failure actions run, so an exhausted `retry` falls through to the next matching failure action — which may be another `retry` with its own independent budget, or a terminal `end` / `goto`; if none remains, the break-default applies. Each step's `attempts` count is surfaced in the result trace.
 
-A runaway `goto` loop is bounded by `maxSteps` (default `1000`), which throws `ExecutionError` (`reason: 'step-budget'`) when exceeded. The `retryAfter` delay uses an injectable `sleep` (`WorkflowExecutorOptions.sleep`, default a real timer) so tests can run without waiting.
+A runaway `goto` loop **or** a runaway `retry` is bounded by `maxSteps` (default `1000`), which counts every operation execution — each step attempt, including retries — and throws `ExecutionError` (`reason: 'step-budget'`) when exceeded. The `retryAfter` delay uses an injectable `sleep` (`WorkflowExecutorOptions.sleep`, default a real timer) so tests can run without waiting.
 
 ### Workflow-level default actions
 

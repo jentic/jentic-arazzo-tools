@@ -43,8 +43,9 @@ export interface WorkflowExecutorOptions {
    */
   readonly stepExecutor: StepExecutor;
   /**
-   * Upper bound on the number of step executions in a single run, guarding
-   * against a runaway `goto` loop. Defaults to 1000.
+   * Upper bound on the number of operation executions in a single run — every
+   * step attempt, including each `retry`, counts. Guards against both a runaway
+   * `goto` loop and a runaway `retry`. Defaults to 1000.
    */
   readonly maxSteps?: number;
   /**
@@ -185,17 +186,13 @@ class WorkflowExecutor {
     const trace: StepRunRecord[] = [];
 
     let index = 0;
-    let stepCount = 0;
+    // total operation executions this run, charged once per attempt (including
+    // retries) so both a runaway `goto` loop and a runaway `retry` are bounded by
+    // the one budget. Threaded into #runStepWithRetry so retries count too.
+    const budget = { spent: 0 };
     let status: WorkflowExecutionResult['status'] = 'completed';
 
     while (index < steps.length) {
-      if (++stepCount > this.#maxSteps) {
-        throw new ExecutionError(
-          `workflow "${workflowId}" exceeded the step budget of ${this.#maxSteps} (a goto loop, or a workflow longer than maxSteps)`,
-          { workflowId, reason: 'step-budget' },
-        );
-      }
-
       const step = steps[index];
       const stepId = toValue(step.stepId) as string;
 
@@ -211,6 +208,7 @@ class WorkflowExecutor {
         defaultActions,
         workflowId,
         stepId,
+        budget,
       );
       state.setStepOutputs(outcome.stepId, outcome.outputs);
       trace.push({
@@ -370,6 +368,7 @@ class WorkflowExecutor {
     defaultActions: StepDefaultActions,
     workflowId: string,
     stepId: string,
+    budget: { spent: number },
   ): Promise<{
     outcome: StepExecutionResult;
     action: SelectedAction | undefined;
@@ -381,6 +380,16 @@ class WorkflowExecutor {
     let attempts = 0;
 
     for (;;) {
+      // charge the shared run budget per operation execution — this is what
+      // bounds a runaway retry (and, since every step entry runs ≥1 attempt, a
+      // runaway goto loop) rather than an unbounded spin.
+      if (++budget.spent > this.#maxSteps) {
+        throw new ExecutionError(
+          `workflow "${workflowId}" exceeded the step budget of ${this.#maxSteps} (a goto loop, or a step retried past the budget)`,
+          { workflowId, stepId, reason: 'step-budget' },
+        );
+      }
+
       const outcome = await this.#stepExecutor.execute(step, state, executeOptions, defaultActions);
       attempts += 1;
 

@@ -405,6 +405,36 @@ describe('WorkflowExecutor', function () {
       assert.strictEqual(result.status, 'failed');
     });
 
+    specify('should proceed to the following step after a retry succeeds', async function () {
+      // flaky fails once (500) then succeeds (200); control must continue to the
+      // `after` step rather than stopping at the recovered retry.
+      const { executor } = makeExecutor([serverErrorResponse, okResponse]);
+
+      const result = await executor.execute('retryThenSucceedThenNext');
+
+      assert.strictEqual(result.status, 'completed');
+      assert.deepEqual(
+        result.steps.map((step) => step.stepId),
+        ['flaky', 'after'],
+      );
+      assert.strictEqual(result.steps[0].attempts, 2); // flaky: initial + 1 retry
+      assert.strictEqual(result.steps[1].attempts, 1); // after: ran once
+      assert.strictEqual(result.outputs.after, 200);
+    });
+
+    specify('should count retry attempts against the step budget', async function () {
+      // retryExhaustedThenBreak retries a persistent 500 (retryLimit 2 → 3
+      // attempts); a maxSteps of 2 must halt it via the step-budget guard,
+      // proving retries are bounded, not just outer step entries.
+      const { executor } = makeExecutor([serverErrorResponse], { maxSteps: 2 });
+
+      await rejects(
+        executor.execute('retryExhaustedThenBreak'),
+        ExecutionError,
+        /exceeded the step budget of 2/,
+      );
+    });
+
     specify('should exhaust retries before firing a subsequent failure action', async function () {
       // always 500: retry (limit 2) is exhausted, then the subsequent end fires.
       const { executor, calls, sleeps } = makeExecutor([serverErrorResponse]);
