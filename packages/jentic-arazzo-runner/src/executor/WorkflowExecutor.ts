@@ -374,8 +374,14 @@ class WorkflowExecutor {
     action: SelectedAction | undefined;
     attempts: number;
   }> {
-    // attempts already spent on each retry action, keyed by the action element
-    // so each retry in a chain keeps its own independent budget across re-runs.
+    // attempts already spent on each retry action, keyed by the action element.
+    // The element is the correct identity here: re-running the step returns the
+    // same element instances (the workflow is normalized once and `onFailure`'s
+    // getter returns its stored children — nothing re-refracts per call), and
+    // keying by the element survives the criteria re-filtering that varies
+    // `matchedActions` between attempts (position within that filtered list is
+    // NOT stable when a response change drops an earlier action). So each retry
+    // in a chain keeps its own independent budget across re-runs.
     const retriesSpent = new Map<SelectedAction, number>();
     let attempts = 0;
 
