@@ -1,9 +1,11 @@
 import { toValue } from '@speclynx/apidom-core';
-import { isArrayElement, isStringElement } from '@speclynx/apidom-datamodel';
+import { isArrayElement, isNumberElement, isStringElement } from '@speclynx/apidom-datamodel';
 import {
   isStepElement,
+  isFailureActionElement,
   type WorkflowElement,
   type StepElement,
+  type FailureActionElement,
 } from '@speclynx/apidom-ns-arazzo-1';
 
 import type ArazzoDocument from '../document/ArazzoDocument.ts';
@@ -15,7 +17,7 @@ import ArazzoWorkflowExtractor from '../extractor/ArazzoWorkflowExtractor.ts';
 import ArazzoWorkflowNormalizer from '../normalizer/ArazzoWorkflowNormalizer.ts';
 import OutputResolver from '../resolver/OutputResolver.ts';
 import WorkflowExecutionState from '../state/WorkflowExecutionState.ts';
-import StepExecutor, { type StepDefaultActions } from './StepExecutor.ts';
+import StepExecutor, { type StepDefaultActions, type StepExecutionResult } from './StepExecutor.ts';
 import type { SelectedAction } from '../action/ActionResolver.ts';
 import ExecutionError from '../errors/ExecutionError.ts';
 
@@ -41,10 +43,17 @@ export interface WorkflowExecutorOptions {
    */
   readonly stepExecutor: StepExecutor;
   /**
-   * Upper bound on the number of step executions in a single run, guarding
-   * against a runaway `goto` loop. Defaults to 1000.
+   * Upper bound on the number of operation executions in a single run — every
+   * step attempt, including each `retry`, counts. Guards against both a runaway
+   * `goto` loop and a runaway `retry`. Defaults to 1000.
    */
   readonly maxSteps?: number;
+  /**
+   * Delays for the given number of milliseconds — awaited between a step's retry
+   * attempts (`retryAfter`). Injected so tests pass a no-op and real runs delay;
+   * defaults to a real timer.
+   */
+  readonly sleep?: (ms: number) => Promise<void>;
 }
 
 /**
@@ -55,6 +64,12 @@ export interface StepRunRecord {
   readonly stepId: string;
   readonly successful: boolean;
   readonly action: SelectedAction | undefined;
+  /**
+   * How many times the step's operation ran — 1 with no retries, more when a
+   * `retry` action fired. The final `successful` / `action` reflect the last
+   * attempt.
+   */
+  readonly attempts: number;
 }
 
 /**
@@ -106,21 +121,29 @@ type Transition =
  * step that legitimately fails and breaks is a normal `status: 'failed'`
  * result, not a throw — the same split {@link StepExecutor} draws.
  *
- * This initial version is the backbone: linear flow, `goto` to a step, `end`,
- * the break-default, and workflow-level default `successActions` /
- * `failureActions` a step inherits when it declares none of its own (a step's
- * own list overrides the workflow default wholesale — no merge). Retry,
- * sub-workflow (`workflowId`) steps, step-level `goto` to a workflow, and
- * `dependsOn` are not yet supported and throw {@link ExecutionError} rather than
- * behaving incorrectly.
+ * This version supports: linear flow, `goto` to a step, `end`, the
+ * break-default, `retry` actions (with `retryLimit` / `retryAfter` and the
+ * exhaustion fall-through to subsequent failure actions), and workflow-level
+ * default `successActions` / `failureActions` a step inherits when it declares
+ * none of its own (a step's own list overrides the workflow default wholesale —
+ * no merge). Sub-workflow (`workflowId`) steps, step-level `goto` to a workflow,
+ * a `retry` carrying a `stepId` / `workflowId` reference, and `dependsOn` are
+ * not yet supported and throw {@link ExecutionError} rather than behaving
+ * incorrectly.
  * @public
  */
 class WorkflowExecutor {
   static readonly #DEFAULT_MAX_STEPS = 1000;
+  static readonly #DEFAULT_RETRY_LIMIT = 1;
+  static readonly #DEFAULT_SLEEP = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
 
   readonly #document: ArazzoDocument;
   readonly #registry: DocumentRegistry;
   readonly #maxSteps: number;
+  readonly #sleep: (ms: number) => Promise<void>;
   readonly #extractor = new ArazzoWorkflowExtractor();
   readonly #normalizer = new ArazzoWorkflowNormalizer();
   readonly #outputResolver = new OutputResolver();
@@ -130,6 +153,7 @@ class WorkflowExecutor {
     this.#document = options.document;
     this.#registry = options.registry;
     this.#maxSteps = options.maxSteps ?? WorkflowExecutor.#DEFAULT_MAX_STEPS;
+    this.#sleep = options.sleep ?? WorkflowExecutor.#DEFAULT_SLEEP;
     this.#stepExecutor = options.stepExecutor;
   }
 
@@ -162,31 +186,39 @@ class WorkflowExecutor {
     const trace: StepRunRecord[] = [];
 
     let index = 0;
-    let stepCount = 0;
+    // total operation executions this run, charged once per attempt (including
+    // retries) so both a runaway `goto` loop and a runaway `retry` are bounded by
+    // the one budget. Threaded into #runStepWithRetry so retries count too.
+    const budget = { spent: 0 };
     let status: WorkflowExecutionResult['status'] = 'completed';
 
     while (index < steps.length) {
-      if (++stepCount > this.#maxSteps) {
-        throw new ExecutionError(
-          `workflow "${workflowId}" exceeded the step budget of ${this.#maxSteps} (a goto loop, or a workflow longer than maxSteps)`,
-          { workflowId, reason: 'step-budget' },
-        );
-      }
-
       const step = steps[index];
       const stepId = toValue(step.stepId) as string;
 
       this.#rejectUnsupportedStep(step, stepId, workflowId);
 
-      const outcome = await this.#stepExecutor.execute(step, state, executeOptions, defaultActions);
+      // run the step, honoring any retry actions internally; `action` is the
+      // terminal action after retries are exhausted (retry itself never leaves
+      // this call), and `attempts` is how many times the operation ran.
+      const { outcome, action, attempts } = await this.#runStepWithRetry(
+        step,
+        state,
+        executeOptions,
+        defaultActions,
+        workflowId,
+        stepId,
+        budget,
+      );
       state.setStepOutputs(outcome.stepId, outcome.outputs);
       trace.push({
         stepId: outcome.stepId,
         successful: outcome.successful,
-        action: outcome.action,
+        action,
+        attempts,
       });
 
-      const transition = this.#interpret(outcome.action, outcome.successful, workflowId, stepId);
+      const transition = this.#interpret(action, outcome.successful, workflowId, stepId);
       if (transition.kind === 'next') {
         index += 1;
       } else if (transition.kind === 'goto') {
@@ -263,12 +295,15 @@ class WorkflowExecutor {
   }
 
   /**
-   * Interprets the action a step selected into the loop's next transition.
+   * Interprets the terminal action a step resolved to into the loop's next
+   * transition.
    *
    * With no matching action, applies the path default: the next sequential step
-   * on success, break-and-return on failure. A `goto` targeting a `stepId`
-   * jumps within the current workflow. Action types not yet supported (`retry`,
-   * `goto` targeting a `workflowId`) throw rather than behave incorrectly.
+   * on success, break-and-return on failure. A `goto` targeting a `stepId` jumps
+   * within the current workflow. `retry` never reaches here — it is consumed by
+   * {@link WorkflowExecutor.#runStepWithRetry}, which returns only the terminal
+   * action a retry chain resolves to. `goto` targeting a `workflowId` is not yet
+   * supported and throws.
    */
   #interpret(
     action: SelectedAction | undefined,
@@ -300,18 +335,145 @@ class WorkflowExecutor {
         { stepId, workflowId, reason: 'goto-target-missing' },
       );
     }
-    if (type === 'retry') {
-      throw new ExecutionError(
-        `retry action on step "${stepId}" in workflow "${workflowId}" is not supported yet`,
-        { stepId, workflowId, reason: 'retry-unsupported' },
-      );
-    }
 
     // an unknown action type is malformed input, not a defined control flow.
+    // (`retry` is resolved away in #runStepWithRetry and never arrives here.)
     throw new ExecutionError(
       `action on step "${stepId}" in workflow "${workflowId}" has unsupported type "${type}"`,
       { stepId, workflowId, reason: 'unknown-action-type' },
     );
+  }
+
+  /**
+   * Runs a step, applying its `retry` failure actions before returning a
+   * terminal outcome.
+   *
+   * On success (or an immediate non-retry failure) the step runs once. On a
+   * failure whose first matching action is a `retry`, the operation is re-run up
+   * to that action's `retryLimit` (default 1) with a `retryAfter`-second delay
+   * between attempts. Per spec — "retryLimit MUST be exhausted prior to executing
+   * subsequent failure actions" — an exhausted retry falls through to the *next*
+   * matching failure action of the latest attempt, which may itself be another
+   * `retry` with its own independent budget, or a terminal `end` / `goto`. Each
+   * attempt re-runs the operation and re-selects against the fresh response.
+   *
+   * Returns the last attempt's `outcome`, the resolved terminal `action` (never a
+   * `retry`; `undefined` when nothing terminal matched, so the loop applies the
+   * path default), and the number of `attempts` made.
+   */
+  async #runStepWithRetry(
+    step: StepElement,
+    state: WorkflowExecutionState,
+    executeOptions: Record<string, unknown>,
+    defaultActions: StepDefaultActions,
+    workflowId: string,
+    stepId: string,
+    budget: { spent: number },
+  ): Promise<{
+    outcome: StepExecutionResult;
+    action: SelectedAction | undefined;
+    attempts: number;
+  }> {
+    // attempts already spent on each retry action, keyed by the action element.
+    // The element is the correct identity here: re-running the step returns the
+    // same element instances (the workflow is normalized once and `onFailure`'s
+    // getter returns its stored children — nothing re-refracts per call), and
+    // keying by the element survives the criteria re-filtering that varies
+    // `matchedActions` between attempts (position within that filtered list is
+    // NOT stable when a response change drops an earlier action). So each retry
+    // in a chain keeps its own independent budget across re-runs.
+    const retriesSpent = new Map<SelectedAction, number>();
+    let attempts = 0;
+
+    for (;;) {
+      // charge the shared run budget per operation execution — this is what
+      // bounds a runaway retry (and, since every step entry runs ≥1 attempt, a
+      // runaway goto loop) rather than an unbounded spin.
+      if (++budget.spent > this.#maxSteps) {
+        throw new ExecutionError(
+          `workflow "${workflowId}" exceeded its budget of ${this.#maxSteps} operation executions (a goto loop or excessive retries)`,
+          { workflowId, stepId, reason: 'step-budget' },
+        );
+      }
+
+      const outcome = await this.#stepExecutor.execute(step, state, executeOptions, defaultActions);
+      attempts += 1;
+
+      if (outcome.successful) {
+        return { outcome, action: outcome.action, attempts };
+      }
+
+      // walk the matching failure actions: fire the first retry that still has
+      // budget, else fall through to the first terminal (non-retry) action.
+      let fired = false;
+      let terminal: SelectedAction | undefined;
+      for (const action of outcome.matchedActions) {
+        if (!this.#isRetry(action)) {
+          terminal = action;
+          break;
+        }
+        const spent = retriesSpent.get(action) ?? 0;
+        if (spent >= this.#retryLimit(action)) continue; // exhausted — try the next action
+
+        this.#rejectRetryReference(action, stepId, workflowId);
+        retriesSpent.set(action, spent + 1);
+        // only sleep for a real, positive delay — skip the event-loop yield of
+        // sleep(0) for immediate retries, and never hand a custom sleep a
+        // zero/negative/NaN value.
+        const delayMs = this.#retryAfterMs(action);
+        if (delayMs > 0) await this.#sleep(delayMs);
+        fired = true;
+        break;
+      }
+
+      if (fired) continue; // re-run the step
+      return { outcome, action: terminal, attempts };
+    }
+  }
+
+  /**
+   * Whether a matched action is a `retry` failure action (narrowing it to
+   * {@link FailureActionElement} so `retryLimit` / `retryAfter` are accessible).
+   */
+  #isRetry(action: SelectedAction): action is FailureActionElement {
+    return isFailureActionElement(action) && (toValue(action.type) as string) === 'retry';
+  }
+
+  /**
+   * A `retry` action's attempt budget — its `retryLimit`, or the default of 1
+   * when unset or non-numeric.
+   */
+  #retryLimit(action: FailureActionElement): number {
+    return isNumberElement(action.retryLimit)
+      ? (toValue(action.retryLimit) as number)
+      : WorkflowExecutor.#DEFAULT_RETRY_LIMIT;
+  }
+
+  /**
+   * The delay before a retry, in milliseconds — the action's `retryAfter`
+   * (seconds) converted. `0` when unset, non-numeric, or not a finite positive
+   * value (a negative or `NaN` `retryAfter` means "no wait", never a bad value
+   * handed to `sleep`).
+   */
+  #retryAfterMs(action: FailureActionElement): number {
+    if (!isNumberElement(action.retryAfter)) return 0;
+    const ms = (toValue(action.retryAfter) as number) * 1000;
+    return Number.isFinite(ms) && ms > 0 ? ms : 0;
+  }
+
+  /**
+   * Rejects a `retry` action that carries a `stepId` / `workflowId` reference to
+   * execute before retrying — a defined feature ("the reference is executed and
+   * the context is returned, after which the current step is retried") that is
+   * not yet supported, so it throws rather than silently ignoring the reference.
+   */
+  #rejectRetryReference(action: FailureActionElement, stepId: string, workflowId: string): void {
+    if (isStringElement(action.stepId) || isStringElement(action.workflowId)) {
+      throw new ExecutionError(
+        `retry action on step "${stepId}" in workflow "${workflowId}" carries a stepId/workflowId reference; not supported yet`,
+        { stepId, workflowId, reason: 'retry-reference-unsupported' },
+      );
+    }
   }
 
   /**

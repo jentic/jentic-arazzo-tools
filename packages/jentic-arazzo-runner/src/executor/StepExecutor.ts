@@ -93,7 +93,19 @@ export interface StepExecutionResult {
   readonly response: OpenAPIOperationResponse;
   readonly successful: boolean;
   readonly outputs: Record<string, unknown>;
+  /**
+   * The action to take for this outcome — the first of {@link StepExecutionResult.matchedActions},
+   * or `undefined` when none matched (the caller then applies the path default).
+   */
   readonly action: SelectedAction | undefined;
+  /**
+   * Every `onSuccess` / `onFailure` action whose criteria matched this outcome,
+   * in list order. Usually the caller acts on `action` (the first); the workflow
+   * executor walks the full list to honor "retryLimit exhausted prior to
+   * subsequent failure actions" — falling from an exhausted `retry` to the next
+   * matching action. Empty when none matched.
+   */
+  readonly matchedActions: readonly SelectedAction[];
 }
 
 /**
@@ -212,9 +224,9 @@ class StepExecutor {
     const outputs = this.#outputResolver.resolve(step.outputs, (expression) =>
       this.#evaluate(postContext, expression),
     );
-    const action = this.#selectAction(step, successful, postContext, defaultActions);
+    const matchedActions = this.#selectActions(step, successful, postContext, defaultActions);
 
-    return { stepId, response, successful, outputs, action };
+    return { stepId, response, successful, outputs, action: matchedActions[0], matchedActions };
   }
 
   /**
@@ -274,8 +286,8 @@ class StepExecutor {
   }
 
   /**
-   * Selects the `onSuccess` / `onFailure` action for the outcome, gating each
-   * action's criteria against the context.
+   * Selects every matching `onSuccess` / `onFailure` action for the outcome, in
+   * list order, gating each action's criteria against the context.
    *
    * A step's own action list overrides the workflow-level default wholesale: the
    * step's list is used when the step *declares* it, otherwise the matching
@@ -286,18 +298,22 @@ class StepExecutor {
    * empty list (`onSuccess: []`) has *overridden* the default with an empty set
    * of actions and must not fall back to it, whereas a step that omits the key
    * inherits the default.
+   *
+   * The full matching list (not just the first) is returned so the caller can
+   * honor "retryLimit exhausted prior to subsequent failure actions"; the common
+   * caller simply takes the first.
    */
-  #selectAction(
+  #selectActions(
     step: StepElement,
     successful: boolean,
     context: RuntimeExpressionContext,
     defaultActions: StepDefaultActions,
-  ): SelectedAction | undefined {
+  ): SelectedAction[] {
     const [stepKey, stepActions, defaultActionList] = successful
       ? (['onSuccess', step.onSuccess, defaultActions.onSuccess] as const)
       : (['onFailure', step.onFailure, defaultActions.onFailure] as const);
     const actions = step.hasKey(stepKey) ? stepActions : defaultActionList;
-    return this.#actionResolver.resolve(actions, (criterion) =>
+    return this.#actionResolver.resolveAll(actions, (criterion) =>
       this.#criterionEvaluator.evaluate(criterion, (expression) =>
         this.#evaluate(context, expression),
       ),

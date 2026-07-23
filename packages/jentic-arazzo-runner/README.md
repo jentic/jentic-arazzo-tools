@@ -79,7 +79,7 @@ registry.clear(); // drop cached documents to reclaim memory
 ## `WorkflowExecutor`
 
 > [!NOTE]
-> Under active development. The backbone below works today; retry, sub-workflow calls, `dependsOn`, and step-level `goto` to a workflow are not yet implemented and throw `ExecutionError` rather than behaving incorrectly (see [Not yet supported](#not-yet-supported)).
+> Under active development. The backbone below works today; sub-workflow calls, `dependsOn`, and step-level `goto` to a workflow are not yet implemented and throw `ExecutionError` rather than behaving incorrectly (see [Not yet supported](#not-yet-supported)).
 
 `WorkflowExecutor` is the stateful orchestrator that runs a whole workflow. It iterates a workflow's steps in list order, calling `StepExecutor` per step, and owns the run state (a `WorkflowExecutionState`) that accumulates each step's outputs so later steps can read `$steps.*.outputs`. It interprets the control-flow actions `StepExecutor` only _selects_ — advancing to the next step, jumping via `goto`, or stopping on `end` / the failure break-default — supplies each step the workflow-level default `successActions` / `failureActions`, and resolves the workflow's `outputs` against the final state.
 
@@ -127,9 +127,10 @@ After each step, the selected `onSuccess` / `onFailure` action determines what h
 
 - **no matching action** — success falls through to the next step; failure _breaks and returns_ (`status: 'failed'`);
 - **`end`** — stops the run early with `status: 'ended'`, returning the outputs accumulated so far;
-- **`goto` a `stepId`** — jumps to that step within the current workflow.
+- **`goto` a `stepId`** — jumps to that step within the current workflow;
+- **`retry`** — re-runs the step's operation up to the action's `retryLimit` (default `1`), waiting `retryAfter` seconds between attempts. Per spec, `retryLimit` is exhausted _before_ subsequent failure actions run, so an exhausted `retry` falls through to the next matching failure action — which may be another `retry` with its own independent budget, or a terminal `end` / `goto`; if none remains, the break-default applies. Each step's `attempts` count is surfaced in the result trace.
 
-A runaway `goto` loop is bounded by `maxSteps` (default `1000`), which throws `ExecutionError` (`reason: 'step-budget'`) when exceeded.
+A runaway `goto` loop **or** a runaway `retry` is bounded by `maxSteps` (default `1000`), which counts every operation execution — each step attempt, including retries — and throws `ExecutionError` (`reason: 'step-budget'`) when exceeded. The `retryAfter` delay uses an injectable `sleep` (`WorkflowExecutorOptions.sleep`, default a real timer) so tests can run without waiting.
 
 ### Workflow-level default actions
 
@@ -143,9 +144,9 @@ Same split as `StepExecutor`: a step whose `successCriteria` go unmet with no re
 
 These throw `ExecutionError` today rather than behaving incorrectly, and land in later work:
 
-- **`retry` actions** (`reason: 'retry-unsupported'`);
 - **sub-workflow steps** — a step targeting a `workflowId` (`reason: 'workflow-step-unsupported'`);
 - **step-level `goto` to a `workflowId`** (`reason: 'goto-workflow-unsupported'`);
+- **a `retry` carrying a `stepId` / `workflowId` reference** to run before retrying (`reason: 'retry-reference-unsupported'`);
 - **`dependsOn`** between workflows.
 
 ## `StepExecutor`

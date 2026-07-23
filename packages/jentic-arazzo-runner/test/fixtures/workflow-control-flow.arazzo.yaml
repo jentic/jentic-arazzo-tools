@@ -143,10 +143,52 @@ workflows:
             type: goto
             workflowId: linear
 
-  # the step fails and selects a retry action — not yet supported.
-  - workflowId: retryUnsupported
+  # the step fails then succeeds within the retry budget: the operation is
+  # re-run until a 200 arrives, and the run completes.
+  - workflowId: retryThenSucceed
     steps:
-      - stepId: only
+      - stepId: flaky
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 3
+            retryAfter: 2
+        outputs:
+          status: $statusCode
+    outputs:
+      status: $steps.flaky.outputs.status
+
+  # after a retry finally succeeds, control proceeds to the following step — a
+  # successful retry must not break the rest of the workflow.
+  - workflowId: retryThenSucceedThenNext
+    steps:
+      - stepId: flaky
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 3
+      - stepId: after
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          ran: $statusCode
+    outputs:
+      after: $steps.after.outputs.ran
+
+  # retries are exhausted, then the SUBSEQUENT failure action (end) fires — per
+  # spec, retryLimit must be exhausted prior to executing subsequent actions.
+  - workflowId: retryExhaustedThenEnd
+    steps:
+      - stepId: doomed
         operationId: getInventory
         successCriteria:
           - condition: $statusCode == 200
@@ -154,6 +196,126 @@ workflows:
           - name: tryAgain
             type: retry
             retryLimit: 2
+            retryAfter: 1
+          - name: giveUp
+            type: end
+      - stepId: unreached
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+
+  # retries are exhausted and there is no subsequent failure action, so the run
+  # falls to the break-default (status: failed).
+  - workflowId: retryExhaustedThenBreak
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 2
+
+  # a retry with no retryLimit — defaults to a single retry (2 attempts total),
+  # then the break-default.
+  - workflowId: retryDefaultLimit
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+
+  # two retry actions in the chain: the first exhausts its own budget, then the
+  # second exhausts its independent budget, then the terminal end fires.
+  - workflowId: retryChainIndependentBudgets
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: retryFast
+            type: retry
+            retryLimit: 2
+            retryAfter: 1
+          - name: retrySlow
+            type: retry
+            retryLimit: 3
+            retryAfter: 5
+          - name: giveUp
+            type: end
+
+  # after retries are exhausted, the subsequent failure action is a goto — the
+  # exhausted retry falls through to it and jumps to a later step.
+  - workflowId: retryExhaustedThenGoto
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 1
+          - name: recover
+            type: goto
+            stepId: recovery
+      - stepId: skipped
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          ran: $statusCode
+      - stepId: recovery
+        operationId: getPetById
+        parameters:
+          - name: petId
+            in: path
+            value: "7"
+        outputs:
+          reached: $statusCode
+    outputs:
+      skipped: $steps.skipped.outputs.ran
+      recovery: $steps.recovery.outputs.reached
+
+  # the retry's criteria match only a 503; the first attempt returns 503 (retry
+  # fires), the second returns 500 (criteria no longer match) so the retry is not
+  # re-selected and the run breaks — proving re-selection against the fresh
+  # response, not the first.
+  - workflowId: retryCriteriaStopMatching
+    steps:
+      - stepId: flaky
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: retryOn503
+            type: retry
+            retryLimit: 5
+            criteria:
+              - condition: $statusCode == 503
+
+  # a retry action carrying a stepId reference to run before retrying — not yet
+  # supported.
+  - workflowId: retryWithReference
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 2
+            stepId: doomed
 
   # a sub-workflow (workflowId) step — not yet supported.
   - workflowId: subWorkflowStep
