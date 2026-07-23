@@ -251,6 +251,58 @@ workflows:
           - name: giveUp
             type: end
 
+  # after retries are exhausted, the subsequent failure action is a goto — the
+  # exhausted retry falls through to it and jumps to a later step.
+  - workflowId: retryExhaustedThenGoto
+    steps:
+      - stepId: doomed
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: tryAgain
+            type: retry
+            retryLimit: 1
+          - name: recover
+            type: goto
+            stepId: recovery
+      - stepId: skipped
+        operationId: findPetsByStatus
+        parameters:
+          - name: status
+            in: query
+            value: available
+        outputs:
+          ran: $statusCode
+      - stepId: recovery
+        operationId: getPetById
+        parameters:
+          - name: petId
+            in: path
+            value: "7"
+        outputs:
+          reached: $statusCode
+    outputs:
+      skipped: $steps.skipped.outputs.ran
+      recovery: $steps.recovery.outputs.reached
+
+  # the retry's criteria match only a 503; the first attempt returns 503 (retry
+  # fires), the second returns 500 (criteria no longer match) so the retry is not
+  # re-selected and the run breaks — proving re-selection against the fresh
+  # response, not the first.
+  - workflowId: retryCriteriaStopMatching
+    steps:
+      - stepId: flaky
+        operationId: getInventory
+        successCriteria:
+          - condition: $statusCode == 200
+        onFailure:
+          - name: retryOn503
+            type: retry
+            retryLimit: 5
+            criteria:
+              - condition: $statusCode == 503
+
   # a retry action carrying a stepId reference to run before retrying — not yet
   # supported.
   - workflowId: retryWithReference

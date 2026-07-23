@@ -385,7 +385,7 @@ class WorkflowExecutor {
       // runaway goto loop) rather than an unbounded spin.
       if (++budget.spent > this.#maxSteps) {
         throw new ExecutionError(
-          `workflow "${workflowId}" exceeded the step budget of ${this.#maxSteps} (a goto loop, or a step retried past the budget)`,
+          `workflow "${workflowId}" exceeded its budget of ${this.#maxSteps} operation executions (a goto loop or excessive retries)`,
           { workflowId, stepId, reason: 'step-budget' },
         );
       }

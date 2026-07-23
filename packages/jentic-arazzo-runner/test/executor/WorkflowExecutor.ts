@@ -62,6 +62,15 @@ const serverErrorResponse: CannedResponse = {
   text: '',
   body: {},
 };
+const serviceUnavailableResponse: CannedResponse = {
+  ok: false,
+  url: 'x',
+  status: 503,
+  statusText: 'Service Unavailable',
+  headers: {},
+  text: '',
+  body: {},
+};
 
 /**
  * Asserts a promise rejects with the given error type and message — a local
@@ -200,7 +209,11 @@ describe('WorkflowExecutor', function () {
     specify('should bound an infinite goto by the step budget', async function () {
       const { executor } = makeExecutor(okResponse, { maxSteps: 5 });
 
-      await rejects(executor.execute('infiniteGoto'), ExecutionError, /step budget of 5/);
+      await rejects(
+        executor.execute('infiniteGoto'),
+        ExecutionError,
+        /budget of 5 operation executions/,
+      );
     });
   });
 
@@ -433,7 +446,7 @@ describe('WorkflowExecutor', function () {
       await rejects(
         executor.execute('retryExhaustedThenBreak'),
         ExecutionError,
-        /exceeded the step budget of 2/,
+        /budget of 2 operation executions/,
       );
     });
 
@@ -480,6 +493,38 @@ describe('WorkflowExecutor', function () {
       assert.strictEqual(result.steps[0].attempts, 6);
       // 2 fast delays (1s) then 3 slow delays (5s).
       assert.deepEqual(sleeps, [1000, 1000, 5000, 5000, 5000]);
+    });
+
+    specify('should fall through an exhausted retry to a goto action', async function () {
+      // doomed fails twice (initial + 1 retry, both 500) exhausting the retry,
+      // then the subsequent goto jumps to recovery (3rd call → 200), skipping the
+      // step in between.
+      const { executor } = makeExecutor([serverErrorResponse, serverErrorResponse, okResponse]);
+
+      const result = await executor.execute('retryExhaustedThenGoto');
+
+      assert.strictEqual(result.status, 'completed');
+      assert.deepEqual(
+        result.steps.map((step) => step.stepId),
+        ['doomed', 'recovery'],
+      );
+      assert.strictEqual(result.steps[0].attempts, 2); // initial + 1 retry
+      assert.isUndefined(result.outputs.skipped);
+      assert.strictEqual(result.outputs.recovery, 200);
+    });
+
+    specify('should re-select against the fresh response each attempt', async function () {
+      // the retry matches only a 503. Attempt 1 → 503 (retry fires); attempt 2 →
+      // 500, so the retry's criteria no longer match and it is not re-selected —
+      // with no other action the run breaks, despite retryLimit being 5.
+      const { executor, calls } = makeExecutor([serviceUnavailableResponse, serverErrorResponse]);
+
+      const result = await executor.execute('retryCriteriaStopMatching');
+
+      assert.strictEqual(result.status, 'failed');
+      // 2 attempts only — the retry did not fire again once the 500 arrived.
+      assert.strictEqual(calls.length, 2);
+      assert.strictEqual(result.steps[0].attempts, 2);
     });
   });
 
