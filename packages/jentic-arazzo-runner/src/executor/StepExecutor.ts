@@ -278,9 +278,14 @@ class StepExecutor {
    * action's criteria against the context.
    *
    * A step's own action list overrides the workflow-level default wholesale: the
-   * step's list is used when present, otherwise the matching `defaultActions`
-   * list. There is no per-action merge, and success/failure fall back
-   * independently.
+   * step's list is used when the step *declares* it, otherwise the matching
+   * `defaultActions` list. There is no per-action merge, and success/failure fall
+   * back independently.
+   *
+   * Presence is tested with `hasKey`, not truthiness: a step that declares an
+   * empty list (`onSuccess: []`) has *overridden* the default with an empty set
+   * of actions and must not fall back to it, whereas a step that omits the key
+   * inherits the default.
    */
   #selectAction(
     step: StepElement,
@@ -288,9 +293,10 @@ class StepExecutor {
     context: RuntimeExpressionContext,
     defaultActions: StepDefaultActions,
   ): SelectedAction | undefined {
-    const actions = successful
-      ? (step.onSuccess ?? defaultActions.onSuccess)
-      : (step.onFailure ?? defaultActions.onFailure);
+    const [stepKey, stepActions, defaultActionList] = successful
+      ? (['onSuccess', step.onSuccess, defaultActions.onSuccess] as const)
+      : (['onFailure', step.onFailure, defaultActions.onFailure] as const);
+    const actions = step.hasKey(stepKey) ? stepActions : defaultActionList;
     return this.#actionResolver.resolve(actions, (criterion) =>
       this.#criterionEvaluator.evaluate(criterion, (expression) =>
         this.#evaluate(context, expression),

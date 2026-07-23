@@ -137,7 +137,7 @@ A workflow's `successActions` / `failureActions` apply to every step as a **defa
 
 ### Authoring errors vs. failed runs
 
-Same split as `StepExecutor`: a step whose `successCriteria` go unmet with no redirecting action is a normal `status: 'failed'` result, **not** a throw. Only authoring errors throw `ExecutionError` — an unknown `workflowId` (`workflow-not-found`), a `goto` to a step that does not exist (`goto-target-not-found`), a `goto` naming neither `stepId` nor `workflowId` (`goto-target-missing`), an action of an unknown `type` (`unknown-action-type`), or the step-budget overflow above (`step-budget`).
+Same split as `StepExecutor`: a step whose `successCriteria` go unmet with no redirecting action is a normal `status: 'failed'` result, **not** a throw. Only authoring errors throw `ExecutionError` — an unknown `workflowId` (`workflow-not-found`), a `goto` to a step that does not exist (`goto-target-not-found`), a `goto` naming neither `stepId` nor `workflowId` (`goto-target-missing`), an action of an unknown `type` (`unknown-action-type`), a present but malformed `steps` (`malformed-steps`), or the step-budget overflow above (`step-budget`).
 
 ### Not yet supported
 

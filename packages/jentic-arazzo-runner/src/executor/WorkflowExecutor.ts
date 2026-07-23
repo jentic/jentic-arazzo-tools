@@ -1,5 +1,5 @@
 import { toValue } from '@speclynx/apidom-core';
-import { isStringElement } from '@speclynx/apidom-datamodel';
+import { isArrayElement, isStringElement } from '@speclynx/apidom-datamodel';
 import {
   isStepElement,
   type WorkflowElement,
@@ -151,7 +151,7 @@ class WorkflowExecutor {
     executeOptions: Record<string, unknown> = {},
   ): Promise<WorkflowExecutionResult> {
     const workflow = await this.#resolveWorkflow(workflowId);
-    const steps = this.#orderedSteps(workflow);
+    const steps = this.#orderedSteps(workflow, workflowId);
     // the workflow-level default actions every step falls back to when it
     // declares no onSuccess / onFailure of its own (resolved once per run).
     const defaultActions: StepDefaultActions = {
@@ -221,13 +221,31 @@ class WorkflowExecutor {
   }
 
   /**
-   * The workflow's steps as an array in list order. A workflow with no steps
-   * yields an empty list (a completed, no-op run).
+   * The workflow's steps as an array in list order. An absent `steps` is a
+   * workflow with no steps — an empty list, a completed no-op run. A present but
+   * malformed `steps` (not a list, or holding a non-step entry) is an authoring
+   * error and throws rather than being silently treated as empty or partial.
    */
-  #orderedSteps(workflow: WorkflowElement): StepElement[] {
+  #orderedSteps(workflow: WorkflowElement, workflowId: string): StepElement[] {
+    if (!workflow.hasKey('steps')) return [];
+
     const steps = workflow.steps;
-    if (steps === undefined) return [];
-    return [...steps].filter((step): step is StepElement => isStepElement(step));
+    if (!isArrayElement(steps)) {
+      throw new ExecutionError(`workflow "${workflowId}" has a non-list "steps"`, {
+        workflowId,
+        reason: 'malformed-steps',
+      });
+    }
+
+    return [...steps].map((step, index) => {
+      if (!isStepElement(step)) {
+        throw new ExecutionError(
+          `workflow "${workflowId}" has a non-step entry at steps[${index}]`,
+          { workflowId, reason: 'malformed-steps' },
+        );
+      }
+      return step;
+    });
   }
 
   /**

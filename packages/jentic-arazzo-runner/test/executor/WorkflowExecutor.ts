@@ -347,6 +347,13 @@ describe('WorkflowExecutor', function () {
         /has unsupported type "teleport"/,
       );
     });
+
+    specify('should throw for a present but non-list "steps"', async function () {
+      // a malformed steps is an authoring error, not a silent no-op run.
+      const { executor } = makeExecutor();
+
+      await rejects(executor.execute('scalarSteps'), ExecutionError, /non-list "steps"/);
+    });
   });
 
   context('step executor injection', function () {

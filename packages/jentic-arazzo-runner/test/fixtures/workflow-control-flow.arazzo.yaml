@@ -317,3 +317,7 @@ workflows:
   # a workflow with no steps at all — a completed, no-op run.
   - workflowId: emptyWorkflow
     steps: []
+
+  # a present but non-list "steps" — malformed, an authoring error (not a no-op).
+  - workflowId: scalarSteps
+    steps: not-a-list
