@@ -135,6 +135,41 @@ For complete documentation, see the [@jentic/arazzo-validator README](./packages
 
 ---
 
+## Runner
+
+The Runner executes Arazzo Workflows against live APIs described by their OpenAPI source descriptions. It composes small, single-responsibility engines bottom-up — an `OpenAPIOperationExecutor` (runs one OpenAPI operation), a `StepExecutor` (runs one Arazzo step), and a `WorkflowExecutor` (iterates a workflow's steps, owns the run state, and interprets control-flow actions).
+
+> [!WARNING]
+> This package is under heavy development and is not yet published to npm. It is developed within this monorepo and will be publicly installable once its API stabilizes; until then, APIs may change without notice. Not all Arazzo control-flow features are implemented yet — see the package README for the current "Not yet supported" list.
+
+```js
+import {
+  DocumentRegistry,
+  OpenAPIOperationExecutor,
+  StepExecutor,
+  WorkflowExecutor,
+  OpenAPIClientSwagger,
+} from '@jentic/arazzo-runner';
+
+const registry = new DocumentRegistry();
+const arazzoDoc = await registry.acquireEntryDocument('/path/to/workflow.arazzo.yaml');
+
+// compose the engines bottom-up; each takes its collaborator rather than building one.
+const operationExecutor = new OpenAPIOperationExecutor({
+  clientFactory: (document) => new OpenAPIClientSwagger(document),
+});
+const stepExecutor = new StepExecutor({ document: arazzoDoc, registry, operationExecutor });
+const executor = new WorkflowExecutor({ document: arazzoDoc, registry, stepExecutor });
+
+const result = await executor.execute('myWorkflow', { username: 'user1' });
+console.log(result.status); // 'completed' | 'ended' | 'failed'
+console.log(result.outputs); // resolved workflow outputs
+```
+
+For complete documentation, see the [@jentic/arazzo-runner README](./packages/jentic-arazzo-runner/README.md).
+
+---
+
 ## UI
 
 Interactive viewer for Arazzo workflows with diagram, documentation, and split views.
