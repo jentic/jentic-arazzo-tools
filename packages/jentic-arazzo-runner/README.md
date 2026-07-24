@@ -142,12 +142,14 @@ Same split as `StepExecutor`: a step whose `successCriteria` go unmet with no re
 
 ### Not yet supported
 
-These throw `ExecutionError` today rather than behaving incorrectly, and land in later work:
+These land in later work. Each throws `ExecutionError` (with the noted `reason`) rather than behaving incorrectly — except workflow-level `parameters`, which is simply not read yet:
 
-- **sub-workflow steps** — a step targeting a `workflowId` (`reason: 'workflow-step-unsupported'`);
+- **sub-workflow steps** — a step targeting a `workflowId`, i.e. calling another workflow (`reason: 'workflow-step-unsupported'`). Recursion, sub-workflow cycle detection, and a nesting-depth guard land with this;
+- **`dependsOn`** — running the workflows a workflow depends on before its own steps;
 - **step-level `goto` to a `workflowId`** (`reason: 'goto-workflow-unsupported'`);
 - **a `retry` carrying a `stepId` / `workflowId` reference** to run before retrying (`reason: 'retry-reference-unsupported'`);
-- **`dependsOn`** between workflows.
+- **cross-document workflow references** — a `workflowId` / `dependsOn` naming a workflow in another document via `$sourceDescriptions.<name>.<workflowId>` (`reason: 'cross-document-workflow-unsupported'`); same-document only for now;
+- **workflow-level `parameters`** — a workflow's `parameters` applied to all its steps (they are not read yet).
 
 ## `StepExecutor`
 
