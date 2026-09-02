@@ -54,7 +54,7 @@
     "@types/emscripten": "^1.41.2",
     "@types/jsdom-global": "^3.0.7",
     "@types/mocha": "=10.0.10",
-    "@types/node": "^25.0.10",
+    "@types/node": "^26.1.2",
     "@types/ramda": "~0.31.1",
     "@types/sinon": "=22.0.0",
     "babel-loader": "=10.1.1",
