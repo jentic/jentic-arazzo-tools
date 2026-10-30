@@ -165,7 +165,7 @@ export function stripInternalIds(doc: ArazzoDocument): ArazzoDocument {
       return {
         ...workflowRest,
         steps: (workflow.steps || []).map((step) => {
-          const { _internalId: _stepInternalId, ...stepRest } = step;
+          const { _internalId: _stepInternalId, _operation: _stepOperation, ...stepRest } = step;
           return stepRest as Step;
         }),
       } as Workflow;

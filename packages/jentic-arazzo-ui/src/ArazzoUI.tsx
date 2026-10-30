@@ -43,6 +43,7 @@ export type {
 export type {
   ArazzoDocument,
   InfoObject,
+  StepOperation,
   SourceDescription,
   Workflow,
   Step,
@@ -58,6 +59,7 @@ export type {
   JSONSchema,
 } from './types/arazzo';
 import { stripInternalIds } from './utils/internalIds';
+import { attachStepOperations, indexSourceOperations } from './utils/operationMethods';
 
 import './styles/index.css';
 
@@ -66,13 +68,14 @@ function detectUrl(value: ArazzoDocument | string): string | null {
 }
 
 async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocument> {
-  const parseResult = await parseArazzo(input as any, {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+  // source descriptions are parsed only to look up HTTP methods, failing to load them is not fatal
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const parseResult = await parseArazzo(input as any, {
+    parse: { parserOpts: { sourceDescriptions: true } },
+    resolve: { baseURI: document.baseURI },
+  });
+  const sourceOperations = indexSourceOperations(parseResult);
   const dereferenced = await dereferenceArazzoElement(parseResult, {
-    parse: {
-      parserOpts: {
-        sourceDescriptions: false,
-      },
-    },
     resolve: {
       baseURI: document.baseURI,
     },
@@ -81,7 +84,7 @@ async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocu
       immutable: false,
     },
   });
-  return toValue(dereferenced.result) as ArazzoDocument;
+  return attachStepOperations(toValue(dereferenced.result) as ArazzoDocument, sourceOperations);
 }
 
 /**

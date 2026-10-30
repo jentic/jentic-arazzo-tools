@@ -46,6 +46,7 @@ export function generateDocumentation(
       description: step.description,
       operationId: step.operationId,
       operationPath: step.operationPath,
+      operation: step._operation,
       workflowId: step.workflowId,
       parameters: step.parameters,
       outputs: step.outputs,

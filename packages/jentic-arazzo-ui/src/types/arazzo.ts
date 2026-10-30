@@ -60,6 +60,18 @@ export interface Step {
   outputs?: Record<string, string>;
   /** Internal tracking ID - not part of Arazzo spec, stripped on export */
   _internalId?: string;
+  /** Resolved from the source description - not part of Arazzo spec, stripped on export */
+  _operation?: StepOperation;
+}
+
+/**
+ * HTTP method and path of the OpenAPI operation targeted by a step.
+ * @public
+ */
+export interface StepOperation {
+  /** upper-case HTTP method, e.g. `GET` */
+  method: string;
+  path?: string;
 }
 
 /** @public */

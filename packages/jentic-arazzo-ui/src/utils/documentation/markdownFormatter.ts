@@ -1,4 +1,5 @@
 import { DocumentationMetadata, WorkflowDocumentation } from '../../types/viewer';
+import { HTTP_METHOD_COLORS } from '../operationMethods';
 
 export interface FormatOptions {
   includeMetadata?: boolean;
@@ -151,6 +152,13 @@ export function formatWorkflowAsMarkdown(
     // Step header
     sections.push(`<div class="timeline-step-header">`);
     sections.push(`<span class="timeline-step-name">${step.stepId}</span>`);
+    if (step.operation) {
+      const { method, path } = step.operation;
+      const colors = HTTP_METHOD_COLORS[method] ?? { background: '#f3f4f6', color: '#374151' };
+      sections.push(
+        `<span class="http-method http-method--${method.toLowerCase()}" title="${path ?? ''}" style="margin-left: auto; font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 3px; background: ${colors.background}; color: ${colors.color}">${method}</span>`,
+      );
+    }
     sections.push(`</div>`);
 
     // Description + operation combined

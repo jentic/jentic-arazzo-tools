@@ -36,6 +36,7 @@ export type {
 export type {
   ArazzoDocument,
   InfoObject,
+  StepOperation,
   SourceDescription,
   Workflow,
   Step,
