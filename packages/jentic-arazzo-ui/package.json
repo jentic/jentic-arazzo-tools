@@ -67,7 +67,7 @@
     "@jentic/arazzo-parser": "1.0.0-alpha.32",
     "@jentic/arazzo-resolver": "1.0.0-alpha.32",
     "@speclynx/apidom-core": "^5.0.1",
-    "mermaid": "^11.16.1",
+    "mermaid": "^12.2.0",
     "react-markdown": "^10.1.0",
     "reactflow": "^11.10.4",
     "rehype-highlight": "^7.0.2",
@@ -82,7 +82,7 @@
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "@vitejs/plugin-react": "^6.0.1",
-    "vite": "^8.1.4"
+    "vite": "^8.1.6"
   },
   "files": [
     "bin/",
