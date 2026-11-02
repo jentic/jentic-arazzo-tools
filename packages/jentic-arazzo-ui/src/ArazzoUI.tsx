@@ -7,9 +7,8 @@ import React, {
   useEffect,
 } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { parseArazzo, indexSourceOperations, attachStepOperations } from '@jentic/arazzo-parser';
+import { parseArazzo, attachStepOperations } from '@jentic/arazzo-parser';
 import { dereferenceArazzoElement } from '@jentic/arazzo-resolver';
-import { toValue } from '@speclynx/apidom-core';
 
 import { ArazzoViewerProvider, useArazzoViewer } from './context/ArazzoViewerContext';
 import { DiagramView, DiagramViewRef } from './components/DiagramView';
@@ -74,7 +73,6 @@ async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocu
     parse: { parserOpts: { sourceDescriptions: true } },
     resolve: { baseURI: document.baseURI },
   });
-  const sourceOperations = indexSourceOperations(parseResult);
   const dereferenced = await dereferenceArazzoElement(parseResult, {
     resolve: {
       baseURI: document.baseURI,
@@ -84,7 +82,7 @@ async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocu
       immutable: false,
     },
   });
-  return attachStepOperations(toValue(dereferenced.result) as ArazzoDocument, sourceOperations);
+  return attachStepOperations<ArazzoDocument>(dereferenced.result, parseResult);
 }
 
 /**
