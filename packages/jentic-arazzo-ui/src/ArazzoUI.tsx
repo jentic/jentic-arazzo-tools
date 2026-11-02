@@ -7,7 +7,7 @@ import React, {
   useEffect,
 } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { parseArazzo } from '@jentic/arazzo-parser';
+import { parseArazzo, indexSourceOperations, attachStepOperations } from '@jentic/arazzo-parser';
 import { dereferenceArazzoElement } from '@jentic/arazzo-resolver';
 import { toValue } from '@speclynx/apidom-core';
 
@@ -59,7 +59,6 @@ export type {
   JSONSchema,
 } from './types/arazzo';
 import { stripInternalIds } from './utils/internalIds';
-import { attachStepOperations, indexSourceOperations } from './utils/operationMethods';
 
 import './styles/index.css';
 

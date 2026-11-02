@@ -3,6 +3,10 @@
  * Based on: https://spec.openapis.org/arazzo/latest.html
  */
 
+import type { StepOperation } from '@jentic/arazzo-parser';
+
+export type { StepOperation };
+
 /** @public */
 export interface ArazzoDocument {
   arazzo: string;
@@ -62,16 +66,6 @@ export interface Step {
   _internalId?: string;
   /** Resolved from the source description - not part of Arazzo spec, stripped on export */
   _operation?: StepOperation;
-}
-
-/**
- * HTTP method and path of the OpenAPI operation targeted by a step.
- * @public
- */
-export interface StepOperation {
-  /** upper-case HTTP method, e.g. `GET` */
-  method: string;
-  path?: string;
 }
 
 /** @public */
