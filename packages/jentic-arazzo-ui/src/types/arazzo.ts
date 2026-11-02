@@ -3,10 +3,6 @@
  * Based on: https://spec.openapis.org/arazzo/latest.html
  */
 
-import type { StepOperation } from '@jentic/arazzo-parser';
-
-export type { StepOperation };
-
 /** @public */
 export interface ArazzoDocument {
   arazzo: string;
@@ -64,8 +60,6 @@ export interface Step {
   outputs?: Record<string, string>;
   /** Internal tracking ID - not part of Arazzo spec, stripped on export */
   _internalId?: string;
-  /** Resolved from the source description - not part of Arazzo spec, stripped on export */
-  _operation?: StepOperation;
 }
 
 /** @public */

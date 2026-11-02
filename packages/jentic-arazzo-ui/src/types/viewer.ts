@@ -13,8 +13,10 @@ import {
   ArazzoDocument,
   ReusableObject,
   Parameter,
-  StepOperation,
 } from './arazzo';
+import type { StepOperation } from '@jentic/arazzo-parser';
+
+export type { StepOperation };
 
 // ============================================================================
 // Viewer Mode & Events
@@ -153,10 +155,19 @@ export interface DocumentationSection {
 /** @public */
 export type ArazzoNodeType = 'start' | 'end' | 'step' | 'workflowRef' | 'workflow' | 'externalWorkflow';
 
+/**
+ * A step enriched with the OpenAPI operation it targets.
+ * @public
+ */
+export interface ViewerStep extends Step {
+  /** Resolved from the source description - not part of Arazzo spec, stripped on export */
+  _operation?: StepOperation;
+}
+
 /** @public */
 export interface StepNodeData {
   type: 'step';
-  step: Step;
+  step: ViewerStep;
   workflowId: string;
   workflowSuccessActions?: (SuccessAction | { $ref: string })[];
   workflowFailureActions?: (FailureAction | { $ref: string })[];

@@ -1,5 +1,5 @@
 import { ArazzoDocument } from '../../types/arazzo';
-import { DocumentationMetadata, WorkflowDocumentation } from '../../types/viewer';
+import { DocumentationMetadata, ViewerStep, WorkflowDocumentation } from '../../types/viewer';
 import { generateMetadata } from './metadataGenerator';
 import {
   formatAsMarkdown,
@@ -46,7 +46,7 @@ export function generateDocumentation(
       description: step.description,
       operationId: step.operationId,
       operationPath: step.operationPath,
-      operation: step._operation,
+      operation: (step as ViewerStep)._operation,
       workflowId: step.workflowId,
       parameters: step.parameters,
       outputs: step.outputs,
