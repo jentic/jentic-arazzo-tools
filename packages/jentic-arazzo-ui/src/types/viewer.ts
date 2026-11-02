@@ -13,6 +13,7 @@ import {
   ArazzoDocument,
   ReusableObject,
   Parameter,
+  RequestBody,
 } from './arazzo';
 
 // ============================================================================
@@ -130,6 +131,7 @@ export interface StepDocumentation {
   operationPath?: string;
   workflowId?: string;
   parameters?: (Parameter | ReusableObject)[];
+  requestBody?: RequestBody;
   outputs?: Record<string, string>;
   successCriteria?: Criterion[];
   onSuccess?: (SuccessAction | ReusableObject)[];

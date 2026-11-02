@@ -48,6 +48,7 @@ export function generateDocumentation(
       operationPath: step.operationPath,
       workflowId: step.workflowId,
       parameters: step.parameters,
+      requestBody: step.requestBody,
       outputs: step.outputs,
       successCriteria: step.successCriteria,
       onSuccess: step.onSuccess,
