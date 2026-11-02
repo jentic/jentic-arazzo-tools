@@ -32,7 +32,7 @@ function decodePointerSegment(segment: string): string {
 /**
  * Indexes the operations of the OpenAPI source descriptions attached to a parsed Arazzo
  * document (see the `sourceDescriptions` parser option) by name and operationId.
- * Source descriptions that failed to load, or are not OpenAPI documents, are skipped.
+ * Only source descriptions of type `openapi` are indexed; ones that failed to load index nothing.
  */
 export function indexSourceOperations(parseResult: unknown): SourceOperations {
   const index: SourceOperations = new Map();
@@ -42,14 +42,13 @@ export function indexSourceOperations(parseResult: unknown): SourceOperations {
 
   sourceDescriptions?.forEach?.((sourceDescription) => {
     const name = toValue(sourceDescription.get?.('name'));
+    if (typeof name !== 'string' || toValue(sourceDescription.get?.('type')) !== 'openapi') return;
     const sourceApi = (sourceDescription as { meta?: { get(key: string): unknown } }).meta?.get(
       'parseResult',
     ) as { api?: ElementLike } | undefined;
-    const paths = sourceApi?.api?.get?.('paths');
-    if (typeof name !== 'string' || !paths?.forEach) return;
 
     const operations: IndexedOperations = new Map();
-    paths.forEach((pathItem, pathKey) => {
+    sourceApi?.api?.get?.('paths')?.forEach?.((pathItem, pathKey) => {
       const path = toValue(pathKey) as string;
       for (const method of HTTP_METHODS) {
         const operationId = toValue(pathItem.get?.(method)?.get?.('operationId'));
