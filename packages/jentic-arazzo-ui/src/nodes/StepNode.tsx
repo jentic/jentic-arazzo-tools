@@ -2,7 +2,7 @@ import React from 'react';
 import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import { StepNodeData, SuccessAction, FailureAction, Criterion } from '../types/index';
 import { useArazzoViewer } from '../context/ArazzoViewerContext';
-import { HTTP_METHOD_COLORS } from '../utils/operationMethods';
+import { renderMethodBadgeStyle } from '../utils/operationMethods';
 
 // Type guard for SuccessAction
 const isSuccessAction = (action: unknown): action is SuccessAction => {
@@ -132,15 +132,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
               <span
                 className={`http-method http-method--${httpMethod.toLowerCase()}`}
                 title={step._operation?.path}
-                style={{
-                  marginLeft: 'auto',
-                  fontSize: '10px',
-                  fontWeight: 700,
-                  padding: '1px 6px',
-                  borderRadius: '3px',
-                  background: HTTP_METHOD_COLORS[httpMethod]?.background ?? '#f3f4f6',
-                  color: HTTP_METHOD_COLORS[httpMethod]?.color ?? '#374151',
-                }}
+                style={renderMethodBadgeStyle(httpMethod)}
               >
                 {httpMethod}
               </span>
