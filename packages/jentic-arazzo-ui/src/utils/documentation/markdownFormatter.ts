@@ -1,4 +1,5 @@
 import { DocumentationMetadata, WorkflowDocumentation } from '../../types/viewer';
+import { getRequestBodyView } from './requestBodyView';
 
 export interface FormatOptions {
   includeMetadata?: boolean;
@@ -211,46 +212,37 @@ export function formatWorkflowAsMarkdown(
     }
 
     // Request body
-    const requestBody = step.requestBody;
+    const requestBody = getRequestBodyView(step.requestBody);
     if (requestBody) {
-      const hasPayload = requestBody.payload !== undefined && requestBody.payload !== null;
-      const replacements = requestBody.replacements ?? [];
-      if (hasPayload || requestBody.contentType || replacements.length > 0) {
-        const countHtml =
-          replacements.length > 0
-            ? ` <span class="step-detail-count">${replacements.length} replacement${replacements.length === 1 ? '' : 's'}</span>`
-            : '';
+      const { replacements } = requestBody;
+      const countHtml =
+        replacements.length > 0
+          ? ` <span class="step-detail-count">${replacements.length} replacement${replacements.length === 1 ? '' : 's'}</span>`
+          : '';
+      sections.push(
+        `<details class="step-detail"><summary class="step-detail-summary">Request Body${countHtml}</summary>`,
+      );
+      sections.push(`<div class="step-detail-body">`);
+      if (requestBody.contentType) {
         sections.push(
-          `<details class="step-detail"><summary class="step-detail-summary">Request Body${countHtml}</summary>`,
+          `<div class="step-row">Content-Type: <code>${escapeHtml(requestBody.contentType)}</code></div>`,
         );
-        sections.push(`<div class="step-detail-body">`);
-        if (requestBody.contentType) {
-          sections.push(
-            `<div class="step-row">Content-Type: <code>${escapeHtml(requestBody.contentType)}</code></div>`,
-          );
-        }
-        if (hasPayload) {
-          const isString = typeof requestBody.payload === 'string';
-          const payload = isString
-            ? (requestBody.payload as string)
-            : JSON.stringify(requestBody.payload, null, 2);
-          sections.push(
-            `<pre><code${isString ? '' : ' class="language-json"'}>${escapeHtml(payload)}</code></pre>`,
-          );
-        }
-        if (replacements.length > 0) {
-          sections.push(`<div class="step-grid-3">`);
-          replacements.forEach((r) => {
-            const value = typeof r.value === 'string' ? r.value : JSON.stringify(r.value);
-            const arrow = value.startsWith('$') ? '←' : '=';
-            sections.push(
-              `<div class="step-grid-row"><span><code>${escapeHtml(r.target)}</code></span><span class="step-arrow">${arrow}</span><span><code>${escapeHtml(value)}</code></span></div>`,
-            );
-          });
-          sections.push(`</div>`);
-        }
-        sections.push(`</div></details>`);
       }
+      if (requestBody.payload !== undefined) {
+        sections.push(
+          `<pre><code${requestBody.isJsonPayload ? ' class="language-json"' : ''}>${escapeHtml(requestBody.payload)}</code></pre>`,
+        );
+      }
+      if (replacements.length > 0) {
+        sections.push(`<div class="step-grid-3">`);
+        replacements.forEach((r) => {
+          sections.push(
+            `<div class="step-grid-row"><span><code>${escapeHtml(r.target)}</code></span><span class="step-arrow">${r.arrow}</span><span><code>${escapeHtml(r.value)}</code></span></div>`,
+          );
+        });
+        sections.push(`</div>`);
+      }
+      sections.push(`</div></details>`);
     }
 
     // Success criteria
