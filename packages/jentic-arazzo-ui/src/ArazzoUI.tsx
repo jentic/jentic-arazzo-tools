@@ -67,7 +67,10 @@ function detectUrl(value: ArazzoDocument | string): string | null {
 }
 
 async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocument> {
-  // source descriptions are parsed only to look up HTTP methods, failing to load them is not fatal
+  // source descriptions are parsed to load HTTP methods. This requires fetching OpenAPI specs from
+  // the client's browser. If the server hosting the spec does not include
+  // Access-Control-Allow-Origin headers, the browser blocks the fetch and no method badges are
+  // shown. Failure to load the OpenAPI spec is not fatal.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const parseResult = await parseArazzo(input as any, {
     parse: { parserOpts: { sourceDescriptions: true } },
