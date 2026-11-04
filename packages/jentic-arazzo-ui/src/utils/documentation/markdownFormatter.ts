@@ -228,23 +228,23 @@ export function formatWorkflowAsMarkdown(
           `<div class="step-row">Content-Type: <code>${escapeHtml(requestBody.contentType)}</code></div>`,
         );
       }
-      const keyValueRows = (rows: KeyValueRowView[]) =>
-        `<div class="step-grid-3">${rows
+      const keyValueTable = (keyHeader: string, rows: KeyValueRowView[]) =>
+        `<table class="step-table"><thead><tr><th>${keyHeader}</th><th>Value</th></tr></thead><tbody>${rows
           .map(
             (r) =>
-              `<div class="step-grid-row"><span><code>${escapeHtml(r.key)}</code></span><span class="step-arrow">${r.arrow}</span><span><code>${escapeHtml(r.value)}</code></span></div>`,
+              `<tr><td><code>${escapeHtml(r.key)}</code></td><td><code>${escapeHtml(r.value)}</code></td></tr>`,
           )
-          .join('')}</div>`;
+          .join('')}</tbody></table>`;
       const { payload } = requestBody;
       if (payload?.kind === 'form') {
-        sections.push(keyValueRows(payload.fields));
+        sections.push(keyValueTable('Field', payload.fields));
       } else if (payload) {
         sections.push(
           `<pre><code${payload.language ? ` class="language-${payload.language}"` : ''}>${escapeHtml(payload.text)}</code></pre>`,
         );
       }
       if (replacements.length > 0) {
-        sections.push(keyValueRows(replacements));
+        sections.push(keyValueTable('Target', replacements));
       }
       sections.push(`</div></details>`);
     }

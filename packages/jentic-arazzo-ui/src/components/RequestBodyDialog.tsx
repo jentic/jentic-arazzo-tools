@@ -10,16 +10,39 @@ interface RequestBodyDialogProps {
 
 const monoFont = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace";
 
-const KeyValueRows: React.FC<{ rows: KeyValueRowView[] }> = ({ rows }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
-    {rows.map((r, idx) => (
-      <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
-        <code style={{ fontFamily: monoFont }}>{r.key}</code>
-        <span style={{ color: '#9333ea' }}>{r.arrow}</span>
-        <code style={{ fontFamily: monoFont }}>{r.value}</code>
-      </div>
-    ))}
-  </div>
+const cellStyle: React.CSSProperties = {
+  padding: '6px 10px',
+  borderBottom: '1px solid #f3f4f6',
+  textAlign: 'left',
+  verticalAlign: 'top',
+};
+
+const KeyValueTable: React.FC<{ keyHeader: string; rows: KeyValueRowView[] }> = ({
+  keyHeader,
+  rows,
+}) => (
+  <table
+    style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '12px', fontSize: '12px' }}
+  >
+    <thead>
+      <tr style={{ background: '#f9fafb', color: '#6b7280', fontSize: '11px' }}>
+        <th style={{ ...cellStyle, fontWeight: 600 }}>{keyHeader}</th>
+        <th style={{ ...cellStyle, fontWeight: 600 }}>Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((f, idx) => (
+        <tr key={idx}>
+          <td style={cellStyle}>
+            <code style={{ fontFamily: monoFont }}>{f.key}</code>
+          </td>
+          <td style={cellStyle}>
+            <code style={{ fontFamily: monoFont }}>{f.value}</code>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
 );
 
 export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
@@ -108,7 +131,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
           )}
 
           {requestBody.payload?.kind === 'form' && (
-            <KeyValueRows rows={requestBody.payload.fields} />
+            <KeyValueTable keyHeader="Field" rows={requestBody.payload.fields} />
           )}
 
           {requestBody.payload?.kind === 'code' && (
@@ -141,7 +164,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
               >
                 REPLACEMENTS:
               </div>
-              <KeyValueRows rows={requestBody.replacements} />
+              <KeyValueTable keyHeader="Target" rows={requestBody.replacements} />
             </div>
           )}
         </div>

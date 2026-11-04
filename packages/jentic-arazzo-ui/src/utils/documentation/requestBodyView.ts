@@ -5,7 +5,6 @@ export type RequestBodyLanguage = 'json' | 'xml' | 'yaml';
 export interface KeyValueRowView {
   key: string;
   value: string;
-  arrow: '←' | '=';
 }
 
 export type RequestBodyPayloadView =
@@ -20,7 +19,7 @@ export interface RequestBodyView {
 
 const toKeyValueRow = (key: string, value: unknown): KeyValueRowView => {
   const text = typeof value === 'string' ? value : JSON.stringify(value);
-  return { key, value: text, arrow: text.startsWith('$') ? '←' : '=' };
+  return { key, value: text };
 };
 
 const isPlainObject = (value: unknown): value is Record<string, unknown> =>
