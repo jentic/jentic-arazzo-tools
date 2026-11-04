@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { RequestBodyView } from '../utils/documentation/requestBodyView';
+import { KeyValueRowView, RequestBodyView } from '../utils/documentation/requestBodyView';
 
 interface RequestBodyDialogProps {
   stepId: string;
@@ -9,6 +9,18 @@ interface RequestBodyDialogProps {
 }
 
 const monoFont = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace";
+
+const KeyValueRows: React.FC<{ rows: KeyValueRowView[] }> = ({ rows }) => (
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginBottom: '12px' }}>
+    {rows.map((r, idx) => (
+      <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
+        <code style={{ fontFamily: monoFont }}>{r.key}</code>
+        <span style={{ color: '#9333ea' }}>{r.arrow}</span>
+        <code style={{ fontFamily: monoFont }}>{r.value}</code>
+      </div>
+    ))}
+  </div>
+);
 
 export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
   stepId,
@@ -95,7 +107,11 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
             </div>
           )}
 
-          {requestBody.payload !== undefined && (
+          {requestBody.payload?.kind === 'form' && (
+            <KeyValueRows rows={requestBody.payload.fields} />
+          )}
+
+          {requestBody.payload?.kind === 'code' && (
             <pre
               style={{
                 margin: '0 0 12px',
@@ -108,7 +124,13 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
                 fontSize: '12px',
               }}
             >
-              <code>{requestBody.payload}</code>
+              <code
+                className={
+                  requestBody.payload.language && `language-${requestBody.payload.language}`
+                }
+              >
+                {requestBody.payload.text}
+              </code>
             </pre>
           )}
 
@@ -119,15 +141,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
               >
                 REPLACEMENTS:
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                {requestBody.replacements.map((r, idx) => (
-                  <div key={idx} style={{ display: 'flex', gap: '8px', alignItems: 'baseline' }}>
-                    <code style={{ fontFamily: monoFont }}>{r.target}</code>
-                    <span style={{ color: '#9333ea' }}>{r.arrow}</span>
-                    <code style={{ fontFamily: monoFont }}>{r.value}</code>
-                  </div>
-                ))}
-              </div>
+              <KeyValueRows rows={requestBody.replacements} />
             </div>
           )}
         </div>

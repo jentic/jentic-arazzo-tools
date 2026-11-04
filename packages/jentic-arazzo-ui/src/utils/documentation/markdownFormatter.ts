@@ -1,5 +1,5 @@
 import { DocumentationMetadata, WorkflowDocumentation } from '../../types/viewer';
-import { getRequestBodyView } from './requestBodyView';
+import { getRequestBodyView, KeyValueRowView } from './requestBodyView';
 
 export interface FormatOptions {
   includeMetadata?: boolean;
@@ -228,19 +228,23 @@ export function formatWorkflowAsMarkdown(
           `<div class="step-row">Content-Type: <code>${escapeHtml(requestBody.contentType)}</code></div>`,
         );
       }
-      if (requestBody.payload !== undefined) {
+      const keyValueRows = (rows: KeyValueRowView[]) =>
+        `<div class="step-grid-3">${rows
+          .map(
+            (r) =>
+              `<div class="step-grid-row"><span><code>${escapeHtml(r.key)}</code></span><span class="step-arrow">${r.arrow}</span><span><code>${escapeHtml(r.value)}</code></span></div>`,
+          )
+          .join('')}</div>`;
+      const { payload } = requestBody;
+      if (payload?.kind === 'form') {
+        sections.push(keyValueRows(payload.fields));
+      } else if (payload) {
         sections.push(
-          `<pre><code${requestBody.isJsonPayload ? ' class="language-json"' : ''}>${escapeHtml(requestBody.payload)}</code></pre>`,
+          `<pre><code${payload.language ? ` class="language-${payload.language}"` : ''}>${escapeHtml(payload.text)}</code></pre>`,
         );
       }
       if (replacements.length > 0) {
-        sections.push(`<div class="step-grid-3">`);
-        replacements.forEach((r) => {
-          sections.push(
-            `<div class="step-grid-row"><span><code>${escapeHtml(r.target)}</code></span><span class="step-arrow">${r.arrow}</span><span><code>${escapeHtml(r.value)}</code></span></div>`,
-          );
-        });
-        sections.push(`</div>`);
+        sections.push(keyValueRows(replacements));
       }
       sections.push(`</div></details>`);
     }
