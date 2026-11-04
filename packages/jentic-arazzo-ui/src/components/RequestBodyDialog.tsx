@@ -12,7 +12,7 @@ const monoFont = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospac
 
 const cellStyle: React.CSSProperties = {
   padding: '6px 10px',
-  borderBottom: '1px solid #f3f4f6',
+  borderBottom: '1px solid #e5e7eb',
   textAlign: 'left',
   verticalAlign: 'top',
 };

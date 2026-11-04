@@ -229,7 +229,7 @@ export function formatWorkflowAsMarkdown(
         );
       }
       const keyValueTable = (keyHeader: string, rows: KeyValueRowView[]) =>
-        `<table class="step-table"><thead><tr><th>${keyHeader}</th><th>Value</th></tr></thead><tbody>${rows
+        `<table class="step-table request-body-table"><thead><tr><th>${keyHeader}</th><th>Value</th></tr></thead><tbody>${rows
           .map(
             (r) =>
               `<tr><td><code>${escapeHtml(r.key)}</code></td><td><code>${escapeHtml(r.value)}</code></td></tr>`,
