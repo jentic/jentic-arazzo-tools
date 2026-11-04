@@ -77,7 +77,14 @@ export function findStepOperation(
     api.paths?.forEach((pathItem, key) => {
       if (found || (!isPathItem2Element(pathItem) && !isPathItem3Element(pathItem))) return;
       const path = String(key.toValue());
-      for (const [method, operation] of Object.entries(pathItemOperations(pathItem))) {
+      const operations = Object.entries(pathItemOperations(pathItem));
+      // a pointer to a path item (no method) is unambiguous only when it has a single operation
+      if (pointer === compile(['paths', path])) {
+        const defined = operations.filter(([, operation]) => operation);
+        if (defined.length === 1) found = { method: defined[0][0].toUpperCase(), path };
+        return;
+      }
+      for (const [method, operation] of operations) {
         const matches = pointer
           ? pointer === compile(['paths', path, method])
           : operation?.operationId?.toValue() === (qualifiedId ?? operationId);

@@ -24,6 +24,10 @@
           "operationPath": "{$sourceDescriptions.petStore.url}#/paths/~1pets/get"
         },
         {
+          "stepId": "byPathItemPath",
+          "operationPath": "{$sourceDescriptions.petStore.url}#/paths/~1pets"
+        },
+        {
           "stepId": "byWorkflowId",
           "workflowId": "other"
         }

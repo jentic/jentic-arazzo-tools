@@ -34,6 +34,15 @@ describe('findStepOperation', function () {
     assert.deepEqual(findStepOperation(result, { operationPath }), listPets);
   });
 
+  specify(
+    'should find the only operation of an operationPath pointing at a path item',
+    function () {
+      const operationPath = '{$sourceDescriptions.petStore.url}#/paths/~1pets';
+
+      assert.deepEqual(findStepOperation(result, { operationPath }), listPets);
+    },
+  );
+
   specify('should return undefined for unknown operations', function () {
     assert.isUndefined(findStepOperation(result, { operationId: 'unknown' }));
     assert.isUndefined(
@@ -51,7 +60,7 @@ describe('attachStepOperations', function () {
 
     assert.deepEqual(
       steps.map((step) => (step as { _operation?: unknown })._operation),
-      [listPets, listPets, undefined],
+      [listPets, listPets, listPets, undefined],
     );
   });
 });
