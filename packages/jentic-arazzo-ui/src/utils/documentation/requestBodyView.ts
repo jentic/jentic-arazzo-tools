@@ -114,11 +114,9 @@ const getPayloadView = (
   if (typeof payload === 'string') {
     return { kind: 'code', text: payload, language: kind };
   }
-  if (kind === 'yaml') {
-    return { kind: 'code', text: toYaml(payload), language: 'yaml' };
-  }
-  // xml cannot be derived from a parsed object, so fall back to JSON for anything non-string
-  return { kind: 'code', text: JSON.stringify(payload, null, 2), language: 'json' };
+  // xml cannot be derived from a parsed object, and json would imply every value is a string
+  // literal, so show parsed object payloads as yaml (the contentType conveys the wire format)
+  return { kind: 'code', text: toYaml(payload), language: 'yaml' };
 };
 
 /**
