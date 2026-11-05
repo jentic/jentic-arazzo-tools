@@ -1,0 +1,32 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pet Store API with path item references",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pets": {
+      "$ref": "./paths/pets.json"
+    },
+    "/owners": {
+      "$ref": "#/components/pathItems/owners"
+    },
+    "/missing": {
+      "$ref": "./paths/missing.json"
+    }
+  },
+  "components": {
+    "pathItems": {
+      "owners": {
+        "post": {
+          "operationId": "createOwner",
+          "responses": {
+            "201": {
+              "description": "Created"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -8,7 +8,10 @@ import React, {
 } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import { parseArazzo, attachStepOperations } from '@jentic/arazzo-parser';
-import { dereferenceArazzoElement } from '@jentic/arazzo-resolver';
+import {
+  dereferenceArazzoElement,
+  dereferenceSourceDescriptionPathItems,
+} from '@jentic/arazzo-resolver';
 
 import { ArazzoViewerProvider, useArazzoViewer } from './context/ArazzoViewerContext';
 import { DiagramView, DiagramViewRef } from './components/DiagramView';
@@ -76,6 +79,9 @@ async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocu
     parse: { parserOpts: { sourceDescriptions: true } },
     resolve: { baseURI: document.baseURI },
   });
+  // Path Items that are only a $ref (local or external) are resolved so their methods are found;
+  // this never rejects, an unresolvable Path Item just gets no badge.
+  await dereferenceSourceDescriptionPathItems(parseResult);
   const dereferenced = await dereferenceArazzoElement(parseResult, {
     resolve: {
       baseURI: document.baseURI,
