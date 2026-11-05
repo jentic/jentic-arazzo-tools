@@ -11,12 +11,21 @@
     "/owners": {
       "$ref": "#/components/pathItems/owners"
     },
+    "/broken": {
+      "$ref": "./paths/broken.json"
+    },
+    "/chained": {
+      "$ref": "#/components/pathItems/chain"
+    },
     "/missing": {
       "$ref": "./paths/missing.json"
     }
   },
   "components": {
     "pathItems": {
+      "chain": {
+        "$ref": "./paths/pets.json"
+      },
       "owners": {
         "post": {
           "operationId": "createOwner",

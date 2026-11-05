@@ -40,6 +40,26 @@ describe('dereferenceSourceDescriptionPathItems', function () {
     });
   });
 
+  specify('should resolve operations whose unrelated nested references fail', async function () {
+    await dereferenceSourceDescriptionPathItems(result);
+
+    assert.deepEqual(findStepOperation(result, { operationId: 'listBroken' }), {
+      method: 'GET',
+      path: '/broken',
+    });
+  });
+
+  specify('should resolve chains of Path Item references', async function () {
+    await dereferenceSourceDescriptionPathItems(result);
+
+    assert.deepEqual(
+      findStepOperation(result, {
+        operationPath: '{$sourceDescriptions.petStore.url}#/paths/~1chained/get',
+      }),
+      { method: 'GET', path: '/chained' },
+    );
+  });
+
   specify('should not reject when a Path Item reference cannot be resolved', async function () {
     await dereferenceSourceDescriptionPathItems(result);
 
