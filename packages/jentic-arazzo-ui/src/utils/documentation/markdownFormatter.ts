@@ -195,11 +195,17 @@ export function formatWorkflowAsMarkdown(
       step.parameters.forEach((param) => {
         if ('$ref' in param) {
           sections.push(`<div class="step-row">Reference: <code>${param.$ref}</code></div>`);
-        } else if ('name' in param && 'in' in param) {
+        } else if ('reference' in param) {
+          sections.push(
+            `<div class="step-row">Reference: <code>${(param as { reference: string }).reference}</code></div>`,
+          );
+        } else if ('name' in param) {
+          // `in` is optional: parameters of steps invoking a workflow have no location
+          const inHtml = param.in ? ` <span class="step-in">${param.in}</span>` : '';
           const value = typeof param.value === 'string' ? param.value : JSON.stringify(param.value);
           const arrow = typeof value === 'string' && value.startsWith('$') ? '←' : '=';
           sections.push(
-            `<div class="step-grid-row"><span><code>${param.name}</code> <span class="step-in">${param.in}</span></span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
+            `<div class="step-grid-row"><span><code>${param.name}</code>${inHtml}</span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
           );
         }
       });
