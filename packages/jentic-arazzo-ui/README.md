@@ -211,3 +211,11 @@ ref.current.getDocument();
 ref.current.getActiveWorkflowId();
 ref.current.getSelectedStepId();
 ```
+
+## Limitations
+
+### HTTP method badges
+
+Steps that target an OpenAPI operation show its HTTP method. To look the method up, the viewer fetches the OpenAPI documents listed in `sourceDescriptions` from the client's browser.
+If the server hosting a spec does not send `Access-Control-Allow-Origin` headers, the browser blocks the request and no method badges are shown for that source.
+The rest of the document renders normally.

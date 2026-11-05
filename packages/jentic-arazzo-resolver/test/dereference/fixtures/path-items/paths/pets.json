@@ -1,0 +1,11 @@
+{
+  "get": {
+    "operationId": "listPets",
+    "summary": "List all pets",
+    "responses": {
+      "200": {
+        "description": "A list of pets"
+      }
+    }
+  }
+}

@@ -17,6 +17,8 @@ export type {
   ArazzoNode,
   ArazzoNodeData,
   StepNodeData,
+  StepOperation,
+  ViewerStep,
   WorkflowRefNodeData,
   StartNodeData,
   EndNodeData,
