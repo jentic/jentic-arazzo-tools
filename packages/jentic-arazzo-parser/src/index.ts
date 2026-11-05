@@ -6,6 +6,13 @@ export {
 } from './parse-arazzo.ts';
 export type { Options as ParseArazzoOptions } from './parse-arazzo.ts';
 
+export { findStepOperation, attachStepOperations } from './step-operations.ts';
+export type {
+  StepOperation,
+  StepOperationsDocument,
+  StepOperationsResult,
+} from './step-operations.ts';
+
 export {
   parse as parseOpenAPI,
   defaultOptions as defaultParseOpenAPIOptions,

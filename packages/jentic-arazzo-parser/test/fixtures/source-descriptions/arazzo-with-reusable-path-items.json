@@ -1,0 +1,15 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Pet Store Reusable Path Items",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "petStore",
+      "type": "openapi",
+      "url": "./openapi-reusable-path-items.json"
+    }
+  ],
+  "workflows": []
+}
