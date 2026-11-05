@@ -171,6 +171,11 @@ export function formatWorkflowAsMarkdown(
     // Description + (Operation|Workflow) combined
     let opHtml = '';
     let opKind = 'Operation';
+    const defaultType =
+      metadata.sourceDescriptions.length > 0
+        ? metadata.sourceDescriptions[0].type || 'arazzo'
+        : 'arazzo';
+    const refColor = defaultType === 'openapi' ? '#6BA543' : '#94C83D';
     if (step.operationId) {
       const dotIdx = step.operationId.indexOf('.');
       if (dotIdx > 0) {
@@ -179,17 +184,12 @@ export function formatWorkflowAsMarkdown(
         const type = sourceTypes.get(source) || 'arazzo';
         opHtml = `<span class="timeline-operation-group">${sourceIcon(type)}<span class="timeline-source">${source}</span><span class="timeline-op-name">${operation}</span></span>`;
       } else {
-        const defaultType =
-          metadata.sourceDescriptions.length > 0
-            ? metadata.sourceDescriptions[0].type || 'arazzo'
-            : 'arazzo';
-        const color = defaultType === 'openapi' ? '#6BA543' : '#94C83D';
-        opHtml = `<span class="step-op-ref" style="color: ${color}">${step.operationId}</span>`;
+        opHtml = `<span class="step-op-ref" style="color: ${refColor}">${step.operationId}</span>`;
       }
     } else if (step.operationPath) {
       opHtml = `<code>${step.operationPath}</code>`;
     } else if (step.workflowId) {
-      opHtml = `<code>${step.workflowId}</code>`;
+      opHtml = `<span class="step-op-ref" style="color: ${refColor}">${step.workflowId}</span>`;
       opKind = 'Workflow';
     }
 
