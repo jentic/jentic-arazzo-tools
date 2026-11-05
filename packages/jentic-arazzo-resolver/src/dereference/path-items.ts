@@ -38,11 +38,10 @@ const MAX_REF_CHAIN = 20;
 
 // evaluates the JSON Pointer of a URI fragment against an element tree
 const evaluateFragment = (root: Element, fragment: string): Element | undefined => {
-  const tokens = fragment
-    .replace(/^#/, '')
+  const tokens = decodeURIComponent(fragment.replace(/^#/, ''))
     .split('/')
     .slice(1)
-    .map((token) => decodeURIComponent(token).replace(/~1/g, '/').replace(/~0/g, '~'));
+    .map((token) => token.replace(/~1/g, '/').replace(/~0/g, '~'));
   let current: Element | undefined = root;
 
   for (const token of tokens) {
