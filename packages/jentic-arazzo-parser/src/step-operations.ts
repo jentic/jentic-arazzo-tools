@@ -69,7 +69,7 @@ export function findStepOperation(
 
   parseResult.api.sourceDescriptions?.forEach((sourceDescription) => {
     if (found || !isSourceDescriptionElement(sourceDescription)) return;
-    if (sourceDescription.type?.toValue() !== 'openapi') return;
+    if (sourceDescription.type && sourceDescription.type.toValue() !== 'openapi') return;
     if (sourceName && sourceDescription.name?.toValue() !== sourceName) return;
     const api = (sourceDescription.meta.get('parseResult') as ParseResultElement | undefined)?.api;
     if (!isSwaggerElement(api) && !isOpenApi3_0Element(api) && !isOpenApi3_1Element(api)) return;
