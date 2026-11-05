@@ -1,4 +1,5 @@
 import { DocumentationMetadata, WorkflowDocumentation } from '../../types/viewer';
+import { escapeHtml } from '../escapeHtml';
 import { renderMethodBadgeStyle } from '../operationMethods';
 
 export interface FormatOptions {
@@ -158,7 +159,7 @@ export function formatWorkflowAsMarkdown(
         .map(([key, value]) => `${key.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}: ${value}`)
         .join('; ');
       sections.push(
-        `<span class="http-method http-method--${method.toLowerCase()}" title="${path ?? ''}" style="${style}">${method}</span>`,
+        `<span class="http-method http-method--${method.toLowerCase()}" title="${escapeHtml(path ?? '')}" style="${style}">${method}</span>`,
       );
     }
     sections.push(`</div>`);
