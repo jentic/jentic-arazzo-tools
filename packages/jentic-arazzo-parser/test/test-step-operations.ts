@@ -51,6 +51,48 @@ describe('findStepOperation', function () {
   });
 });
 
+describe('findStepOperation with literal URLs', function () {
+  let result: ParseResultElement;
+
+  before(async function () {
+    result = await parseArazzo(path.join(fixturesPath, 'arazzo-with-literal-urls.json'), {
+      parse: { parserOpts: { sourceDescriptions: true } },
+    });
+  });
+
+  specify('should search only the source the URL targets', function () {
+    assert.deepEqual(
+      findStepOperation(result, { operationPath: './openapi-post.json#/paths/~1pets/post' }),
+      { method: 'POST', path: '/pets' },
+    );
+    assert.deepEqual(
+      findStepOperation(result, { operationPath: './openapi.json#/paths/~1pets/get' }),
+      listPets,
+    );
+  });
+
+  specify('should not find an operation of another source with the same path', function () {
+    assert.isUndefined(
+      findStepOperation(result, { operationPath: './openapi-post.json#/paths/~1pets/get' }),
+    );
+    assert.isUndefined(
+      findStepOperation(result, { operationPath: './openapi.json#/paths/~1pets/post' }),
+    );
+  });
+
+  specify(
+    'should return undefined when the targeted source is unavailable or unknown',
+    function () {
+      assert.isUndefined(
+        findStepOperation(result, { operationPath: './missing.json#/paths/~1pets/get' }),
+      );
+      assert.isUndefined(
+        findStepOperation(result, { operationPath: './unknown.json#/paths/~1pets/get' }),
+      );
+    },
+  );
+});
+
 describe('attachStepOperations', function () {
   specify('should convert to a plain object with _operation on resolved steps', async function () {
     const result = await parseArazzo(path.join(fixturesPath, 'arazzo-with-operations.json'), {

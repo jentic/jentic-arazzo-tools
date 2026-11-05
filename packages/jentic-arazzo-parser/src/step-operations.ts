@@ -4,6 +4,7 @@ import { compile, URIFragmentIdentifier } from '@speclynx/apidom-json-pointer';
 import {
   isArazzoSpecification1Element,
   isSourceDescriptionElement,
+  type SourceDescriptionElement,
 } from '@speclynx/apidom-ns-arazzo-1';
 import {
   isSwaggerElement,
@@ -47,6 +48,32 @@ const pathItemOperations = (pathItem: PathItem2Element | PathItem3Element) => ({
   trace: isPathItem3Element(pathItem) ? pathItem.trace : undefined,
 });
 
+// resolves a (possibly relative) URI against the document it appears in, as far as possible
+const resolveURI = (uri: string, baseURI?: string) => {
+  try {
+    return new URL(uri, baseURI).href;
+  } catch {
+    return uri;
+  }
+};
+
+// whether a literal URL targets the document of the source description, as declared or as retrieved
+const targetsSource = (
+  sourceDescription: SourceDescriptionElement,
+  documentURI: string,
+  baseURI?: string,
+): boolean => {
+  const target = resolveURI(documentURI, baseURI);
+  const url = sourceDescription.url?.toValue() as string | undefined;
+  const retrievalURI = (
+    sourceDescription.meta.get('parseResult') as ParseResultElement | undefined
+  )?.meta.get('retrievalURI') as string | undefined;
+
+  return [url, retrievalURI].some(
+    (uri) => uri !== undefined && (uri === documentURI || resolveURI(uri, baseURI) === target),
+  );
+};
+
 /**
  * Finds the OpenAPI operation targeted by an Arazzo step in the `openapi` source descriptions
  * parsed along with the Arazzo Document (see the `sourceDescriptions` parser option).
@@ -65,12 +92,18 @@ export function findStepOperation(
   const [, sourceName, qualifiedId] =
     /^\{?\$sourceDescriptions\.([^.]+)\.(.+)$/.exec(reference) ?? [];
   const pointer = operationPath && URIFragmentIdentifier.fromURIReference(operationPath);
+  // a literal URL (no `$sourceDescriptions` expression) names its source by the document it targets
+  const documentURI =
+    operationPath && !sourceName ? operationPath.split('#')[0].replace(/^\{|\}$/g, '') : '';
+  const baseURI = parseResult.meta.get('retrievalURI') as string | undefined;
   let found: StepOperation | undefined;
 
   parseResult.api.sourceDescriptions?.forEach((sourceDescription) => {
     if (found || !isSourceDescriptionElement(sourceDescription)) return;
     if (sourceDescription.type && sourceDescription.type.toValue() !== 'openapi') return;
     if (sourceName && sourceDescription.name?.toValue() !== sourceName) return;
+    // the source must be the one the URL targets, and it is not searched when it failed to load
+    if (documentURI && !targetsSource(sourceDescription, documentURI, baseURI)) return;
     const api = (sourceDescription.meta.get('parseResult') as ParseResultElement | undefined)?.api;
     if (!isSwaggerElement(api) && !isOpenApi3_0Element(api) && !isOpenApi3_1Element(api)) return;
 

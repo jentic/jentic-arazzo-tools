@@ -1,0 +1,25 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Pet Store Literal URLs",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "petStore",
+      "type": "openapi",
+      "url": "./openapi.json"
+    },
+    {
+      "name": "petAdmin",
+      "type": "openapi",
+      "url": "./openapi-post.json"
+    },
+    {
+      "name": "unavailable",
+      "type": "openapi",
+      "url": "./missing.json"
+    }
+  ],
+  "workflows": []
+}
