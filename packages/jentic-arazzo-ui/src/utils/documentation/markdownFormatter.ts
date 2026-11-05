@@ -164,8 +164,9 @@ export function formatWorkflowAsMarkdown(
     }
     sections.push(`</div>`);
 
-    // Description + operation combined
+    // Description + (Operation|Workflow) combined
     let opHtml = '';
+    let opKind = 'Operation';
     if (step.operationId) {
       const dotIdx = step.operationId.indexOf('.');
       if (dotIdx > 0) {
@@ -185,16 +186,17 @@ export function formatWorkflowAsMarkdown(
       opHtml = `<code>${step.operationPath}</code>`;
     } else if (step.workflowId) {
       opHtml = `<code>${step.workflowId}</code>`;
+      opKind = 'Workflow';
     }
 
     if (step.description && opHtml) {
       sections.push(
-        `<div class="step-description">${step.description} via ${opHtml} Operation</div>`,
+        `<div class="step-description">${step.description} via ${opHtml} ${opKind}</div>`,
       );
     } else if (step.description) {
       sections.push(`<div class="step-description">${step.description}</div>`);
     } else if (opHtml) {
-      sections.push(`<div class="step-description">via ${opHtml} Operation</div>`);
+      sections.push(`<div class="step-description">via ${opHtml} ${opKind}</div>`);
     }
 
     // Parameters
