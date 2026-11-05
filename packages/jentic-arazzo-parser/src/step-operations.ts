@@ -1,6 +1,6 @@
 import { toValue } from '@speclynx/apidom-core';
 import type { Element, ParseResultElement } from '@speclynx/apidom-datamodel';
-import { compile, URIFragmentIdentifier } from '@speclynx/apidom-json-pointer';
+import { compile, evaluate, URIFragmentIdentifier } from '@speclynx/apidom-json-pointer';
 import {
   isArazzoSpecification1Element,
   isSourceDescriptionElement,
@@ -74,6 +74,41 @@ const targetsSource = (
   );
 };
 
+const pointerTokens = (pointer: string) =>
+  pointer
+    .split('/')
+    .slice(1)
+    .map((token) => token.replace(/~1/g, '/').replace(/~0/g, '~'));
+
+// resolves a JSON Pointer against a source document, so it can target operations of both
+// `paths` entries and reusable Path Items (`#/components/pathItems/...`)
+const operationAtPointer = (api: Element, pointer: string): StepOperation | undefined => {
+  const tokens = pointerTokens(pointer);
+  const withPath = (method: string): StepOperation => ({
+    method: method.toUpperCase(),
+    ...(tokens[0] === 'paths' && { path: tokens[1] }),
+  });
+  const evaluateAt = (parts: string[]) => {
+    try {
+      return evaluate<unknown>(api, compile(parts));
+    } catch {
+      return undefined;
+    }
+  };
+
+  const target = evaluateAt(tokens);
+  // a pointer to a path item (no method) is unambiguous only when it has a single operation
+  if (isPathItem2Element(target) || isPathItem3Element(target)) {
+    const defined = Object.entries(pathItemOperations(target)).filter(([, operation]) => operation);
+    return defined.length === 1 ? withPath(defined[0][0]) : undefined;
+  }
+
+  const method = tokens[tokens.length - 1];
+  const parent = evaluateAt(tokens.slice(0, -1));
+  if (!target || !(isPathItem2Element(parent) || isPathItem3Element(parent))) return undefined;
+  return Object.keys(pathItemOperations(parent)).includes(method) ? withPath(method) : undefined;
+};
+
 /**
  * Finds the OpenAPI operation targeted by an Arazzo step in the `openapi` source descriptions
  * parsed along with the Arazzo Document (see the `sourceDescriptions` parser option).
@@ -107,21 +142,16 @@ export function findStepOperation(
     const api = (sourceDescription.meta.get('parseResult') as ParseResultElement | undefined)?.api;
     if (!isSwaggerElement(api) && !isOpenApi3_0Element(api) && !isOpenApi3_1Element(api)) return;
 
+    if (pointer) {
+      found = operationAtPointer(api, pointer);
+      return;
+    }
+
     api.paths?.forEach((pathItem, key) => {
       if (found || (!isPathItem2Element(pathItem) && !isPathItem3Element(pathItem))) return;
       const path = String(key.toValue());
-      const operations = Object.entries(pathItemOperations(pathItem));
-      // a pointer to a path item (no method) is unambiguous only when it has a single operation
-      if (pointer === compile(['paths', path])) {
-        const defined = operations.filter(([, operation]) => operation);
-        if (defined.length === 1) found = { method: defined[0][0].toUpperCase(), path };
-        return;
-      }
-      for (const [method, operation] of operations) {
-        const matches = pointer
-          ? pointer === compile(['paths', path, method])
-          : operation?.operationId?.toValue() === (qualifiedId ?? operationId);
-        if (operation && matches) {
+      for (const [method, operation] of Object.entries(pathItemOperations(pathItem))) {
+        if (operation?.operationId?.toValue() === (qualifiedId ?? operationId)) {
           found = { method: method.toUpperCase(), path };
           return;
         }

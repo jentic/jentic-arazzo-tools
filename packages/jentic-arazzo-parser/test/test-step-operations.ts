@@ -93,6 +93,39 @@ describe('findStepOperation with literal URLs', function () {
   );
 });
 
+describe('findStepOperation with reusable path items', function () {
+  const base = '{$sourceDescriptions.petStore.url}#/components/pathItems';
+  let result: ParseResultElement;
+
+  before(async function () {
+    result = await parseArazzo(path.join(fixturesPath, 'arazzo-with-reusable-path-items.json'), {
+      parse: { parserOpts: { sourceDescriptions: true } },
+    });
+  });
+
+  specify('should find operations of reusable path items', function () {
+    assert.deepEqual(findStepOperation(result, { operationPath: `${base}/Pets/get` }), {
+      method: 'GET',
+    });
+    assert.deepEqual(findStepOperation(result, { operationPath: `${base}/Owners/post` }), {
+      method: 'POST',
+    });
+  });
+
+  specify('should find the only operation of a reusable path item', function () {
+    assert.deepEqual(findStepOperation(result, { operationPath: `${base}/Pets` }), {
+      method: 'GET',
+    });
+    assert.isUndefined(findStepOperation(result, { operationPath: `${base}/Owners` }));
+  });
+
+  specify('should return undefined for pointers that target no operation', function () {
+    assert.isUndefined(findStepOperation(result, { operationPath: `${base}/Pets/post` }));
+    assert.isUndefined(findStepOperation(result, { operationPath: `${base}/Unknown/get` }));
+    assert.isUndefined(findStepOperation(result, { operationPath: `${base}/Pets/get/responses` }));
+  });
+});
+
 describe('attachStepOperations', function () {
   specify('should convert to a plain object with _operation on resolved steps', async function () {
     const result = await parseArazzo(path.join(fixturesPath, 'arazzo-with-operations.json'), {

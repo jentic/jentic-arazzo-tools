@@ -1,0 +1,40 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pet Store API with reusable path items",
+    "version": "1.0.0"
+  },
+  "paths": {},
+  "components": {
+    "pathItems": {
+      "Pets": {
+        "get": {
+          "operationId": "listPets",
+          "responses": {
+            "200": {
+              "description": "A list of pets"
+            }
+          }
+        }
+      },
+      "Owners": {
+        "get": {
+          "operationId": "listOwners",
+          "responses": {
+            "200": {
+              "description": "A list of owners"
+            }
+          }
+        },
+        "post": {
+          "operationId": "createOwner",
+          "responses": {
+            "201": {
+              "description": "Created"
+            }
+          }
+        }
+      }
+    }
+  }
+}
