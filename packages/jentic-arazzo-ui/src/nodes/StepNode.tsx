@@ -3,6 +3,7 @@ import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import { StepNodeData, SuccessAction, FailureAction, Criterion } from '../types/index';
 import { useArazzoViewer } from '../context/ArazzoViewerContext';
 import { renderMethodBadgeStyle } from '../utils/operationMethods';
+import { arazzoLogoSvg } from '../utils/arazzoLogo';
 
 // Type guard for SuccessAction
 const isSuccessAction = (action: unknown): action is SuccessAction => {
@@ -136,6 +137,14 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
               >
                 {httpMethod}
               </span>
+            )}
+            {step.workflowId && (
+              <span
+                className="workflow-badge"
+                title="Workflow"
+                style={{ marginLeft: 'auto', display: 'inline-flex' }}
+                dangerouslySetInnerHTML={{ __html: arazzoLogoSvg('width: 16px; height: 16px;') }}
+              />
             )}
           </div>
           {step.description && (
