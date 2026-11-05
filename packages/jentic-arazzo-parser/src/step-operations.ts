@@ -36,6 +36,25 @@ export interface StepOperationsDocument {
   workflows?: { steps?: { operationId?: string; operationPath?: string }[] }[];
 }
 
+/**
+ * A plain Arazzo Document whose steps may carry the `_operation` they target. Every other field
+ * of the document type, and of its workflows and steps, is preserved as is.
+ * @public
+ */
+export type StepOperationsResult<T extends StepOperationsDocument = StepOperationsDocument> = {
+  [K in keyof T]: K extends 'workflows'
+    ? NonNullable<T[K]> extends readonly (infer Workflow)[]
+      ? {
+          [W in keyof Workflow]: W extends 'steps'
+            ? NonNullable<Workflow[W]> extends readonly (infer Step)[]
+              ? (Step & { _operation?: StepOperation })[]
+              : Workflow[W]
+            : Workflow[W];
+        }[]
+      : T[K]
+    : T[K];
+};
+
 // OpenAPI 3.1 path items extend the OpenAPI 3.0 ones, so isPathItem3Element covers both
 const pathItemOperations = (pathItem: PathItem2Element | PathItem3Element) => ({
   get: pathItem.getField,
@@ -167,19 +186,19 @@ export function findStepOperation(
  * targets an operation of the `openapi` source descriptions parsed along with it.
  * @param element - The Arazzo Document element, e.g. the (dereferenced) result of the parse result
  * @param parseResult - The result of parsing the Arazzo Document with source descriptions
- * @returns The plain Arazzo Document with `_operation` set on the resolved steps
+ * @returns The plain Arazzo Document, typed with `_operation` on its steps and set on the resolved ones
  * @public
  */
 export function attachStepOperations<T extends StepOperationsDocument = StepOperationsDocument>(
   element: Element | undefined,
   parseResult: ParseResultElement,
-): T {
-  const doc = toValue(element) as T;
+): StepOperationsResult<T> {
+  const doc = toValue(element) as StepOperationsDocument;
   doc?.workflows?.forEach((workflow) =>
     workflow.steps?.forEach((step) => {
       const operation = findStepOperation(parseResult, step);
       if (operation) Object.assign(step, { _operation: operation });
     }),
   );
-  return doc;
+  return doc as StepOperationsResult<T>;
 }

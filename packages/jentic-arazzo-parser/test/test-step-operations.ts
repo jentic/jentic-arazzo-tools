@@ -127,6 +127,22 @@ describe('findStepOperation with reusable path items', function () {
 });
 
 describe('attachStepOperations', function () {
+  specify('should preserve the fields of the given document type', async function () {
+    interface Doc {
+      arazzo: string;
+      workflows: { workflowId: string; steps: { stepId: string; operationId?: string }[] }[];
+    }
+    const result = await parseArazzo(path.join(fixturesPath, 'arazzo-with-operations.json'), {
+      parse: { parserOpts: { sourceDescriptions: true } },
+    });
+    const doc = attachStepOperations<Doc>(result.api, result);
+    const step = doc.workflows[0].steps[0];
+
+    assert.equal(doc.workflows[0].workflowId, 'list-pets');
+    assert.equal(step.stepId, 'byOperationId');
+    assert.deepEqual(step._operation, listPets);
+  });
+
   specify('should convert to a plain object with _operation on resolved steps', async function () {
     const result = await parseArazzo(path.join(fixturesPath, 'arazzo-with-operations.json'), {
       parse: { parserOpts: { sourceDescriptions: true } },
@@ -134,7 +150,7 @@ describe('attachStepOperations', function () {
     const steps = attachStepOperations(result.api, result).workflows?.[0].steps ?? [];
 
     assert.deepEqual(
-      steps.map((step) => (step as { _operation?: unknown })._operation),
+      steps.map((step) => step._operation),
       [listPets, listPets, listPets, undefined],
     );
   });
