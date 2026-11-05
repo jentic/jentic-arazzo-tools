@@ -7,9 +7,11 @@ import React, {
   useEffect,
 } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { parseArazzo } from '@jentic/arazzo-parser';
-import { dereferenceArazzoElement } from '@jentic/arazzo-resolver';
-import { toValue } from '@speclynx/apidom-core';
+import { parseArazzo, attachStepOperations } from '@jentic/arazzo-parser';
+import {
+  dereferenceArazzoElement,
+  dereferenceSourceDescriptionPathItems,
+} from '@jentic/arazzo-resolver';
 
 import { ArazzoViewerProvider, useArazzoViewer } from './context/ArazzoViewerContext';
 import { DiagramView, DiagramViewRef } from './components/DiagramView';
@@ -24,6 +26,8 @@ export type {
   ArazzoNode,
   ArazzoNodeData,
   StepNodeData,
+  StepOperation,
+  ViewerStep,
   WorkflowRefNodeData,
   StartNodeData,
   EndNodeData,
@@ -66,13 +70,19 @@ function detectUrl(value: ArazzoDocument | string): string | null {
 }
 
 async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocument> {
-  const parseResult = await parseArazzo(input as any, {}); // eslint-disable-line @typescript-eslint/no-explicit-any
+  // OpenAPI specs from sourceDescriptions are parsed from the client's browser to retrieve HTTP
+  // methods for steps. If the server hosting the spec does not include Access-Control-Allow-Origin
+  // headers, the browser blocks the fetch and no method badges are shown. Failure to load the
+  // OpenAPI spec is not fatal.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const parseResult = await parseArazzo(input as any, {
+    parse: { parserOpts: { sourceDescriptions: true } },
+    resolve: { baseURI: document.baseURI },
+  });
+  // Path Items that are only a $ref (local or external) are resolved so their methods are found;
+  // this never rejects, an unresolvable Path Item just gets no badge.
+  await dereferenceSourceDescriptionPathItems(parseResult);
   const dereferenced = await dereferenceArazzoElement(parseResult, {
-    parse: {
-      parserOpts: {
-        sourceDescriptions: false,
-      },
-    },
     resolve: {
       baseURI: document.baseURI,
     },
@@ -81,7 +91,7 @@ async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocu
       immutable: false,
     },
   });
-  return toValue(dereferenced.result) as ArazzoDocument;
+  return attachStepOperations<ArazzoDocument>(dereferenced.result, parseResult);
 }
 
 /**

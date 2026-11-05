@@ -12,4 +12,6 @@ export {
   type Options as DereferenceOpenAPIOptions,
 } from './dereference/openapi.ts';
 
+export { dereferenceSourceDescriptionPathItems } from './dereference/path-items.ts';
+
 export { default as DereferenceError } from './errors/DereferenceError.ts';
