@@ -1,0 +1,17 @@
+{
+  "get": {
+    "operationId": "listBroken",
+    "responses": {
+      "200": {
+        "description": "A list of broken things",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "./schemas/missing.json"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "arazzo": "1.0.1",
+  "info": {
+    "title": "Pet Store Path Item References",
+    "version": "1.0.0"
+  },
+  "sourceDescriptions": [
+    {
+      "name": "petStore",
+      "type": "openapi",
+      "url": "./openapi-path-item-refs.json"
+    }
+  ],
+  "workflows": [
+    {
+      "workflowId": "path-item-refs",
+      "steps": [
+        {
+          "stepId": "external",
+          "operationId": "listPets"
+        },
+        {
+          "stepId": "local",
+          "operationId": "createOwner"
+        },
+        {
+          "stepId": "unresolvable",
+          "operationPath": "{$sourceDescriptions.petStore.url}#/paths/~1missing/get"
+        }
+      ]
+    }
+  ]
+}
