@@ -60,6 +60,15 @@ describe('dereferenceSourceDescriptionPathItems', function () {
     );
   });
 
+  specify('should resolve references of reusable Path Items', async function () {
+    const operationPath = '{$sourceDescriptions.petStore.url}#/components/pathItems/Pets/get';
+    assert.isUndefined(findStepOperation(result, { operationPath }));
+
+    await dereferenceSourceDescriptionPathItems(result);
+
+    assert.deepEqual(findStepOperation(result, { operationPath }), { method: 'GET' });
+  });
+
   specify('should not reject when a Path Item reference cannot be resolved', async function () {
     await dereferenceSourceDescriptionPathItems(result);
 

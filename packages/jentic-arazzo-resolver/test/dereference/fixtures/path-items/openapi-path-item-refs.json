@@ -23,6 +23,9 @@
   },
   "components": {
     "pathItems": {
+      "Pets": {
+        "$ref": "./paths/pets.json"
+      },
       "chain": {
         "$ref": "./paths/pets.json"
       },

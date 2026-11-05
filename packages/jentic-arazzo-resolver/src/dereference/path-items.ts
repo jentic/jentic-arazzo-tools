@@ -145,19 +145,31 @@ export async function dereferenceSourceDescriptionPathItems(
       return follow(merged, documentURI, targetRoot, visited);
     };
 
-    api.paths?.forEach((pathItem, member) => {
-      if (!isPathItem(pathItem) || !pathItem.$ref) return;
+    // Path Items in `paths` and in the reusable `components.pathItems` are both resolved, since
+    // steps can target either
+    const collections = [
+      api.paths,
+      (api as { components?: { pathItems?: unknown } }).components?.pathItems,
+    ];
+    collections.forEach((collection) => {
+      if (!isObjectElement(collection)) return;
 
-      pending.push(
-        follow(pathItem, sourceURI, api, new Set()).then(
-          (resolved) => {
-            if (resolved) api.paths?.set(String(member.toValue()), resolved);
-          },
-          () => {
-            // keep the unresolved Path Item
-          },
-        ),
-      );
+      collection.forEach((pathItem, member) => {
+        // in `components.pathItems` a `$ref`-only entry is refracted to a Reference, not a Path Item
+        const candidate = pathItem as PathItem;
+        if (!isObjectElement(pathItem) || !isStringElement(candidate.$ref)) return;
+
+        pending.push(
+          follow(candidate, sourceURI, api, new Set()).then(
+            (resolved) => {
+              if (resolved) collection.set(String(member.toValue()), resolved);
+            },
+            () => {
+              // keep the unresolved Path Item
+            },
+          ),
+        );
+      });
     });
   });
 
