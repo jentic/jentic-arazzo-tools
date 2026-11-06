@@ -49,6 +49,7 @@ export function generateDocumentation(
       operation: (step as ViewerStep)._operation,
       workflowId: step.workflowId,
       parameters: step.parameters,
+      requestBody: step.requestBody,
       outputs: step.outputs,
       successCriteria: step.successCriteria,
       onSuccess: step.onSuccess,

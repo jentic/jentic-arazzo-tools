@@ -1,4 +1,5 @@
 import { DocumentationMetadata, WorkflowDocumentation } from '../../types/viewer';
+import { getRequestBodyView, KeyValueRowView } from './requestBodyView';
 import { escapeHtml } from '../escapeHtml';
 import { renderMethodBadgeStyle } from '../operationMethods';
 import { arazzoLogoSvg } from '../arazzoLogo';
@@ -212,14 +213,58 @@ export function formatWorkflowAsMarkdown(
       step.parameters.forEach((param) => {
         if ('$ref' in param) {
           sections.push(`<div class="step-row">Reference: <code>${param.$ref}</code></div>`);
-        } else if ('name' in param && 'in' in param) {
+        } else if ('reference' in param) {
+          sections.push(
+            `<div class="step-row">Reference: <code>${(param as { reference: string }).reference}</code></div>`,
+          );
+        } else if ('name' in param) {
+          // `in` is optional: parameters of steps invoking a workflow have no location
+          const locationBadge = param.in ? ` <span class="step-in">${param.in}</span>` : '';
           const value = typeof param.value === 'string' ? param.value : JSON.stringify(param.value);
           const arrow = typeof value === 'string' && value.startsWith('$') ? '←' : '=';
           sections.push(
-            `<div class="step-grid-row"><span><code>${param.name}</code> <span class="step-in">${param.in}</span></span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
+            `<div class="step-grid-row"><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
           );
         }
       });
+      sections.push(`</div></details>`);
+    }
+
+    // Request body
+    const requestBody = getRequestBodyView(step.requestBody);
+    if (requestBody) {
+      const { replacements } = requestBody;
+      const countHtml =
+        replacements.length > 0
+          ? ` <span class="step-detail-count">${replacements.length} replacement${replacements.length === 1 ? '' : 's'}</span>`
+          : '';
+      sections.push(
+        `<details class="step-detail"><summary class="step-detail-summary">Request Body${countHtml}</summary>`,
+      );
+      sections.push(`<div class="step-detail-body">`);
+      if (requestBody.contentType) {
+        sections.push(
+          `<div class="step-row">Content-Type: <code>${escapeHtml(requestBody.contentType)}</code></div>`,
+        );
+      }
+      const keyValueTable = (keyHeader: string, rows: KeyValueRowView[]) =>
+        `<table class="step-table request-body-table"><thead><tr><th>${keyHeader}</th><th>Value</th></tr></thead><tbody>${rows
+          .map(
+            (r) =>
+              `<tr><td><code>${escapeHtml(r.key)}</code></td><td><code>${escapeHtml(r.value)}</code></td></tr>`,
+          )
+          .join('')}</tbody></table>`;
+      const { payload } = requestBody;
+      if (payload?.kind === 'form') {
+        sections.push(keyValueTable('Field', payload.fields));
+      } else if (payload) {
+        sections.push(
+          `<pre><code${payload.language ? ` class="language-${payload.language}"` : ''}>${escapeHtml(payload.text)}</code></pre>`,
+        );
+      }
+      if (replacements.length > 0) {
+        sections.push(keyValueTable('Target', replacements));
+      }
       sections.push(`</div></details>`);
     }
 

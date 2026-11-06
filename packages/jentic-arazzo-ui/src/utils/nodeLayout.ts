@@ -1,4 +1,8 @@
 import { ArazzoNode } from '../types/viewer';
+import { getRequestBodyView } from './documentation/requestBodyView';
+
+// request body section: 24px padding + 18px header + ~22px content row
+export const REQUEST_BODY_SECTION_HEIGHT = 24 + 18 + 22;
 
 /**
  * Calculate the Y offset for the inherited success action section within a step node.
@@ -24,6 +28,11 @@ export function getInheritedSuccessActionYOffset(node: ArazzoNode): number {
     const shownParams = Math.min(step.parameters.length, 3);
     yOffset += 24 + 18 + shownParams * 22;
     if (step.parameters.length > 3) yOffset += 18;
+  }
+
+  // Request body section (same visibility condition as StepNode)
+  if (getRequestBodyView(step.requestBody)) {
+    yOffset += REQUEST_BODY_SECTION_HEIGHT;
   }
 
   // Outputs section
