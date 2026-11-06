@@ -212,11 +212,11 @@ export function formatWorkflowAsMarkdown(
           );
         } else if ('name' in param) {
           // `in` is optional: parameters of steps invoking a workflow have no location
-          const inHtml = param.in ? ` <span class="step-in">${param.in}</span>` : '';
+          const locationBadge = param.in ? ` <span class="step-in">${param.in}</span>` : '';
           const value = typeof param.value === 'string' ? param.value : JSON.stringify(param.value);
           const arrow = typeof value === 'string' && value.startsWith('$') ? '←' : '=';
           sections.push(
-            `<div class="step-grid-row"><span><code>${param.name}</code>${inHtml}</span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
+            `<div class="step-grid-row"><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
           );
         }
       });
