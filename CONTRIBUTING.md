@@ -92,7 +92,7 @@ can be avoided by having an initial discussion.
 2.  **Fork & Branch:** Create a fork of the repository and make your changes in a descriptively named branch.
 
 3.  **Code & Test:** Write your code and add tests to cover your changes. Make sure the existing test suite passes.
-  *   See [DEVELOPMENT.md](DEVELOPMENT.md) for setup instructions, testing commands, and development workflows.
+  *   See [CLAUDE.md](CLAUDE.md) for setup instructions, testing commands, and development workflows.
 
 4.  **Update Documentation:** If you've added a new feature or changed an existing one, be sure to update the relevant documentation.
 
