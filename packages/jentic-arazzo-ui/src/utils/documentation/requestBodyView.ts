@@ -39,6 +39,9 @@ const getContentTypeKind = (contentType?: string): ContentTypeKind => {
   return undefined;
 };
 
+// a payload that is entirely a runtime expression, e.g. $inputs.order (no field separators)
+const WHOLE_RUNTIME_EXPRESSION = /^\$[^=&\s]*$/;
+
 const YAML_PLAIN_SCALAR = /^[A-Za-z_$][\w$./-]*$/;
 const YAML_RESERVED = /^(true|false|null|yes|no|on|off|y|n|~)$/i;
 
@@ -99,7 +102,7 @@ const getPayloadView = (
         fields: Object.entries(payload).map(([key, value]) => toKeyValueRow(key, value)),
       };
     }
-    if (typeof payload === 'string') {
+    if (typeof payload === 'string' && !WHOLE_RUNTIME_EXPRESSION.test(payload.trim())) {
       const fields = Array.from(new URLSearchParams(payload).entries()).map(([key, value]) =>
         toKeyValueRow(key, value),
       );
