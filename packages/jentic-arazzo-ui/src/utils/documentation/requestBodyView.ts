@@ -89,7 +89,7 @@ const getPayloadView = (
   payload: unknown,
   contentType?: string,
 ): RequestBodyPayloadView | undefined => {
-  if (payload === undefined || payload === null) return undefined;
+  if (payload === undefined) return undefined;
   const kind = getContentTypeKind(contentType);
 
   if (kind === 'form') {
