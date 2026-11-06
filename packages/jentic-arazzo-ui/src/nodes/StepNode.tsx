@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Handle, Position, NodeProps, useReactFlow } from 'reactflow';
 import { StepNodeData, SuccessAction, FailureAction, Criterion } from '../types/index';
 import { useArazzoViewer } from '../context/ArazzoViewerContext';
+import { RequestBodyDialog } from '../components/RequestBodyDialog';
+import { getRequestBodyView } from '../utils/documentation/requestBodyView';
 import { renderMethodBadgeStyle } from '../utils/operationMethods';
 
 // Type guard for SuccessAction
@@ -28,6 +30,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
   const { step, isValid, workflowId, workflowSuccessActions, workflowFailureActions } = data;
   const reactFlow = useReactFlow();
   const { nodes, setSelectedNode } = useArazzoViewer();
+  const [showRequestBody, setShowRequestBody] = useState(false);
 
   // Navigate to target node when clicking on a goto action
   const handleActionClick = (action: SuccessAction | FailureAction, e: React.MouseEvent) => {
@@ -61,6 +64,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
   };
 
   const operationType = getOperationType();
+  const requestBody = getRequestBodyView(step.requestBody);
   const httpMethod = step._operation?.method;
   const hasInputs = step.parameters && step.parameters.length > 0;
   const hasOutputs = step.outputs && Object.keys(step.outputs).length > 0;
@@ -195,6 +199,50 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
               )}
             </div>
           </div>
+        )}
+
+        {/* Request Body */}
+        {requestBody && (
+          <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+            <div
+              style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}
+            >
+              REQUEST BODY:
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              {requestBody.contentType && (
+                <span style={{ fontSize: '11px', color: '#374151', fontWeight: 500 }}>
+                  {requestBody.contentType}
+                </span>
+              )}
+              <button
+                type="button"
+                className="nodrag nopan"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRequestBody(true);
+                }}
+                style={{
+                  fontSize: '10px',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  border: '1px solid #bfdbfe',
+                  background: '#eff6ff',
+                  color: '#1e40af',
+                  cursor: 'pointer',
+                }}
+              >
+                View
+              </button>
+            </div>
+          </div>
+        )}
+        {showRequestBody && requestBody && (
+          <RequestBodyDialog
+            stepId={step.stepId}
+            requestBody={requestBody}
+            onClose={() => setShowRequestBody(false)}
+          />
         )}
 
         {/* Outputs */}

@@ -1,4 +1,6 @@
 import { ArazzoNode, ArazzoEdge } from '../types/viewer';
+import { getRequestBodyView } from './documentation/requestBodyView';
+import { REQUEST_BODY_SECTION_HEIGHT } from './nodeLayout';
 
 export interface SequentialLayoutOptions {
   direction?: 'RIGHT' | 'DOWN' | 'LEFT' | 'UP';
@@ -182,6 +184,11 @@ function estimateNodeHeight(node: ArazzoNode): number {
     const shownParams = Math.min(step.parameters.length, 3);
     height += 24 + 18 + shownParams * 22;
     if (step.parameters.length > 3) height += 18; // "+N more..." text
+  }
+
+  // Request body section (same visibility condition as StepNode)
+  if (getRequestBodyView(step.requestBody)) {
+    height += REQUEST_BODY_SECTION_HEIGHT;
   }
 
   // Outputs section: same structure as parameters
