@@ -39,6 +39,10 @@ const getContentTypeKind = (contentType?: string): ContentTypeKind => {
   return undefined;
 };
 
+// URLSearchParams only understands url-encoded strings, not raw multipart bodies
+const isUrlEncoded = (contentType?: string): boolean =>
+  contentType?.split(';')[0].trim().toLowerCase() === 'application/x-www-form-urlencoded';
+
 // a payload that is entirely a runtime expression, e.g. $inputs.order (no field separators)
 const WHOLE_RUNTIME_EXPRESSION = /^\$[^=&\s]*$/;
 
@@ -102,7 +106,11 @@ const getPayloadView = (
         fields: Object.entries(payload).map(([key, value]) => toKeyValueRow(key, value)),
       };
     }
-    if (typeof payload === 'string' && !WHOLE_RUNTIME_EXPRESSION.test(payload.trim())) {
+    if (
+      typeof payload === 'string' &&
+      isUrlEncoded(contentType) &&
+      !WHOLE_RUNTIME_EXPRESSION.test(payload.trim())
+    ) {
       const fields = Array.from(new URLSearchParams(payload).entries()).map(([key, value]) =>
         toKeyValueRow(key, value),
       );
