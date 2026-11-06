@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { KeyValueRowView, RequestBodyView } from '../utils/documentation/requestBodyView';
 
@@ -50,18 +50,24 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
   requestBody,
   onClose,
 }) => {
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  // native modal dialog traps focus, makes the background inert and handles escape
   useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+    const dialog = dialogRef.current;
+    const opener = document.activeElement as HTMLElement | null;
+    if (dialog && !dialog.open) dialog.showModal();
+    // the dialog is unmounted rather than closed, so restore focus explicitly
+    return () => opener?.focus?.();
+  }, []);
 
   // portal to body so the dialog escapes the react-flow viewport transform
   return createPortal(
-    <div
+    <dialog
+      ref={dialogRef}
       className="arazzo-ui nodrag nopan nowheel"
+      aria-label={`Request body for ${stepId}`}
+      onClose={onClose}
       onClick={(e) => {
         e.stopPropagation();
         onClose();
@@ -69,6 +75,13 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
       style={{
         position: 'fixed',
         inset: 0,
+        width: '100vw',
+        height: '100vh',
+        maxWidth: 'none',
+        maxHeight: 'none',
+        margin: 0,
+        padding: 0,
+        border: 'none',
         background: 'rgba(17, 24, 39, 0.5)',
         display: 'flex',
         alignItems: 'center',
@@ -77,9 +90,6 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
       }}
     >
       <div
-        role="dialog"
-        aria-modal="true"
-        aria-label={`Request body for ${stepId}`}
         onClick={(e) => e.stopPropagation()}
         style={{
           background: '#fff',
@@ -169,7 +179,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
           )}
         </div>
       </div>
-    </div>,
+    </dialog>,
     document.body,
   );
 };
