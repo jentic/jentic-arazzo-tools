@@ -740,6 +740,14 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             border-bottom: none;
           }
 
+          .step-table.request-body-table td {
+            border-bottom: 1px solid #e5e7eb;
+          }
+
+          .step-table.request-body-table tr:last-child td {
+            border-bottom: 1px solid #e5e7eb;
+          }
+
           .step-table code {
             background: #f3f4f6;
             padding: 1px 5px;

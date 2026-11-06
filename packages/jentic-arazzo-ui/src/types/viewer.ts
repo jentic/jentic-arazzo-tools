@@ -13,6 +13,7 @@ import {
   ArazzoDocument,
   ReusableObject,
   Parameter,
+  RequestBody,
 } from './arazzo';
 import type { StepOperation } from '@jentic/arazzo-parser';
 
@@ -134,6 +135,7 @@ export interface StepDocumentation {
   operation?: StepOperation;
   workflowId?: string;
   parameters?: (Parameter | ReusableObject)[];
+  requestBody?: RequestBody;
   outputs?: Record<string, string>;
   successCriteria?: Criterion[];
   onSuccess?: (SuccessAction | ReusableObject)[];
