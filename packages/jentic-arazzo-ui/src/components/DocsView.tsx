@@ -26,7 +26,21 @@ const severityLabels: Record<DiagnosticSeverityName, [singular: string, plural: 
   hint: ['hint', 'hints'],
 };
 
-const ValidationSection: React.FC<{ validation: ValidationState }> = ({ validation }) => {
+interface ValidationSectionProps {
+  validation: ValidationState;
+  showInlineNotes: boolean;
+  onShowInlineNotesChange: (show: boolean) => void;
+}
+
+const ValidationSection: React.FC<ValidationSectionProps> = ({
+  validation,
+  showInlineNotes,
+  onShowInlineNotesChange,
+}) => {
+  // only errors and warnings are shown inline, so the switch is pointless without them
+  const hasInlineNotes =
+    validation.status === 'done' &&
+    validation.diagnostics.some((d) => d.severity === 'error' || d.severity === 'warning');
   let summary: React.ReactNode = null;
   let body: React.ReactNode;
 
@@ -79,8 +93,29 @@ const ValidationSection: React.FC<{ validation: ValidationState }> = ({ validati
   return (
     <section className="validation-section" data-validation-status={validation.status}>
       <div className="workflows-header-row">
-        <span className="sources-header" style={{ margin: 0 }}>
-          Validation
+        <span className="validation-title">
+          <span className="sources-header" style={{ margin: 0 }}>
+            Validation
+          </span>
+          {hasInlineNotes && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showInlineNotes}
+              className="validation-inline-switch"
+              title={
+                showInlineNotes
+                  ? 'Hide validation notes in the workflows above'
+                  : 'Show validation notes in the workflows above'
+              }
+              onClick={() => onShowInlineNotesChange(!showInlineNotes)}
+            >
+              <span className="validation-inline-switch-track" aria-hidden="true">
+                <span className="validation-inline-switch-thumb" />
+              </span>
+              Inline notes
+            </button>
+          )}
         </span>
         {summary && <span className="validation-summary">{summary}</span>}
       </div>
@@ -243,7 +278,9 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
   }, [activeWorkflowId]);
 
   // Generate documentation (memoized)
-  const diagnostics = validation?.status === 'done' ? validation.diagnostics : undefined;
+  const [showInlineNotes, setShowInlineNotes] = useState(true);
+  const diagnostics =
+    showInlineNotes && validation?.status === 'done' ? validation.diagnostics : undefined;
 
   const documentation = useMemo(() => {
     if (!document) return null;
@@ -1076,6 +1113,64 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             gap: 6px;
           }
 
+          .validation-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+          }
+
+          .validation-inline-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+          }
+
+          .validation-inline-switch:hover {
+            color: #374151;
+          }
+
+          .validation-inline-switch:focus-visible {
+            outline: 2px solid #93c5fd;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+
+          .validation-inline-switch-track {
+            position: relative;
+            width: 28px;
+            height: 16px;
+            border-radius: 8px;
+            background: #d1d5db;
+            transition: background 0.15s;
+          }
+
+          .validation-inline-switch-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            transition: transform 0.15s;
+          }
+
+          .validation-inline-switch[aria-checked='true'] .validation-inline-switch-track {
+            background: #6BA543;
+          }
+
+          .validation-inline-switch[aria-checked='true'] .validation-inline-switch-thumb {
+            transform: translateX(12px);
+          }
+
           .validation-count {
             font-size: 11px;
             font-weight: 600;
@@ -1268,7 +1363,13 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             );
           })}
 
-          {validation && <ValidationSection validation={validation} />}
+          {validation && (
+            <ValidationSection
+              validation={validation}
+              showInlineNotes={showInlineNotes}
+              onShowInlineNotesChange={setShowInlineNotes}
+            />
+          )}
         </article>
       </div>
     </div>
