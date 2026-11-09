@@ -1,6 +1,11 @@
+import { parseArazzo } from '@jentic/arazzo-parser';
+
 import type { ArazzoDocument } from '../types/index';
 
 export type DiagnosticSeverityName = 'error' | 'warning' | 'info' | 'hint';
+
+// location of a diagnostic in the document tree, e.g. ['workflows', 0, 'steps', 1, 'parameters', 2]
+export type DiagnosticPath = (string | number)[];
 
 export interface DocumentDiagnostic {
   severity: DiagnosticSeverityName;
@@ -9,6 +14,7 @@ export interface DocumentDiagnostic {
   // 1-based position in the source document
   line: number;
   column: number;
+  path?: DiagnosticPath;
 }
 
 export type ValidationState =
@@ -35,6 +41,94 @@ const severityRank: Record<DiagnosticSeverityName, number> = {
   info: 2,
   hint: 3,
 };
+
+// minimal structural view of ApiDOM elements parsed with source maps
+interface SourceElement {
+  element?: string;
+  content?: unknown;
+  startOffset?: number;
+  endOffset?: number;
+  key?: SourceElement;
+  value?: SourceElement;
+  toValue?: () => unknown;
+}
+
+function contains(element: SourceElement | undefined, offset: number): boolean {
+  return (
+    typeof element?.startOffset === 'number' &&
+    typeof element.endOffset === 'number' &&
+    element.startOffset <= offset &&
+    offset < element.endOffset
+  );
+}
+
+function isArrayLike(element: SourceElement | undefined): boolean {
+  return (
+    Array.isArray(element?.content) &&
+    (element.content as SourceElement[]).every((item) => item?.element !== 'member')
+  );
+}
+
+/**
+ * Finds the path of the deepest element containing `offset`.
+ */
+function resolvePath(
+  element: SourceElement,
+  offset: number,
+  path: DiagnosticPath = [],
+): { path: DiagnosticPath; element: SourceElement } {
+  if (Array.isArray(element.content)) {
+    const children = element.content as SourceElement[];
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (child?.element === 'member') {
+        const key = String(child.key?.toValue?.() ?? '');
+        // diagnostics anchored on a key refer to that key's value
+        if (contains(child.key, offset)) {
+          return { path: [...path, key], element: child.value ?? child };
+        }
+        if (child.value && contains(child.value, offset)) {
+          return resolvePath(child.value, offset, [...path, key]);
+        }
+      } else if (contains(child, offset)) {
+        return resolvePath(child, offset, [...path, i]);
+      }
+    }
+  }
+  return { path, element };
+}
+
+/**
+ * Attaches a document path to each diagnostic by locating its start position in a
+ * source-mapped parse of the same content.
+ */
+async function resolveDiagnosticPaths(
+  content: string,
+  diagnostics: { offset: number; diagnostic: DocumentDiagnostic }[],
+): Promise<void> {
+  let root: SourceElement | undefined;
+  try {
+    const parseResult = await parseArazzo(content, {
+      parse: { parserOpts: { sourceMap: true, strict: false, sourceDescriptions: false } },
+    });
+    root = parseResult.api as unknown as SourceElement | undefined;
+  } catch {
+    // unparseable documents still get the plain diagnostics list
+    return;
+  }
+  if (!root) return;
+
+  for (const { offset, diagnostic } of diagnostics) {
+    const { path, element } = resolvePath(root, offset);
+    // JSON Schema errors about array items are reported on the array's key, with the
+    // item index only in the message (e.g. `"2" property must have required property "value"`)
+    const itemIndex = /^"(\d+)" property /.exec(diagnostic.message)?.[1];
+    if (itemIndex !== undefined && isArrayLike(element)) {
+      path.push(Number(itemIndex));
+    }
+    diagnostic.path = path;
+  }
+}
 
 function looksLikeURI(value: string): boolean {
   const trimmed = value.trim();
@@ -101,14 +195,20 @@ export async function validateArazzoSource(
     notice = `Source descriptions could not be resolved (${reason}), so checks against referenced documents were skipped.`;
   }
 
-  const diagnostics: DocumentDiagnostic[] = rawDiagnostics
-    .map((d) => ({
+  const located = rawDiagnostics.map((d) => ({
+    offset: textDocument.offsetAt(d.range.start),
+    diagnostic: {
       severity: severityNames[d.severity ?? 1] ?? 'error',
       message: d.message,
       code: d.code !== undefined ? String(d.code) : undefined,
       line: d.range.start.line + 1,
       column: d.range.start.character + 1,
-    }))
+    } as DocumentDiagnostic,
+  }));
+  await resolveDiagnosticPaths(source.content, located);
+
+  const diagnostics = located
+    .map(({ diagnostic }) => diagnostic)
     .sort(
       (a, b) =>
         severityRank[a.severity] - severityRank[b.severity] ||

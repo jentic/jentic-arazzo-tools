@@ -10,6 +10,7 @@ import {
   generateMermaidSequence,
   generateMermaidFlowchart,
 } from '../utils/documentation/index';
+import { worstSeverity } from '../utils/documentation/inlineDiagnostics';
 import type { DiagnosticSeverityName, ValidationState } from '../utils/validation';
 
 export interface DocsViewProps {
@@ -242,14 +243,17 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
   }, [activeWorkflowId]);
 
   // Generate documentation (memoized)
+  const diagnostics = validation?.status === 'done' ? validation.diagnostics : undefined;
+
   const documentation = useMemo(() => {
     if (!document) return null;
     return generateDocumentation(document, {
       includeMetadata: true,
       includeDiagrams: false,
       documentURL,
+      diagnostics,
     });
-  }, [document, documentURL]);
+  }, [document, documentURL, diagnostics]);
 
   // Pre-generate all diagrams (memoized)
   const sequenceDiagrams = useMemo(() => {
@@ -743,6 +747,92 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             color: #9ca3af;
           }
 
+          /* Inline validation notes */
+          .step-detail-issues {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 0 6px;
+            border-radius: 8px;
+            line-height: 16px;
+          }
+
+          .step-detail-issues-error {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+
+          .step-detail-issues-warning {
+            background: #fef3c7;
+            color: #92400e;
+          }
+
+          .step-detail-issues-info, .step-detail-issues-hint {
+            background: #dbeafe;
+            color: #1e40af;
+          }
+
+          .workflow-issues {
+            margin-left: auto;
+            font-size: 11px;
+            line-height: 20px;
+            padding: 0 8px;
+            border-radius: 10px;
+          }
+
+          .workflow-diagnostics,
+          .step-card > .step-diagnostics {
+            margin-top: 8px;
+          }
+
+          .step-diagnostics {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin: 2px 0 6px;
+          }
+
+          .step-diagnostic {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 3px 8px;
+            border-left: 2px solid;
+            border-radius: 0 4px 4px 0;
+            font-size: 12px;
+            line-height: 1.5;
+          }
+
+          .step-diagnostic-error {
+            background: #fef2f2;
+            border-color: #f87171;
+            color: #991b1b;
+          }
+
+          .step-diagnostic-warning {
+            background: #fffbeb;
+            border-color: #fbbf24;
+            color: #92400e;
+          }
+
+          .step-diagnostic-info, .step-diagnostic-hint {
+            background: #eff6ff;
+            border-color: #60a5fa;
+            color: #1e40af;
+          }
+
+          .step-diagnostic-severity {
+            flex-shrink: 0;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+          }
+
+          .step-diagnostic-message {
+            word-break: break-word;
+          }
+
           .step-detail-body {
             padding: 2px 0 4px 14px;
             font-size: 13px;
@@ -1116,6 +1206,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             const stepCount = workflow.steps.length;
             const currentView = getWorkflowView(workflow.workflowId);
             const workflowMd = documentation.workflowMarkdowns.get(workflow.workflowId) || '';
+            const workflowNotes = documentation.workflowNotes.get(workflow.workflowId) ?? [];
 
             const sequenceSource = sequenceDiagrams.get(workflow.workflowId) || null;
             const flowchartSource = flowchartDiagrams.get(workflow.workflowId) || null;
@@ -1134,6 +1225,14 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
                   <span className="workflow-summary-title">{workflow.workflowId}</span>
                   {workflow.summary && (
                     <span className="workflow-summary-text">{workflow.summary}</span>
+                  )}
+                  {workflowNotes.length > 0 && (
+                    <span
+                      className={`step-detail-issues workflow-issues step-detail-issues-${worstSeverity(workflowNotes)}`}
+                      title={`${workflowNotes.length} validation ${workflowNotes.length === 1 ? 'issue' : 'issues'}`}
+                    >
+                      ⚠ {workflowNotes.length}
+                    </span>
                   )}
                 </summary>
                 <div className="workflow-details-content">
