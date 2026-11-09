@@ -1,4 +1,4 @@
-import type { Metadata } from '@speclynx/apidom-ls';
+import type { Metadata } from '@speclynx/api-languageservice';
 import configArazzo from './arazzo/config.ts';
 import { linterfunctionsMap } from './linter-functions.ts';
 

@@ -1,6 +1,8 @@
 import type { Diagnostic } from 'vscode-languageserver-types';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
+import { formatMessage } from './stylish.ts';
+
 function severityToGitHub(severity: DiagnosticSeverity | undefined): string {
   switch (severity) {
     case DiagnosticSeverity.Error:
@@ -52,7 +54,7 @@ export function formatGitHubActions(
     const col = diagnostic.range.start.character + 1;
     const endLine = diagnostic.range.end.line + 1;
     const endCol = diagnostic.range.end.character + 1;
-    const message = escapeData(diagnostic.message);
+    const message = escapeData(formatMessage(diagnostic));
     const title = escapeProperty(diagnostic.code ? String(diagnostic.code) : 'validation');
     const file = escapeProperty(filePath);
 

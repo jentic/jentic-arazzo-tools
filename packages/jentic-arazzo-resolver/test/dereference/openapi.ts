@@ -3,7 +3,12 @@ import { fileURLToPath } from 'node:url';
 
 import { assert } from 'chai';
 import { isParseResultElement } from '@speclynx/apidom-datamodel';
-import { isOpenApi3_1Element } from '@speclynx/apidom-ns-openapi-3-1';
+import {
+  isOpenApi3_1Element,
+  isOperationElement,
+  type OpenApi3_1Element,
+  type PathItemElement,
+} from '@speclynx/apidom-ns-openapi-3-1';
 import { toValue } from '@speclynx/apidom-core';
 import { parseOpenAPI } from '@jentic/arazzo-parser';
 
@@ -173,6 +178,45 @@ describe('dereferenceOpenAPIElement', function () {
       const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json'));
 
       assert.deepEqual(toValue(actual.api), expected);
+    });
+  });
+
+  context('given child element with parseResult in strategyOpts', function () {
+    const rootFilePath = path.join(fixturesPath, 'root.json');
+
+    specify('should dereference Schema Objects referencing components', async function () {
+      const parseResult = await parseOpenAPI(rootFilePath);
+      const api = parseResult.api as OpenApi3_1Element;
+      const operation = (api.paths!.get('/users') as PathItemElement).getField!;
+
+      // pass parseResult via strategyOpts to provide access to full document for component resolution
+      const result = await dereferenceOpenAPIElement(operation, {
+        dereference: { strategyOpts: { parseResult } },
+      });
+      const expected = loadJsonFile(path.join(fixturesPath, 'dereferenced.json')) as {
+        components: { schemas: { User: unknown } };
+      };
+      const resultValue = toValue(result) as {
+        responses: { '200': { content: { 'application/json': { schema: unknown } } } };
+      };
+
+      assert.isTrue(isOperationElement(result));
+      assert.deepEqual(
+        resultValue.responses['200'].content['application/json'].schema,
+        expected.components.schemas.User,
+      );
+    });
+
+    specify('should not modify the given child element', async function () {
+      const parseResult = await parseOpenAPI(rootFilePath);
+      const api = parseResult.api as OpenApi3_1Element;
+      const operation = (api.paths!.get('/users') as PathItemElement).getField!;
+
+      await dereferenceOpenAPIElement(operation, {
+        dereference: { strategyOpts: { parseResult } },
+      });
+
+      assert.notInclude([...operation.classes], 'result');
     });
   });
 

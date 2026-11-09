@@ -1,0 +1,13 @@
+arazzo: 1.0.1
+info:
+  title: Nested Arazzo Source Description
+  version: 1.0.0
+sourceDescriptions:
+  - name: petstoreOrder
+    url: ./arazzo-full-valid.yaml
+    type: arazzo
+workflows:
+  - workflowId: orderPetViaNestedWorkflow
+    steps:
+      - stepId: orderPet
+        workflowId: $sourceDescriptions.petstoreOrder.authenticateAndOrderPet

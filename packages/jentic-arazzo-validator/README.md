@@ -1,7 +1,7 @@
 # @jentic/arazzo-validator
 
 `@jentic/arazzo-validator` is a validator and linter for [Arazzo Specification](https://spec.openapis.org/arazzo/latest.html) documents.
-It performs JSON Schema validation, semantic validation, and semantic linting using [SpecLynx ApiDOM Language Service](https://www.npmjs.com/package/@speclynx/apidom-ls).
+It performs JSON Schema validation, semantic validation, and semantic linting using [SpecLynx API Language Service](https://www.npmjs.com/package/@speclynx/api-languageservice).
 
 **Supported Arazzo versions:**
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)

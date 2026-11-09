@@ -1,5 +1,5 @@
 import { assert } from 'chai';
-import { refractCriterion, CriterionExpressionTypeElement } from '@speclynx/apidom-ns-arazzo-1';
+import { refractCriterion, ExpressionTypeElement } from '@speclynx/apidom-ns-arazzo-1';
 
 import {
   CriterionEvaluator,
@@ -67,7 +67,7 @@ describe('CriterionEvaluator', function () {
 
     specify('should read the type from a Criterion Expression Type Object', function () {
       const criterion = refractCriterion({ context: '$statusCode', condition: '^200$' });
-      criterion.type = new CriterionExpressionTypeElement({ type: 'regex' });
+      criterion.type = new ExpressionTypeElement({ type: 'regex' });
 
       assert.isTrue(evaluator.evaluate(criterion, resolve));
     });
@@ -125,14 +125,14 @@ describe('CriterionEvaluator', function () {
 
     specify('should accept an explicit rfc9535 version', function () {
       const criterion = refractCriterion({ context: '$response.body', condition: '$.pets[*]' });
-      criterion.type = new CriterionExpressionTypeElement({ type: 'jsonpath', version: 'rfc9535' });
+      criterion.type = new ExpressionTypeElement({ type: 'jsonpath', version: 'rfc9535' });
 
       assert.isTrue(evaluator.evaluate(criterion, resolve));
     });
 
     specify('should throw for a non-rfc9535 jsonpath version', function () {
       const criterion = refractCriterion({ context: '$response.body', condition: '$.pets[*]' });
-      criterion.type = new CriterionExpressionTypeElement({
+      criterion.type = new ExpressionTypeElement({
         type: 'jsonpath',
         version: 'draft-goessner-dispatch-jsonpath-00',
       });
@@ -150,7 +150,7 @@ describe('CriterionEvaluator', function () {
         const criterion = refractCriterion({ context: '$response.body', condition: '$.pets[*]' });
         // a version that is present but not a string is malformed — it must not
         // silently fall back to the default rfc9535.
-        criterion.type = new CriterionExpressionTypeElement({ type: 'jsonpath', version: 42 });
+        criterion.type = new ExpressionTypeElement({ type: 'jsonpath', version: 42 });
 
         assert.throws(
           () => evaluator.evaluate(criterion, resolve),
@@ -184,14 +184,14 @@ describe('CriterionEvaluator', function () {
 
     specify('should accept an explicit xpath-31 version', function () {
       const criterion = refractCriterion({ context: '$inputs.xml', condition: '//status' });
-      criterion.type = new CriterionExpressionTypeElement({ type: 'xpath', version: 'xpath-31' });
+      criterion.type = new ExpressionTypeElement({ type: 'xpath', version: 'xpath-31' });
 
       assert.isTrue(evaluator.evaluate(criterion, resolve));
     });
 
     specify('should throw for a non-xpath-31 version', function () {
       const criterion = refractCriterion({ context: '$inputs.xml', condition: '//status' });
-      criterion.type = new CriterionExpressionTypeElement({ type: 'xpath', version: 'xpath-30' });
+      criterion.type = new ExpressionTypeElement({ type: 'xpath', version: 'xpath-30' });
 
       assert.throws(
         () => evaluator.evaluate(criterion, resolve),
@@ -218,7 +218,7 @@ describe('CriterionEvaluator', function () {
       const criterion = refractCriterion({ context: '$statusCode', condition: '^200$' });
       // a Criterion Expression Type Object with no inner `type` is present but
       // unreadable — it must not silently degrade to `simple`.
-      criterion.type = new CriterionExpressionTypeElement();
+      criterion.type = new ExpressionTypeElement();
 
       assert.throws(() => evaluator.evaluate(criterion, resolve), CriterionError, /invalid "type"/);
     });

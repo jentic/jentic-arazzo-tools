@@ -1,7 +1,7 @@
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
 import ApilintCodes from '../../../codes.ts';
-import { LinterMeta, ArazzoTargetSpecs } from '@speclynx/apidom-ls';
+import { LinterMeta, ArazzoTargetSpecs } from '@speclynx/api-languageservice';
 
 
 const summaryRecommendedLint: LinterMeta = {

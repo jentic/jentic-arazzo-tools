@@ -2,7 +2,7 @@ import { toValue } from '@speclynx/apidom-core';
 import { isStringElement } from '@speclynx/apidom-datamodel';
 import {
   isCriterionElement,
-  isCriterionExpressionTypeElement,
+  isExpressionTypeElement,
   type CriterionElement,
 } from '@speclynx/apidom-ns-arazzo-1';
 
@@ -145,7 +145,7 @@ class CriterionEvaluator {
   #resolveType(criterion: CriterionElement): string {
     const type = criterion.type;
     if (type === undefined) return 'simple';
-    if (isCriterionExpressionTypeElement(type) && isStringElement(type.type)) {
+    if (isExpressionTypeElement(type) && isStringElement(type.type)) {
       return toValue(type.type) as string;
     }
     if (isStringElement(type)) return toValue(type) as string;
@@ -161,7 +161,7 @@ class CriterionEvaluator {
    */
   #resolveVersion(criterion: CriterionElement): string | undefined {
     const type = criterion.type;
-    if (!isCriterionExpressionTypeElement(type) || type.version === undefined) {
+    if (!isExpressionTypeElement(type) || type.version === undefined) {
       return undefined;
     }
     if (isStringElement(type.version)) {

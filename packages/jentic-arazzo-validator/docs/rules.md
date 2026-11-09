@@ -247,4 +247,4 @@ Each rule has a numeric code that appears in [Diagnostic](https://microsoft.gith
 
 ## JSON Schema rules
 
-JSON Schema 2020-12 validation rules are provided by [SpecLynx ApiDOM Language Service](https://www.npmjs.com/package/@speclynx/apidom-ls).
+JSON Schema 2020-12 validation rules are provided by [SpecLynx API Language Service](https://www.npmjs.com/package/@speclynx/api-languageservice).

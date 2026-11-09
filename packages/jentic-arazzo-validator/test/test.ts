@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import dedent from 'dedent';
 
-import { validate, DiagnosticSeverity, createTextDocument } from '../src/index.ts';
+import { validate, validateURI, DiagnosticSeverity, createTextDocument } from '../src/index.ts';
 import ApilintCodes from '../src/config/codes.ts';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -51,6 +51,16 @@ describe('validate', function () {
       const diagnostics = await validate(textDocument);
       const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
       assert.equal(errors.length, 0);
+    });
+  });
+
+  context('given Arazzo source description that has source descriptions of its own', function () {
+    specify('should return diagnostics instead of throwing', async function () {
+      const diagnostics = await validateURI(
+        path.join(__dirname, 'fixtures', 'arazzo-arazzo-source.yaml'),
+      );
+      const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
+      assert.lengthOf(errors, 0);
     });
   });
 
