@@ -269,5 +269,48 @@ describe('validate', function () {
         );
       },
     );
+
+    specify(
+      'should map diagnostics after the version on the same line back to the original positions',
+      async function () {
+        // minified JSON puts every diagnostic on the version's line
+        const minified = (version: string) =>
+          JSON.stringify({
+            arazzo: version,
+            info: { version: '1.0.0' },
+            sourceDescriptions: [{ name: 'myApi', type: 'openapi', url: 'https://example.com' }],
+            workflows: [{ workflowId: 'w', steps: [{ stepId: 's', operationId: 'x' }] }],
+          });
+        const supported = await validate(
+          createTextDocument('memory://arazzo.json', minified('1.0.1')),
+        );
+        assert.isAbove(supported.length, 0);
+
+        for (const version of ['1.1.0', '1.10.0', '1.100.200']) {
+          const shift = version.length - '1.0.1'.length;
+          const diagnostics = await validate(
+            createTextDocument('memory://arazzo.json', minified(version)),
+          );
+          const shifted = supported.map((d) =>
+            JSON.stringify([
+              d.code,
+              d.message,
+              d.range.start.character + shift,
+              d.range.end.character + shift,
+            ]),
+          );
+
+          assert.sameMembers(
+            diagnostics
+              .filter((d) => !isVersionDiagnostic(d))
+              .map((d) =>
+                JSON.stringify([d.code, d.message, d.range.start.character, d.range.end.character]),
+              ),
+            shifted,
+            version,
+          );
+        }
+      },
+    );
   });
 });

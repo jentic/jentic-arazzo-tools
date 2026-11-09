@@ -1,3 +1,5 @@
+import type { TextDocument } from 'vscode-languageserver-textdocument';
+import type { Position } from 'vscode-languageserver-types';
 import { ArazzoTargetSpecs } from '@speclynx/apidom-ls';
 import {
   detect as detectArazzoJSON,
@@ -92,11 +94,11 @@ export const isSupportedArazzoVersion = (version: string): boolean =>
   supportedArazzoVersions.includes(version);
 
 /**
- * Rewrites the root `arazzo` version field to `targetVersion` without shifting
- * any other character offsets, so diagnostics produced for the rewritten content
- * map 1:1 onto the original content.
+ * Rewrites the root `arazzo` version field to `targetVersion`.
  *
- * The replacement value is padded with trailing whitespace placed after any closing quote.
+ * Only the version itself is replaced, so any surrounding quotes are kept.
+ * Use {@link createVersionPositionMapper} to map positions in the rewritten
+ * content back onto the original content.
  *
  * @internal
  */
@@ -105,24 +107,35 @@ export function replaceArazzoVersion(
   detected: DetectedArazzoVersion,
   targetVersion: string,
 ): string {
-  const { start, end, version } = detected;
-  if (targetVersion.length > version.length) {
-    throw new RangeError(
-      `Cannot replace Arazzo version "${version}" with longer version "${targetVersion}"`,
-    );
-  }
+  return content.slice(0, detected.start) + targetVersion + content.slice(detected.end);
+}
 
-  const openingChar = content[start - 1];
-  const closingChar = content[end];
-  const isQuoted = (openingChar === '"' || openingChar === "'") && closingChar === openingChar;
-  const valueEnd = isQuoted ? end + 1 : end;
-  const padding = ' '.repeat(version.length - targetVersion.length);
+/**
+ * Creates a function that maps a position in content rewritten by
+ * {@link replaceArazzoVersion} back onto the original content.
+ *
+ * The version never spans lines, so only positions on the version's line that
+ * lie after the replaced value move. Positions inside the replaced value are
+ * clamped to the end of the original version.
+ *
+ * @param original - the original, unmodified document
+ * @internal
+ */
+export function createVersionPositionMapper(
+  original: TextDocument,
+  detected: DetectedArazzoVersion,
+  targetVersion: string,
+): (position: Position) => Position {
+  const { line, character: startCharacter } = original.positionAt(detected.start);
+  const originalEnd = startCharacter + detected.version.length;
+  const rewrittenEnd = startCharacter + targetVersion.length;
+  const delta = targetVersion.length - detected.version.length;
 
-  return (
-    content.slice(0, start) +
-    targetVersion +
-    content.slice(end, valueEnd) +
-    padding +
-    content.slice(valueEnd)
-  );
+  return (position) => {
+    if (delta === 0 || position.line !== line) return position;
+    if (position.character >= rewrittenEnd) {
+      return { line, character: position.character - delta };
+    }
+    return { line, character: Math.min(position.character, originalEnd) };
+  };
 }
