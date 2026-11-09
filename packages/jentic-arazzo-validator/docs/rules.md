@@ -33,6 +33,7 @@ Each rule has a numeric code that appears in [Diagnostic](https://microsoft.gith
 | 9020100 | error | `arazzo` version field is required |
 | 9020101 | error | `arazzo` must be a string |
 | 9020102 | error | `arazzo` must match `^1\.0\.\d+(-.+)?$` |
+| 9020103 | error | `arazzo` version must be supported; documents with an unsupported version are validated against the rules of the latest supported version |
 | 9020200 | error | `info` field is required |
 | 9020201 | error | `info` must be an Info object |
 | 9020300 | error | `sourceDescriptions` is required |
