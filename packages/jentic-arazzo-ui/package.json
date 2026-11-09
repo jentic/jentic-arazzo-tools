@@ -66,6 +66,7 @@
   "dependencies": {
     "@jentic/arazzo-parser": "1.0.0-alpha.33",
     "@jentic/arazzo-resolver": "1.0.0-alpha.33",
+    "@jentic/arazzo-validator": "1.0.0-alpha.33",
     "mermaid": "^12.2.0",
     "react-markdown": "^10.1.0",
     "reactflow": "^11.10.4",

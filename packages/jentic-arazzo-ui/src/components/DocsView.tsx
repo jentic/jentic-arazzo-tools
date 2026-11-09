@@ -10,11 +10,88 @@ import {
   generateMermaidSequence,
   generateMermaidFlowchart,
 } from '../utils/documentation/index';
+import type { DiagnosticSeverityName, ValidationState } from '../utils/validation';
 
 export interface DocsViewProps {
   diagramType?: string;
   onDiagramTypeChange?: (type: string) => void;
+  validation?: ValidationState;
 }
+
+const severityLabels: Record<DiagnosticSeverityName, [singular: string, plural: string]> = {
+  error: ['error', 'errors'],
+  warning: ['warning', 'warnings'],
+  info: ['info', 'info'],
+  hint: ['hint', 'hints'],
+};
+
+const ValidationSection: React.FC<{ validation: ValidationState }> = ({ validation }) => {
+  let summary: React.ReactNode = null;
+  let body: React.ReactNode;
+
+  if (validation.status === 'loading') {
+    body = <div className="validation-empty">Validating document…</div>;
+  } else if (validation.status === 'error') {
+    body = (
+      <div className="validation-empty validation-failed">
+        Validation could not be run: {validation.message}
+      </div>
+    );
+  } else if (validation.diagnostics.length === 0) {
+    body = <div className="validation-empty validation-ok">✓ No issues found</div>;
+  } else {
+    const counts = validation.diagnostics.reduce<Partial<Record<DiagnosticSeverityName, number>>>(
+      (acc, d) => ({ ...acc, [d.severity]: (acc[d.severity] ?? 0) + 1 }),
+      {},
+    );
+    summary = (Object.keys(severityLabels) as DiagnosticSeverityName[])
+      .filter((severity) => counts[severity])
+      .map((severity) => {
+        const count = counts[severity]!;
+        const [singular, plural] = severityLabels[severity];
+        return (
+          <span key={severity} className={`validation-count validation-count-${severity}`}>
+            {count} {count === 1 ? singular : plural}
+          </span>
+        );
+      });
+    body = (
+      <ul className="validation-list">
+        {validation.diagnostics.map((d, i) => (
+          <li key={i} className="validation-item">
+            <span className={`validation-severity validation-severity-${d.severity}`}>
+              {d.severity}
+            </span>
+            {validation.hasSourcePositions && (
+              <span className="validation-location">
+                {d.line}:{d.column}
+              </span>
+            )}
+            <span className="validation-message">{d.message}</span>
+            {d.code && <span className="validation-code">{d.code}</span>}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <section className="validation-section" data-validation-status={validation.status}>
+      <div className="workflows-header-row">
+        <span className="sources-header" style={{ margin: 0 }}>
+          Validation
+        </span>
+        {summary && <span className="validation-summary">{summary}</span>}
+      </div>
+      <div className="validation-card">
+        {validation.status === 'done' && validation.notice && (
+          <div className="validation-notice">{validation.notice}</div>
+        )}
+        {body}
+      </div>
+    </section>
+  );
+};
 
 type WorkflowViewMode = 'docs' | 'sequence' | 'flowchart';
 
@@ -67,7 +144,7 @@ const MermaidDiagram: React.FC<{ source: string }> = ({ source }) => {
 const markdownPlugins = [remarkGfm];
 const rehypePlugins = [rehypeHighlight, rehypeRaw];
 
-export const DocsView: React.FC<DocsViewProps> = () => {
+export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
   const { document, documentURL, selectedNodeId, nodes, activeWorkflowId } = useArazzoViewer();
   const mermaidInitialized = useRef(false);
   const docsContainerRef = useRef<HTMLDivElement>(null);
@@ -899,6 +976,125 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             height: auto;
           }
 
+          /* Validation */
+          .validation-section {
+            margin-bottom: 24px;
+          }
+
+          .validation-summary {
+            display: flex;
+            gap: 6px;
+          }
+
+          .validation-count {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+          }
+
+          .validation-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          }
+
+          .validation-empty {
+            padding: 14px 20px;
+            font-size: 13px;
+            color: #6b7280;
+          }
+
+          .validation-ok {
+            color: #6BA543;
+            font-weight: 600;
+          }
+
+          .validation-failed {
+            color: #991b1b;
+          }
+
+          .validation-notice {
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #92400e;
+            background: #fffbeb;
+            border-bottom: 1px solid #fde68a;
+          }
+
+          .arazzo-docs-view ul.validation-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+          }
+
+          .arazzo-docs-view li.validation-item {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin: 0;
+            padding: 10px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 13px;
+            line-height: 1.5;
+          }
+
+          .arazzo-docs-view li.validation-item:last-child {
+            border-bottom: none;
+          }
+
+          .validation-severity {
+            flex-shrink: 0;
+            box-sizing: border-box;
+            width: 70px;
+            text-align: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+          }
+
+          .validation-severity-error, .validation-count-error {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+
+          .validation-severity-warning, .validation-count-warning {
+            background: #fef3c7;
+            color: #92400e;
+          }
+
+          .validation-severity-info, .validation-count-info,
+          .validation-severity-hint, .validation-count-hint {
+            background: #dbeafe;
+            color: #1e40af;
+          }
+
+          .validation-location {
+            flex-shrink: 0;
+            min-width: 48px;
+            font-size: 12px;
+            color: #9ca3af;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+          }
+
+          .validation-message {
+            flex: 1;
+            color: #374151;
+            word-break: break-word;
+          }
+
+          .validation-code {
+            flex-shrink: 0;
+            font-size: 11px;
+            color: #9ca3af;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+          }
+
         `}</style>
         <article className="arazzo-docs-prose">
           {/* Header: title, version, sources */}
@@ -972,6 +1168,8 @@ export const DocsView: React.FC<DocsViewProps> = () => {
               </details>
             );
           })}
+
+          {validation && <ValidationSection validation={validation} />}
         </article>
       </div>
     </div>
