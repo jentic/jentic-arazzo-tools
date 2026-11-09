@@ -3,6 +3,41 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.33](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2026-11-09)
+
+### Bug Fixes
+
+- escape HTML in step header title ([67e1ab5](https://github.com/jentic/jentic-arazzo-tools/commit/67e1ab529d7724850c744c8a54f4bf6ef7c110ec))
+- **ui:** account for request body section in node layout ([fa97919](https://github.com/jentic/jentic-arazzo-tools/commit/fa97919d6ee4ef867fe541df15c3201fbacad64f))
+- **ui:** display explicit null request body payload ([72df1bb](https://github.com/jentic/jentic-arazzo-tools/commit/72df1bbd64667fb94fe6d50ebe20c5e5e5c30957))
+- **ui:** label workflow-referencing steps as Workflow, not Operation ([8fb2bf7](https://github.com/jentic/jentic-arazzo-tools/commit/8fb2bf7eaa7734e4b192a5ba4cb30b3b51290f11))
+- **ui:** make petstore sample workflow valid Arazzo ([66afeac](https://github.com/jentic/jentic-arazzo-tools/commit/66afeac732800128bdf17d5eaff35761a81aa49b))
+- **ui:** only parse url-encoded strings as form fields ([a2f00e7](https://github.com/jentic/jentic-arazzo-tools/commit/a2f00e7ac63653dd1cbfe5831795fced3d0cdfab))
+- **ui:** Remove context and type from successCriteria ([4f7a78d](https://github.com/jentic/jentic-arazzo-tools/commit/4f7a78d2e9dbfe53f21e5c65934a8fc7dc455bce))
+- **ui:** render parameters of steps invoking workflows ([7106aa9](https://github.com/jentic/jentic-arazzo-tools/commit/7106aa9759c0a29ce4ded3a5a60532998629cee2))
+- **ui:** show bottom border on request body tables ([f0c39d1](https://github.com/jentic/jentic-arazzo-tools/commit/f0c39d18a2949f3f61885abbb291666cafb54d87))
+- **ui:** show whole-payload runtime expressions as code in forms ([37b0c89](https://github.com/jentic/jentic-arazzo-tools/commit/37b0c8949159a7cab0e171ec0564c8f4fb68a6da))
+- **ui:** style workflow name like operation refs in step description ([025a004](https://github.com/jentic/jentic-arazzo-tools/commit/025a004f3b1e70835b70f29aa51ef425079f1134))
+- **ui:** trap focus in request body dialog ([5cebe94](https://github.com/jentic/jentic-arazzo-tools/commit/5cebe94f97166a75d592e98ec3cd476c7c39badd))
+- **ui:** use a single color for operation and workflow references ([c41185e](https://github.com/jentic/jentic-arazzo-tools/commit/c41185e0ed450ffc4fb5d72441dd119d484c7a60))
+
+### Features
+
+- **parser:** resolve step HTTP methods with typed OpenAPI APIs ([0795f96](https://github.com/jentic/jentic-arazzo-tools/commit/0795f96d6ca93203d2766b5ee6315502ef6bf989))
+- **resolver:** resolve path item refs of source descriptions ([8fca2e7](https://github.com/jentic/jentic-arazzo-tools/commit/8fca2e7b69fa3fb8c7aa79af7f46a8ae81b62e6f))
+- **ui:** Add requestBody dialog to diagram view ([a6abe2f](https://github.com/jentic/jentic-arazzo-tools/commit/a6abe2f7b496e2b163044f19c3a0ee4e3d871e64))
+- **ui:** Add requestBody to docs view ([5f33e04](https://github.com/jentic/jentic-arazzo-tools/commit/5f33e04f279c0955c06334174f59932cff7c841e))
+- **ui:** display requestBody payloads (except forms) as YAML ([3f331d2](https://github.com/jentic/jentic-arazzo-tools/commit/3f331d2288b1a0b71fd2a107f39426eac7f15b43))
+- **ui:** Move StepOperation stuff out of arrazo type def ([67cfbe7](https://github.com/jentic/jentic-arazzo-tools/commit/67cfbe7ba8a189171c1063d72ede40a29475ca4d))
+- **ui:** render requestBody by content type ([ff75c17](https://github.com/jentic/jentic-arazzo-tools/commit/ff75c17560586ac7eac55f47b1741748d341819a))
+- **ui:** Revert unnecessary formatting changes ([7d48e7e](https://github.com/jentic/jentic-arazzo-tools/commit/7d48e7e555280b2092450ff36a8fae1cf48e7683))
+- **ui:** show Arazzo logo instead of method badge for workflow steps ([9393386](https://github.com/jentic/jentic-arazzo-tools/commit/939338650c8ffb68a469ed86005ecad248f183f7))
+- **ui:** show form requestBody fields and replacements as tables ([52c7bcd](https://github.com/jentic/jentic-arazzo-tools/commit/52c7bcd8dec76576a96a124f3acfa0e7c9b29df6))
+- **ui:** show HTTP method of each step's operation ([9671a14](https://github.com/jentic/jentic-arazzo-tools/commit/9671a148440b78f9b51bd1de8915cb3926792919))
+- **ui:** Use existing logic in parser for OpenAPI doc parsing ([4b7bf5e](https://github.com/jentic/jentic-arazzo-tools/commit/4b7bf5e4cedfb536b9ba05a83bd4ee1fd699b19b))
+- **ui:** Use generic helper to render HTTP method badge ([6ab8cd6](https://github.com/jentic/jentic-arazzo-tools/commit/6ab8cd616c0b202a9584cbe62e956a6171c01b25))
+- **ui:** Use sourceDescription.type to check for OpenAPI doc ([f5d4e3f](https://github.com/jentic/jentic-arazzo-tools/commit/f5d4e3f900b94ec586c1f649b762e9f5a1e7c27c))
+
 # [1.0.0-alpha.32](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.31...v1.0.0-alpha.32) (2026-07-21)
 
 **Note:** Version bump only for package @jentic/arazzo-ui

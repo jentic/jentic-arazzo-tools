@@ -1,6 +1,6 @@
 {
   "name": "@jentic/arazzo-ui",
-  "version": "1.0.0-alpha.32",
+  "version": "1.0.0-alpha.33",
   "description": "UI for Arazzo Workflows.",
   "keywords": [
     "arazzo",
@@ -64,8 +64,8 @@
   "author": "Jentic <hello@jentic.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@jentic/arazzo-parser": "1.0.0-alpha.32",
-    "@jentic/arazzo-resolver": "1.0.0-alpha.32",
+    "@jentic/arazzo-parser": "1.0.0-alpha.33",
+    "@jentic/arazzo-resolver": "1.0.0-alpha.33",
     "mermaid": "^12.2.0",
     "react-markdown": "^10.1.0",
     "reactflow": "^11.10.4",

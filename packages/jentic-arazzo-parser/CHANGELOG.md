@@ -3,6 +3,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.33](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2026-11-09)
+
+### Bug Fixes
+
+- **parser:** match literal-URL operationPath to its source ([e9867f1](https://github.com/jentic/jentic-arazzo-tools/commit/e9867f118302fbfb3cc3a34ae9aa048f9735b7fd))
+- **parser:** resolve operationPath pointers against the source ([13d52b3](https://github.com/jentic/jentic-arazzo-tools/commit/13d52b3f461f422a5f86a11b3973817a2172d9c0))
+- **parser:** resolve operationPath that targets a path item ([9d54607](https://github.com/jentic/jentic-arazzo-tools/commit/9d54607eefb93b665582de1ebc6242c937d1dfde))
+- refactor condition to check sourceDescription type ([5604305](https://github.com/jentic/jentic-arazzo-tools/commit/5604305dd7c31ac4459997124667a3cf9609e252))
+
+### Features
+
+- **parser:** resolve step HTTP methods with typed OpenAPI APIs ([0795f96](https://github.com/jentic/jentic-arazzo-tools/commit/0795f96d6ca93203d2766b5ee6315502ef6bf989))
+- **parser:** type _operation on attachStepOperations result ([ae5a101](https://github.com/jentic/jentic-arazzo-tools/commit/ae5a101d1a32961b0c830b8c8e00bac508d73f64))
+- **ui:** Use existing logic in parser for OpenAPI doc parsing ([4b7bf5e](https://github.com/jentic/jentic-arazzo-tools/commit/4b7bf5e4cedfb536b9ba05a83bd4ee1fd699b19b))
+
 # [1.0.0-alpha.32](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.31...v1.0.0-alpha.32) (2026-07-21)
 
 **Note:** Version bump only for package @jentic/arazzo-parser

@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.33](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2026-11-09)
+
+### Bug Fixes
+
+- Correctly decode URI fragment in evaluateFragment ([369a206](https://github.com/jentic/jentic-arazzo-tools/commit/369a2062aa1364d07098eece85a7ffd9261de327))
+- **resolver:** follow only path item $ref chains ([c467e32](https://github.com/jentic/jentic-arazzo-tools/commit/c467e321e95fa00055f983f4b79ec00285a0890f))
+- **resolver:** resolve $refs in components.pathItems ([c9472d4](https://github.com/jentic/jentic-arazzo-tools/commit/c9472d49db22a31c8a0c85b05d59ee348bbc1eb1))
+
+### Features
+
+- **resolver:** resolve path item refs of source descriptions ([8fca2e7](https://github.com/jentic/jentic-arazzo-tools/commit/8fca2e7b69fa3fb8c7aa79af7f46a8ae81b62e6f))
+
 # [1.0.0-alpha.32](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.31...v1.0.0-alpha.32) (2026-07-21)
 
 **Note:** Version bump only for package @jentic/arazzo-resolver
