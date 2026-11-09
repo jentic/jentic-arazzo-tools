@@ -172,11 +172,7 @@ export function formatWorkflowAsMarkdown(
     // Description + (Operation|Workflow) combined
     let opHtml = '';
     let opKind = 'Operation';
-    const defaultType =
-      metadata.sourceDescriptions.length > 0
-        ? metadata.sourceDescriptions[0].type || 'arazzo'
-        : 'arazzo';
-    const refColor = defaultType === 'openapi' ? '#6BA543' : '#94C83D';
+    const refColor = '#6BA543';
     if (step.operationId) {
       const dotIdx = step.operationId.indexOf('.');
       if (dotIdx > 0) {
