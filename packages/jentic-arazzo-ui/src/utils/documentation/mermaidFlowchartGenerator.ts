@@ -152,7 +152,7 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
     `    style End fill:${palette.bgSecondary},stroke:${palette.borderHover},color:${palette.fg},stroke-width:2px`,
   );
   lines.push(
-    `    style Start fill:${palette.success},stroke:${palette.success},color:${palette.onAccent},stroke-width:2px`,
+    `    style Start fill:${palette.primary},stroke:${palette.primary},color:${palette.onAccent},stroke-width:2px`,
   );
 
   return lines.join('\n');

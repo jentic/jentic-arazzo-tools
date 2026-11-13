@@ -840,6 +840,11 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             color: var(--arazzo-fg-lighter);
           }
 
+          /* mermaid wraps node labels in <p> and colors the wrapper, so let them inherit */
+          .arazzo-docs-view .mermaid-rendered p {
+            color: inherit;
+          }
+
           /* Badge styling - small pills like SwaggerUI */
           .version-badge {
             font-family: var(--arazzo-font-heading);
