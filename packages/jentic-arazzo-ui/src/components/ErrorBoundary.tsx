@@ -31,7 +31,14 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
         this.props.fallback || (
           <div style={{ padding: 20, color: 'red', border: '2px solid red', margin: 10 }}>
             <h3>Something went wrong</h3>
-            <pre style={{ fontSize: 12, background: '#fee', padding: 10, overflow: 'auto' }}>
+            <pre
+              style={{
+                fontSize: 12,
+                background: 'var(--arazzo-danger-bg)',
+                padding: 10,
+                overflow: 'auto',
+              }}
+            >
               {this.state.error?.toString()}
               {'\n\n'}
               {this.state.error?.stack}

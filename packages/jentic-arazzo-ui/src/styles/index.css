@@ -4,13 +4,122 @@
    Note: .arazzo-ui class is applied by the ArazzoUI component
    ========================================================================== */
 
+/* ==========================================================================
+   Theme tokens - Jentic brand palette (ported from the light theme in
+   Jentic OS ui/src/index.css: warm off-white page, white cards, pale
+   green-gray borders, deep green primary, gold accent). Every color in the
+   viewer flows through these tokens, so a host app can re-theme by
+   overriding them on .arazzo-ui / .arazzo-ui-standalone. Hex values used
+   where CSS variables can't reach (mermaid, react flow arrow markers) live in
+   src/styles/palette.ts and must be kept in sync with this block.
+   ========================================================================== */
+.arazzo-ui,
+.arazzo-ui-standalone {
+  /* green scale */
+  --arazzo-primary-50: #f0fff9;
+  --arazzo-primary-100: #ddf8ed;
+  --arazzo-primary-300: #0c8d5e;
+  --arazzo-primary-500: #06744c;
+  --arazzo-primary-700: #bfe3d6;
+  --arazzo-primary-850: #eff5f2;
+  --arazzo-primary-900: #ffffff;
+  --arazzo-primary-950: #fbfaf9;
+
+  /* accents */
+  --arazzo-accent-orange: #d48611;
+  --arazzo-accent-yellow: #cc981e;
+  --arazzo-accent-green: #0c8d5e;
+  --arazzo-accent-pink: #c62a37;
+  --arazzo-accent-blue: #206bb6;
+
+  /* surfaces */
+  --arazzo-bg: var(--arazzo-primary-950);
+  --arazzo-bg-secondary: var(--arazzo-primary-850);
+  --arazzo-card: var(--arazzo-primary-900);
+  --arazzo-card-selected: var(--arazzo-primary-50);
+  --arazzo-border: #d9e3de;
+  --arazzo-border-hover: #7ab8a1;
+
+  /* text */
+  --arazzo-fg: #152822;
+  --arazzo-fg-lighter: #495a54;
+  --arazzo-muted-fg: #63746e;
+  --arazzo-subtle-fg: #8a9792;
+
+  /* brand */
+  --arazzo-primary: #0b7a51;
+  --arazzo-primary-hover: #085e3e;
+  --arazzo-primary-fg: #ffffff;
+  --arazzo-primary-bg: rgb(12 141 94 / 0.08);
+  --arazzo-ring: var(--arazzo-primary-300);
+  --arazzo-ring-glow: rgb(12 141 94 / 0.25);
+
+  /* selected diagram node: header strip tint and divider */
+  --arazzo-selected-bg: var(--arazzo-primary-100);
+  --arazzo-selected-border: var(--arazzo-primary-700);
+
+  /* text drawn on top of a solid accent fill (badges, edge labels) */
+  --arazzo-on-accent: #ffffff;
+
+  /* state */
+  --arazzo-success: var(--arazzo-accent-green);
+  --arazzo-success-hover: var(--arazzo-primary-500);
+  --arazzo-success-bg: rgb(12 141 94 / 0.08);
+  --arazzo-success-border: rgb(12 141 94 / 0.3);
+  --arazzo-warning: #8e5a0b; /* gold, darkened so badge text clears 4.5:1 */
+  --arazzo-warning-hover: var(--arazzo-accent-orange);
+  --arazzo-warning-bg: rgb(212 134 17 / 0.08);
+  --arazzo-warning-border: rgb(212 134 17 / 0.3);
+  --arazzo-danger: #c32230;
+  --arazzo-danger-hover: var(--arazzo-accent-pink);
+  --arazzo-danger-bg: rgb(195 34 48 / 0.06);
+  --arazzo-danger-border: rgb(195 34 48 / 0.3);
+  --arazzo-destructive: #b81e1e;
+  --arazzo-info: var(--arazzo-accent-blue);
+  --arazzo-info-bg: rgb(32 107 182 / 0.08);
+  --arazzo-info-border: rgb(32 107 182 / 0.3);
+  --arazzo-accent-orange-bg: rgb(212 134 17 / 0.1);
+
+  /* elevation - soft neutral shadows for light surfaces */
+  --arazzo-shadow: 0 1px 2px 0 rgb(21 40 34 / 0.06);
+  --arazzo-shadow-pop: 0 16px 40px -12px rgb(21 40 34 / 0.18), 0 4px 12px -4px rgb(21 40 34 / 0.1);
+  --arazzo-shadow-node: 0 2px 8px rgb(0 0 0 / 0.1);
+  --arazzo-shadow-node-strong: 0 2px 8px rgb(0 0 0 / 0.15);
+  --arazzo-shadow-label: 0 2px 8px rgb(0 0 0 / 0.2);
+  --arazzo-shadow-dialog: 0 20px 50px rgb(0 0 0 / 0.3);
+
+  /* glow under a selected start / end / workflow-ref node */
+  --arazzo-glow-success: 0 8px 24px rgb(12 141 94 / 0.3);
+  --arazzo-glow-warning: 0 8px 24px rgb(212 134 17 / 0.2);
+  --arazzo-glow-neutral: 0 8px 24px rgb(0 0 0 / 0.3);
+
+  /* backdrop behind modal dialogs */
+  --arazzo-overlay: rgb(21 40 34 / 0.75);
+
+  /* hairline divider drawn on a solid accent fill */
+  --arazzo-on-accent-divider: rgb(255 255 255 / 0.3);
+
+  /* typography - Jentic website brand fonts: Sora for headings, labels and
+     buttons; Nunito Sans for body text; Geist Mono for code. Each stack starts
+     with the brand font and ends with its generic safety net. The fonts
+     themselves are loaded by the host page (see public/app.html). */
+  --arazzo-font-sans: 'Nunito Sans', sans-serif;
+  --arazzo-font-heading: 'Sora', sans-serif;
+  --arazzo-font-mono: 'Geist Mono', ui-monospace, monospace;
+}
+
 /* Base container */
 .arazzo-ui {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--arazzo-font-sans);
   font-size: 14px;
   line-height: 1.5;
-  color: #1f2937;
+  color: var(--arazzo-fg-lighter);
+  background: var(--arazzo-bg);
   box-sizing: border-box;
+}
+
+.arazzo-ui-standalone {
+  background: var(--arazzo-bg);
 }
 
 .arazzo-ui *,
@@ -35,7 +144,7 @@
   margin-top: 0;
   margin-bottom: 0.8em;
   line-height: 1.2;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose h2 {
@@ -44,7 +153,7 @@
   margin-top: 1.6em;
   margin-bottom: 0.6em;
   line-height: 1.3;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose h3 {
@@ -53,7 +162,7 @@
   margin-top: 1.4em;
   margin-bottom: 0.4em;
   line-height: 1.4;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose h4 {
@@ -61,7 +170,7 @@
   font-weight: 600;
   margin-top: 1.2em;
   margin-bottom: 0.4em;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose p {
@@ -70,31 +179,32 @@
 }
 
 .arazzo-docs-prose a {
-  color: #2563eb;
+  color: var(--arazzo-primary);
   text-decoration: underline;
 }
 
 .arazzo-docs-prose a:hover {
-  color: #1d4ed8;
+  color: var(--arazzo-primary-hover);
 }
 
 .arazzo-docs-prose blockquote {
-  border-left: 3px solid #e5e7eb;
+  border-left: 3px solid var(--arazzo-border);
   padding-left: 1em;
   margin-left: 0;
-  color: #6b7280;
+  color: var(--arazzo-muted-fg);
   font-style: italic;
 }
 
 .arazzo-docs-prose hr {
   border: none;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--arazzo-border);
   margin: 2em 0;
 }
 
 .arazzo-docs-prose pre {
-  background: #1f2937;
-  color: #f3f4f6;
+  background: var(--arazzo-bg);
+  border: 1px solid var(--arazzo-border);
+  color: var(--arazzo-fg-lighter);
   padding: 1em;
   border-radius: 6px;
   overflow-x: auto;
@@ -129,5 +239,57 @@
 }
 
 .arazzo-ui .react-flow__controls {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--arazzo-shadow);
+}
+
+.arazzo-ui .react-flow {
+  background: var(--arazzo-bg);
+}
+
+.arazzo-ui .react-flow__controls-button {
+  background: var(--arazzo-card);
+  border-bottom: 1px solid var(--arazzo-border);
+  fill: var(--arazzo-fg-lighter);
+}
+
+.arazzo-ui .react-flow__controls-button:hover {
+  background: var(--arazzo-bg-secondary);
+}
+
+.arazzo-ui .react-flow__controls-button svg {
+  fill: var(--arazzo-fg-lighter);
+}
+
+.arazzo-ui .react-flow__attribution {
+  background: transparent;
+}
+
+.arazzo-ui .react-flow__attribution a {
+  color: var(--arazzo-subtle-fg);
+}
+
+/* ==========================================================================
+   Brand typography
+   ========================================================================== */
+
+.arazzo-ui h1,
+.arazzo-ui h2,
+.arazzo-ui h3,
+.arazzo-ui h4,
+.arazzo-ui h5,
+.arazzo-ui h6,
+.arazzo-ui button,
+.arazzo-ui-standalone button {
+  font-family: var(--arazzo-font-heading);
+}
+
+.arazzo-ui-standalone input {
+  font-family: var(--arazzo-font-sans);
+}
+
+.arazzo-ui code,
+.arazzo-ui pre,
+.arazzo-ui kbd,
+.arazzo-ui samp {
+  font-family: var(--arazzo-font-mono);
 }

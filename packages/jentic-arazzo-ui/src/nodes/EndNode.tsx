@@ -8,24 +8,28 @@ export const EndNode: React.FC<NodeProps<EndNodeData>> = ({ data, selected }) =>
 
   // Selection styles - more prominent
   const boxShadow = selected
-    ? '0 0 0 3px rgba(59, 130, 246, 0.4), 0 8px 24px rgba(107, 114, 128, 0.3)'
-    : '0 2px 8px rgba(0,0,0,0.15)';
+    ? '0 0 0 3px var(--arazzo-ring-glow), var(--arazzo-glow-neutral)'
+    : 'var(--arazzo-shadow-node-strong)';
 
   return (
     <div
       className={`end-node ${selected ? 'end-node--selected' : ''}`}
       style={{
-        background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)',
-        border: `3px solid ${selected ? '#3b82f6' : '#4b5563'}`,
+        background: 'var(--arazzo-bg-secondary)',
+        border: `3px solid ${selected ? 'var(--arazzo-ring)' : 'var(--arazzo-border-hover)'}`,
         borderRadius: '12px',
         width: '420px',
-        color: '#fff',
+        color: 'var(--arazzo-fg)',
         boxShadow,
         transition: 'all 0.15s ease-in-out',
         transform: selected ? 'scale(1.03)' : 'scale(1)',
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#fff' }} />
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ background: 'var(--arazzo-fg-lighter)' }}
+      />
 
       {/* Header */}
       <div
@@ -58,7 +62,7 @@ export const EndNode: React.FC<NodeProps<EndNodeData>> = ({ data, selected }) =>
         <div
           style={{
             padding: '12px 16px',
-            borderTop: '1px solid rgba(255,255,255,0.3)',
+            borderTop: '1px solid var(--arazzo-border)',
             fontSize: '11px',
           }}
         >

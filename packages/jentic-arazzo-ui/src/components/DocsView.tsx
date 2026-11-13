@@ -5,6 +5,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeRaw from 'rehype-raw';
 import mermaid from 'mermaid';
 import { useArazzoViewer } from '../context/ArazzoViewerContext';
+import { palette } from '../styles/palette';
 import {
   generateDocumentation,
   generateMermaidSequence,
@@ -106,7 +107,39 @@ export const DocsView: React.FC<DocsViewProps> = () => {
     if (!mermaidInitialized.current) {
       mermaid.initialize({
         startOnLoad: false,
-        theme: 'default',
+        theme: 'base',
+        darkMode: false,
+        themeVariables: {
+          background: palette.card,
+          fontFamily: "'Nunito Sans', sans-serif",
+          primaryColor: palette.card,
+          primaryTextColor: palette.fg,
+          primaryBorderColor: palette.primary,
+          secondaryColor: palette.bgSecondary,
+          tertiaryColor: palette.bgSecondary,
+          lineColor: palette.subtleFg,
+          textColor: palette.fgLighter,
+          mainBkg: palette.card,
+          nodeBorder: palette.primary,
+          clusterBkg: palette.bgSecondary,
+          edgeLabelBackground: palette.bgSecondary,
+          actorBkg: palette.card,
+          actorBorder: palette.primary,
+          actorTextColor: palette.fg,
+          actorLineColor: palette.borderHover,
+          signalColor: palette.fgLighter,
+          signalTextColor: palette.fgLighter,
+          labelBoxBkgColor: palette.bgSecondary,
+          labelBoxBorderColor: palette.border,
+          labelTextColor: palette.fg,
+          loopTextColor: palette.fgLighter,
+          noteBkgColor: palette.bgSecondary,
+          noteBorderColor: palette.fg,
+          noteTextColor: palette.fgLighter,
+          activationBkgColor: palette.bgSecondary,
+          activationBorderColor: palette.primary,
+          sequenceNumberColor: palette.onAccent,
+        },
         securityLevel: 'loose',
         flowchart: { useMaxWidth: true, htmlLabels: true },
       });
@@ -215,7 +248,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
   if (!document || !documentation) {
     return (
       <div className="arazzo-docs-view">
-        <div style={{ padding: '24px', color: '#6b7280' }}>No workflow loaded</div>
+        <div style={{ padding: '24px', color: 'var(--arazzo-muted-fg)' }}>No workflow loaded</div>
       </div>
     );
   }
@@ -238,21 +271,21 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           flex: 1,
           overflow: 'auto',
           padding: '24px 48px',
-          background: '#f9fafb',
+          background: 'var(--arazzo-bg)',
         }}
       >
         <style>{`
           .workflow-details {
-            background: white;
+            background: var(--arazzo-card);
             border-radius: 8px;
             margin-bottom: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e5e7eb;
+            box-shadow: var(--arazzo-shadow);
+            border: 1px solid var(--arazzo-border);
             overflow: hidden;
           }
 
           .workflow-details[open] {
-            border-color: #94C83D;
+            border-color: var(--arazzo-primary);
           }
 
           .workflow-summary-bar {
@@ -263,7 +296,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             cursor: pointer;
             user-select: none;
             list-style: none;
-            background: #f3fae8;
+            background: var(--arazzo-primary-bg);
             transition: background 0.15s;
           }
 
@@ -274,7 +307,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .workflow-summary-bar::before {
             content: '▶';
             font-size: 10px;
-            color: #6BA543;
+            color: var(--arazzo-primary);
             transition: transform 0.15s;
             flex-shrink: 0;
           }
@@ -284,31 +317,31 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .workflow-summary-bar:hover {
-            background: #ecf5dc;
+            background: var(--arazzo-bg-secondary);
           }
 
           .workflow-summary-title {
             font-size: 15px;
             font-weight: 700;
-            color: #111827;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            color: var(--arazzo-fg);
+            font-family: var(--arazzo-font-mono);
           }
 
           .workflow-summary-text {
             font-size: 13px;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             flex: 1;
           }
 
           .workflow-details-content {
             padding: 4px 20px 20px;
-            border-top: 1px solid #e5e7eb;
+            border-top: 1px solid var(--arazzo-border);
           }
 
           .workflow-view-toggle {
             display: flex;
             gap: 0;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--arazzo-border);
             margin-bottom: 16px;
             margin-top: 8px;
           }
@@ -319,7 +352,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             font-weight: 500;
             border: none;
             background: none;
-            color: #9ca3af;
+            color: var(--arazzo-subtle-fg);
             cursor: pointer;
             transition: all 0.15s;
             border-bottom: 2px solid transparent;
@@ -327,24 +360,24 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .workflow-view-btn:hover {
-            color: #374151;
+            color: var(--arazzo-fg-lighter);
           }
 
           .workflow-view-btn-active {
-            color: #111827;
+            color: var(--arazzo-fg);
             font-weight: 600;
-            border-bottom-color: #111827;
+            border-bottom-color: var(--arazzo-fg);
           }
 
           .workflow-description {
-            color: #4b5563;
+            color: var(--arazzo-fg-lighter);
             margin: 16px 0;
             line-height: 1.6;
           }
 
           .doc-section {
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
+            background: var(--arazzo-bg-secondary);
+            border: 1px solid var(--arazzo-border);
             border-radius: 6px;
             padding: 16px;
             margin: 16px 0;
@@ -355,9 +388,10 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .sources-header {
+            font-family: var(--arazzo-font-heading);
             font-size: 13px;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             text-transform: uppercase;
             letter-spacing: 0.05em;
             margin-bottom: 10px;
@@ -374,9 +408,9 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .expand-all-btn {
             font-size: 12px;
             font-weight: 500;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             background: none;
-            border: 1px solid #d1d5db;
+            border: 1px solid var(--arazzo-border);
             border-radius: 4px;
             padding: 3px 10px;
             cursor: pointer;
@@ -384,9 +418,9 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .expand-all-btn:hover {
-            color: #374151;
-            border-color: #9ca3af;
-            background: #f9fafb;
+            color: var(--arazzo-fg-lighter);
+            border-color: var(--arazzo-border-hover);
+            background: var(--arazzo-bg-secondary);
           }
 
           .sources-grid {
@@ -398,16 +432,16 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .source-card {
             flex: 1;
             min-width: 240px;
-            background: #fff;
-            border: 1px solid #e5e7eb;
+            background: var(--arazzo-card);
+            border: 1px solid var(--arazzo-border);
             border-radius: 8px;
             padding: 14px 16px;
             transition: border-color 0.15s, box-shadow 0.15s;
           }
 
           .source-card:hover {
-            border-color: #94C83D;
-            box-shadow: 0 2px 8px rgba(107, 165, 67, 0.15);
+            border-color: var(--arazzo-primary);
+            box-shadow: 0 2px 8px var(--arazzo-ring-glow);
           }
 
           .source-card-top {
@@ -418,6 +452,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .source-type-badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-block;
             padding: 2px 8px;
             border-radius: 4px;
@@ -427,40 +462,40 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .source-type-openapi {
-            background: #6BA543;
-            color: #fff;
+            background: var(--arazzo-primary);
+            color: var(--arazzo-on-accent);
           }
 
           .source-type-arazzo {
-            background: #94C83D;
-            color: #fff;
+            background: var(--arazzo-primary);
+            color: var(--arazzo-on-accent);
           }
 
           .source-name {
             font-size: 15px;
             font-weight: 600;
-            color: #111827;
+            color: var(--arazzo-fg);
           }
 
           .source-url {
             display: block;
             font-size: 12px;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             text-decoration: none;
             word-break: break-all;
           }
 
           .source-url:hover {
-            color: #3b82f6;
+            color: var(--arazzo-primary);
             text-decoration: underline;
           }
 
           .doc-section h3 {
             margin-top: 0;
-            color: #111827;
+            color: var(--arazzo-fg);
             font-size: 1.1rem;
             font-weight: 600;
-            border-bottom: 2px solid #e5e7eb;
+            border-bottom: 2px solid var(--arazzo-border);
             padding-bottom: 8px;
             margin-bottom: 16px;
           }
@@ -496,18 +531,18 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             width: 24px;
             height: 24px;
             border-radius: 50%;
-            background: #e8f5d3;
-            border: 1px solid #94C83D;
+            background: var(--arazzo-primary-bg);
+            border: 1px solid var(--arazzo-primary);
             flex-shrink: 0;
             font-size: 11px;
             font-weight: 700;
-            color: #6BA543;
+            color: var(--arazzo-primary);
           }
 
           .timeline-line {
             width: 2px;
             flex: 1;
-            background: #94C83D;
+            background: var(--arazzo-primary);
             margin: 4px 0;
           }
 
@@ -533,7 +568,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             left: 14px;
             right: 0;
             height: 1px;
-            background: #e5e7eb;
+            background: var(--arazzo-border);
           }
 
           .timeline-item-last {
@@ -559,16 +594,16 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .timeline-step-name {
             font-size: 14px;
             font-weight: 700;
-            color: #111827;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            color: var(--arazzo-fg);
+            font-family: var(--arazzo-font-mono);
           }
 
           .timeline-operation {
             font-size: 11px;
             padding: 2px 6px;
             border-radius: 4px;
-            background: #e8f5d3;
-            color: #6BA543;
+            background: var(--arazzo-primary-bg);
+            color: var(--arazzo-primary);
             font-weight: 600;
           }
 
@@ -584,7 +619,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             overflow: hidden;
             font-size: 11px;
             font-weight: 600;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-family: var(--arazzo-font-mono);
             line-height: 1;
           }
 
@@ -594,14 +629,14 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
           .timeline-source {
             padding: 3px 6px 3px 2px;
-            background: #f3f4f6;
-            color: #6b7280;
+            background: var(--arazzo-bg-secondary);
+            color: var(--arazzo-muted-fg);
           }
 
           .timeline-op-name {
             padding: 3px 6px;
-            background: #e8f5d3;
-            color: #6BA543;
+            background: var(--arazzo-primary-bg);
+            color: var(--arazzo-primary);
           }
 
           .source-card-top .source-icon {
@@ -609,7 +644,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .step-description {
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             margin: 6px 0 0 0;
             font-style: italic;
             font-size: 13px;
@@ -618,7 +653,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
           .step-op-ref {
             font-weight: 700;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-family: var(--arazzo-font-mono);
             font-style: normal;
             font-size: 12px;
           }
@@ -635,7 +670,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             padding: 3px 0;
             font-size: 12px;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             cursor: pointer;
             user-select: none;
             list-style: none;
@@ -648,7 +683,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .step-detail-summary::before {
             content: '▶';
             font-size: 7px;
-            color: #9ca3af;
+            color: var(--arazzo-subtle-fg);
             transition: transform 0.15s;
           }
 
@@ -657,34 +692,34 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .step-detail-summary:hover {
-            color: #374151;
+            color: var(--arazzo-fg-lighter);
           }
 
           .step-detail-count {
             font-size: 10px;
             font-weight: 600;
-            color: #9ca3af;
+            color: var(--arazzo-subtle-fg);
           }
 
           .step-detail-body {
             padding: 2px 0 4px 14px;
             font-size: 13px;
-            color: #4b5563;
+            color: var(--arazzo-fg-lighter);
             line-height: 1.7;
           }
 
           .step-row {
             padding: 2px 0;
             font-size: 13px;
-            color: #4b5563;
+            color: var(--arazzo-fg-lighter);
           }
 
           .step-row code {
-            background: #f3f4f6;
+            background: var(--arazzo-bg-secondary);
             padding: 1px 5px;
             border-radius: 3px;
             font-size: 12px;
-            color: #1e40af;
+            color: var(--arazzo-info);
           }
 
           .step-grid-3 {
@@ -696,19 +731,19 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .step-grid-row {
             display: contents;
             font-size: 13px;
-            color: #4b5563;
+            color: var(--arazzo-fg-lighter);
           }
 
           .step-grid-row code {
-            background: #f3f4f6;
+            background: var(--arazzo-bg-secondary);
             padding: 1px 5px;
             border-radius: 3px;
             font-size: 12px;
-            color: #1e40af;
+            color: var(--arazzo-info);
           }
 
           .step-arrow {
-            color: #9ca3af;
+            color: var(--arazzo-subtle-fg);
           }
 
           .step-table {
@@ -719,21 +754,21 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .step-table th {
-            background: #f9fafb;
+            background: var(--arazzo-bg-secondary);
             padding: 5px 10px;
             text-align: left;
             font-weight: 600;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             font-size: 11px;
             text-transform: uppercase;
             letter-spacing: 0.03em;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--arazzo-border);
           }
 
           .step-table td {
             padding: 4px 10px;
-            color: #4b5563;
-            border-bottom: 1px solid #f3f4f6;
+            color: var(--arazzo-fg-lighter);
+            border-bottom: 1px solid var(--arazzo-border);
           }
 
           .step-table tr:last-child td {
@@ -741,19 +776,19 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .step-table.request-body-table td {
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--arazzo-border);
           }
 
           .step-table.request-body-table tr:last-child td {
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid var(--arazzo-border);
           }
 
           .step-table code {
-            background: #f3f4f6;
+            background: var(--arazzo-bg-secondary);
             padding: 1px 5px;
             border-radius: 3px;
             font-size: 11px;
-            color: #1e40af;
+            color: var(--arazzo-info);
           }
 
           .arazzo-docs-view table {
@@ -763,30 +798,30 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .arazzo-docs-view th {
-            background: #f3f4f6;
+            background: var(--arazzo-bg-secondary);
             padding: 8px 12px;
             text-align: left;
             font-weight: 600;
-            color: #374151;
-            border: 1px solid #d1d5db;
+            color: var(--arazzo-fg-lighter);
+            border: 1px solid var(--arazzo-border);
           }
 
           .arazzo-docs-view td {
             padding: 8px 12px;
-            border: 1px solid #e5e7eb;
-            color: #4b5563;
+            border: 1px solid var(--arazzo-border);
+            color: var(--arazzo-fg-lighter);
           }
 
           .arazzo-docs-view code {
-            background: #f3f4f6;
+            background: var(--arazzo-bg-secondary);
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 0.9em;
-            color: #1e40af;
+            color: var(--arazzo-info);
           }
 
           .arazzo-docs-view strong {
-            color: #1f2937;
+            color: var(--arazzo-fg);
             font-weight: 600;
           }
 
@@ -802,11 +837,12 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
           /* Runtime expression styling */
           .arazzo-docs-view p, .arazzo-docs-view li {
-            color: #374151;
+            color: var(--arazzo-fg-lighter);
           }
 
           /* Badge styling - small pills like SwaggerUI */
           .version-badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-flex;
             align-items: center;
             height: 22px;
@@ -821,24 +857,25 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .spec-version {
-            background: #94C83D;
-            color: #fff;
+            background: var(--arazzo-primary);
+            color: var(--arazzo-on-accent);
           }
 
           .doc-version {
-            background: #61affe;
-            color: #fff;
+            background: var(--arazzo-info);
+            color: var(--arazzo-on-accent);
           }
 
           .step-count-badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-block;
             padding: 4px 12px;
             border-radius: 6px;
             font-size: 12px;
             font-weight: 600;
-            background: #94C83D;
-            color: #fff;
-            border: 1px solid #6BA543;
+            background: var(--arazzo-primary);
+            color: var(--arazzo-on-accent);
+            border: 1px solid var(--arazzo-primary);
           }
 
           .operation-badge {
@@ -847,12 +884,13 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             border-radius: 4px;
             font-size: 11px;
             font-weight: 600;
-            background: #e8f5d3;
-            color: #6BA543;
+            background: var(--arazzo-primary-bg);
+            color: var(--arazzo-primary);
           }
 
           /* Action badges (END, GOTO, RETRY) */
           .badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-block;
             padding: 3px 8px;
             border-radius: 4px;
@@ -865,27 +903,27 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .badge-success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #86efac;
+            background: var(--arazzo-success-bg);
+            color: var(--arazzo-success);
+            border: 1px solid var(--arazzo-success-border);
           }
 
           .badge-error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
+            background: var(--arazzo-danger-bg);
+            color: var(--arazzo-danger);
+            border: 1px solid var(--arazzo-danger-border);
           }
 
           .badge-warning {
-            background: #fef3c7;
-            color: #92400e;
-            border: 1px solid #fde68a;
+            background: var(--arazzo-warning-bg);
+            color: var(--arazzo-warning);
+            border: 1px solid var(--arazzo-warning-border);
           }
 
           .badge-info {
-            background: #dbeafe;
-            color: #1e40af;
-            border: 1px solid #bfdbfe;
+            background: var(--arazzo-info-bg);
+            color: var(--arazzo-info);
+            border: 1px solid var(--arazzo-info-border);
           }
 
           .mermaid-rendered {

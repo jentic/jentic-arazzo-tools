@@ -13,7 +13,7 @@ export interface FormatOptions {
  * Formats documentation data as markdown string
  */
 function sourceIcon(type: string): string {
-  const color = type === 'openapi' ? '#6BA543' : '#94C83D';
+  const color = type === 'openapi' ? 'var(--arazzo-primary)' : 'var(--arazzo-primary)';
   return `<svg class="source-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="12" height="12" rx="3" fill="${color}" opacity="0.15" stroke="${color}" stroke-width="1"/><circle cx="7" cy="7" r="2" fill="${color}"/></svg>`;
 }
 
@@ -33,7 +33,7 @@ export function formatHeaderAsMarkdown(
   );
   sections.push(arazzoLogoSvg('width: 2.25rem; height: 2.25rem; flex-shrink: 0;'));
   sections.push(
-    `<h1 style="margin: 0; font-size: 2.25rem; font-weight: 700; color: #111827; line-height: 1;">${metadata.title}</h1>`,
+    `<h1 style="margin: 0; font-size: 2.25rem; font-weight: 700; color: var(--arazzo-fg); line-height: 1;">${metadata.title}</h1>`,
   );
   sections.push(
     `<span class="version-badge doc-version" title="Document version">${metadata.version}</span>`,
@@ -172,7 +172,7 @@ export function formatWorkflowAsMarkdown(
     // Description + (Operation|Workflow) combined
     let opHtml = '';
     let opKind = 'Operation';
-    const refColor = '#6BA543';
+    const refColor = 'var(--arazzo-primary)';
     if (step.operationId) {
       const dotIdx = step.operationId.indexOf('.');
       if (dotIdx > 0) {

@@ -22,7 +22,7 @@ export const ViewModeControl: React.FC<ViewModeControlProps> = ({
       style={{
         display: 'inline-flex',
         borderRadius: '6px',
-        border: '1px solid #444',
+        border: '1px solid var(--arazzo-border)',
         overflow: 'hidden',
         fontSize: '13px',
         ...style,
@@ -35,9 +35,9 @@ export const ViewModeControl: React.FC<ViewModeControlProps> = ({
           style={{
             padding: '4px 12px',
             border: 'none',
-            borderRight: v !== views[views.length - 1] ? '1px solid #444' : 'none',
-            background: value === v ? '#fff' : '#2a2a2a',
-            color: value === v ? '#1B1B1B' : '#ccc',
+            borderRight: v !== views[views.length - 1] ? '1px solid var(--arazzo-border)' : 'none',
+            background: value === v ? 'var(--arazzo-primary)' : 'var(--arazzo-bg-secondary)',
+            color: value === v ? 'var(--arazzo-primary-fg)' : 'var(--arazzo-fg-lighter)',
             cursor: value === v ? 'default' : 'pointer',
             fontWeight: value === v ? 600 : 400,
             textTransform: 'capitalize',

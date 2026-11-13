@@ -8,11 +8,11 @@ interface RequestBodyDialogProps {
   onClose: () => void;
 }
 
-const monoFont = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace";
+const monoFont = 'var(--arazzo-font-mono)';
 
 const cellStyle: React.CSSProperties = {
   padding: '6px 10px',
-  borderBottom: '1px solid #e5e7eb',
+  borderBottom: '1px solid var(--arazzo-border)',
   textAlign: 'left',
   verticalAlign: 'top',
 };
@@ -25,7 +25,13 @@ const KeyValueTable: React.FC<{ keyHeader: string; rows: KeyValueRowView[] }> = 
     style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '12px', fontSize: '12px' }}
   >
     <thead>
-      <tr style={{ background: '#f9fafb', color: '#6b7280', fontSize: '11px' }}>
+      <tr
+        style={{
+          background: 'var(--arazzo-bg-secondary)',
+          color: 'var(--arazzo-muted-fg)',
+          fontSize: '11px',
+        }}
+      >
         <th style={{ ...cellStyle, fontWeight: 600 }}>{keyHeader}</th>
         <th style={{ ...cellStyle, fontWeight: 600 }}>Value</th>
       </tr>
@@ -82,7 +88,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
         margin: 0,
         padding: 0,
         border: 'none',
-        background: 'rgba(17, 24, 39, 0.5)',
+        background: 'var(--arazzo-overlay)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -92,13 +98,13 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#fff',
+          background: 'var(--arazzo-card)',
           borderRadius: '8px',
           width: 'min(640px, 90vw)',
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+          boxShadow: 'var(--arazzo-shadow-dialog)',
         }}
       >
         <div
@@ -107,11 +113,12 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '12px 16px',
-            borderBottom: '1px solid #e5e7eb',
+            borderBottom: '1px solid var(--arazzo-border)',
           }}
         >
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#1f2937' }}>
-            Request Body <span style={{ color: '#6b7280', fontWeight: 400 }}>· {stepId}</span>
+          <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--arazzo-fg)' }}>
+            Request Body{' '}
+            <span style={{ color: 'var(--arazzo-muted-fg)', fontWeight: 400 }}>· {stepId}</span>
           </div>
           <button
             type="button"
@@ -122,7 +129,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
               background: 'transparent',
               fontSize: '18px',
               cursor: 'pointer',
-              color: '#6b7280',
+              color: 'var(--arazzo-muted-fg)',
               lineHeight: 1,
             }}
           >
@@ -130,11 +137,18 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
           </button>
         </div>
 
-        <div style={{ padding: '16px', overflow: 'auto', fontSize: '12px', color: '#374151' }}>
+        <div
+          style={{
+            padding: '16px',
+            overflow: 'auto',
+            fontSize: '12px',
+            color: 'var(--arazzo-fg-lighter)',
+          }}
+        >
           {requestBody.contentType && (
             <div style={{ marginBottom: '12px' }}>
               Content-Type:{' '}
-              <code style={{ fontFamily: monoFont, color: '#1e40af' }}>
+              <code style={{ fontFamily: monoFont, color: 'var(--arazzo-info)' }}>
                 {requestBody.contentType}
               </code>
             </div>
@@ -149,8 +163,8 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
               style={{
                 margin: '0 0 12px',
                 padding: '12px',
-                background: '#1f2937',
-                color: '#f3f4f6',
+                background: 'var(--arazzo-bg)',
+                color: 'var(--arazzo-fg-lighter)',
                 borderRadius: '6px',
                 overflow: 'auto',
                 fontFamily: monoFont,
@@ -170,7 +184,12 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
           {requestBody.replacements.length > 0 && (
             <div>
               <div
-                style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: 'var(--arazzo-muted-fg)',
+                  marginBottom: '6px',
+                }}
               >
                 REPLACEMENTS:
               </div>

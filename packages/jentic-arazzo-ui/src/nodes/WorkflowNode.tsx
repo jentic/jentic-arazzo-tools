@@ -5,10 +5,10 @@ import { WorkflowNodeData } from '../types/index';
 export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, selected }) => {
   const { workflow, onClick } = data;
 
-  const borderColor = selected ? '#3b82f6' : '#e5e7eb';
+  const borderColor = selected ? 'var(--arazzo-ring)' : 'var(--arazzo-border)';
   const boxShadow = selected
-    ? '0 0 0 3px rgba(59, 130, 246, 0.3), 0 8px 24px rgba(59, 130, 246, 0.25)'
-    : '0 2px 8px rgba(0,0,0,0.1)';
+    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px var(--arazzo-ring-glow)'
+    : 'var(--arazzo-shadow-node)';
 
   const handleClick = () => {
     if (onClick) {
@@ -20,7 +20,7 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
     <div
       onClick={handleClick}
       style={{
-        background: selected ? '#fafbff' : '#fff',
+        background: selected ? 'var(--arazzo-card-selected)' : 'var(--arazzo-card)',
         border: `2px solid ${borderColor}`,
         borderRadius: '12px',
         minWidth: '240px',
@@ -35,17 +35,17 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
       <div
         style={{
           padding: '14px 16px',
-          borderBottom: `1px solid ${selected ? '#bfdbfe' : '#e5e7eb'}`,
+          borderBottom: `1px solid ${selected ? 'var(--arazzo-selected-border)' : 'var(--arazzo-border)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: selected ? '#eff6ff' : '#f9fafb',
+          background: selected ? 'var(--arazzo-selected-bg)' : 'var(--arazzo-bg-secondary)',
           borderRadius: '10px 10px 0 0',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <span style={{ fontSize: '20px' }}>⚡</span>
-          <span style={{ fontWeight: 600, fontSize: '15px', color: '#1f2937' }}>
+          <span style={{ fontWeight: 600, fontSize: '15px', color: 'var(--arazzo-fg)' }}>
             {workflow.workflowId}
           </span>
         </div>
@@ -55,8 +55,8 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
             fontWeight: 600,
             padding: '3px 10px',
             borderRadius: '4px',
-            background: '#dbeafe',
-            color: '#1e40af',
+            background: 'var(--arazzo-info-bg)',
+            color: 'var(--arazzo-info)',
           }}
         >
           WORKFLOW
@@ -69,7 +69,7 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
           <p
             style={{
               fontSize: '12px',
-              color: '#6b7280',
+              color: 'var(--arazzo-muted-fg)',
               margin: '0 0 12px',
               lineHeight: '1.5',
             }}
@@ -82,7 +82,7 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
           <p
             style={{
               fontSize: '12px',
-              color: '#6b7280',
+              color: 'var(--arazzo-muted-fg)',
               margin: '0 0 12px',
               lineHeight: '1.5',
               overflow: 'hidden',
@@ -96,7 +96,14 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
           </p>
         )}
 
-        <div style={{ display: 'flex', gap: '16px', fontSize: '12px', color: '#6b7280' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '16px',
+            fontSize: '12px',
+            color: 'var(--arazzo-muted-fg)',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span>📋</span>
             <span>
@@ -122,11 +129,11 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
       <div
         style={{
           padding: '10px 16px',
-          borderTop: '1px solid #f3f4f6',
+          borderTop: '1px solid var(--arazzo-border)',
           textAlign: 'center',
           fontSize: '11px',
-          color: '#9ca3af',
-          background: '#fafafa',
+          color: 'var(--arazzo-subtle-fg)',
+          background: 'var(--arazzo-bg-secondary)',
           borderRadius: '0 0 10px 10px',
         }}
       >
