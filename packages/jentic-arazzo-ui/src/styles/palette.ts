@@ -16,7 +16,7 @@ export const palette = {
   primary: '#0b7a51',
   onAccent: '#ffffff',
   success: '#0c8d5e',
-  warning: '#bd770f',
+  warning: '#8e5a0b',
   danger: '#c32230',
   info: '#206bb6',
   accentOrange: '#d48611',

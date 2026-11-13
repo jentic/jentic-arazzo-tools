@@ -66,7 +66,7 @@
   --arazzo-success-hover: var(--arazzo-primary-500);
   --arazzo-success-bg: rgb(12 141 94 / 0.08);
   --arazzo-success-border: rgb(12 141 94 / 0.3);
-  --arazzo-warning: #bd770f;
+  --arazzo-warning: #8e5a0b; /* gold, darkened so badge text clears 4.5:1 */
   --arazzo-warning-hover: var(--arazzo-accent-orange);
   --arazzo-warning-bg: rgb(212 134 17 / 0.08);
   --arazzo-warning-border: rgb(212 134 17 / 0.3);
