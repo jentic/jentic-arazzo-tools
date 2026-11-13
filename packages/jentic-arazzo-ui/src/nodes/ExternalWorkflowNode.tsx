@@ -49,11 +49,11 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
       <div
         style={{
           padding: '12px 14px',
-          borderBottom: `1px solid ${selected ? 'var(--arazzo-info-border)' : 'var(--arazzo-border)'}`,
+          borderBottom: `1px solid ${selected ? 'var(--arazzo-selected-border)' : 'var(--arazzo-border)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: selected ? 'var(--arazzo-info-bg)' : 'var(--arazzo-bg-secondary)',
+          background: selected ? 'var(--arazzo-selected-bg)' : 'var(--arazzo-bg-secondary)',
           borderRadius: '8px 8px 0 0',
         }}
       >

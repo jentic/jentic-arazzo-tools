@@ -105,11 +105,11 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
         <div
           style={{
             padding: '12px',
-            borderBottom: `1px solid ${selected ? 'var(--arazzo-info-border)' : 'var(--arazzo-border)'}`,
+            borderBottom: `1px solid ${selected ? 'var(--arazzo-selected-border)' : 'var(--arazzo-border)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: selected ? 'var(--arazzo-info-bg)' : 'var(--arazzo-bg-secondary)',
+            background: selected ? 'var(--arazzo-selected-bg)' : 'var(--arazzo-bg-secondary)',
             borderRadius: '6px 6px 0 0',
             transition: 'all 0.15s ease-in-out',
           }}

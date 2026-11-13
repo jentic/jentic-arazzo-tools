@@ -35,11 +35,11 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
       <div
         style={{
           padding: '14px 16px',
-          borderBottom: `1px solid ${selected ? 'var(--arazzo-info-border)' : 'var(--arazzo-border)'}`,
+          borderBottom: `1px solid ${selected ? 'var(--arazzo-selected-border)' : 'var(--arazzo-border)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: selected ? 'var(--arazzo-info-bg)' : 'var(--arazzo-bg-secondary)',
+          background: selected ? 'var(--arazzo-selected-bg)' : 'var(--arazzo-bg-secondary)',
           borderRadius: '10px 10px 0 0',
         }}
       >

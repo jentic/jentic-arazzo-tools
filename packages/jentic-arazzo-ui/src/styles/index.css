@@ -54,6 +54,10 @@
   --arazzo-ring: var(--arazzo-primary-300);
   --arazzo-ring-glow: rgb(12 141 94 / 0.25);
 
+  /* selected diagram node: header strip tint and divider */
+  --arazzo-selected-bg: var(--arazzo-primary-100);
+  --arazzo-selected-border: var(--arazzo-primary-700);
+
   /* text drawn on top of a solid accent fill (badges, edge labels) */
   --arazzo-on-accent: #ffffff;
 
