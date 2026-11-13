@@ -111,7 +111,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
         darkMode: false,
         themeVariables: {
           background: palette.card,
-          fontFamily: 'inherit',
+          fontFamily: "'Nunito Sans', sans-serif",
           primaryColor: palette.card,
           primaryTextColor: palette.fg,
           primaryBorderColor: palette.primary,
@@ -324,7 +324,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             font-size: 15px;
             font-weight: 700;
             color: var(--arazzo-fg);
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-family: var(--arazzo-font-mono);
           }
 
           .workflow-summary-text {
@@ -388,6 +388,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .sources-header {
+            font-family: var(--arazzo-font-heading);
             font-size: 13px;
             font-weight: 600;
             color: var(--arazzo-muted-fg);
@@ -451,6 +452,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .source-type-badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-block;
             padding: 2px 8px;
             border-radius: 4px;
@@ -593,7 +595,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             font-size: 14px;
             font-weight: 700;
             color: var(--arazzo-fg);
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-family: var(--arazzo-font-mono);
           }
 
           .timeline-operation {
@@ -617,7 +619,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             overflow: hidden;
             font-size: 11px;
             font-weight: 600;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-family: var(--arazzo-font-mono);
             line-height: 1;
           }
 
@@ -651,7 +653,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
           .step-op-ref {
             font-weight: 700;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-family: var(--arazzo-font-mono);
             font-style: normal;
             font-size: 12px;
           }
@@ -840,6 +842,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
           /* Badge styling - small pills like SwaggerUI */
           .version-badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-flex;
             align-items: center;
             height: 22px;
@@ -864,6 +867,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .step-count-badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-block;
             padding: 4px 12px;
             border-radius: 6px;
@@ -886,6 +890,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
 
           /* Action badges (END, GOTO, RETRY) */
           .badge {
+            font-family: var(--arazzo-font-heading);
             display: inline-block;
             padding: 3px 8px;
             border-radius: 4px;

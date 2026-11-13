@@ -112,7 +112,13 @@ export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data, selected }
                 <div key={key} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                   <span>•</span>
                   <span>{key}</span>
-                  <span style={{ opacity: 0.7, fontFamily: 'monospace', fontSize: '10px' }}>
+                  <span
+                    style={{
+                      opacity: 0.7,
+                      fontFamily: 'var(--arazzo-font-mono)',
+                      fontSize: '10px',
+                    }}
+                  >
                     : {typeDisplay}
                   </span>
                   {isRequired && <span style={{ opacity: 0.7, fontSize: '10px' }}>(required)</span>}

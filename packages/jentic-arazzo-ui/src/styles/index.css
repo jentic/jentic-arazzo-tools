@@ -79,12 +79,19 @@
   /* elevation - soft neutral shadows for light surfaces */
   --arazzo-shadow: 0 1px 2px 0 rgb(21 40 34 / 0.06);
   --arazzo-shadow-pop: 0 16px 40px -12px rgb(21 40 34 / 0.18), 0 4px 12px -4px rgb(21 40 34 / 0.1);
+
+  /* typography - Jentic website brand fonts: Sora for headings, labels and
+     buttons; Nunito Sans for body text; Geist Mono for code. Each stack starts
+     with the brand font and ends with its generic safety net. The fonts
+     themselves are loaded by the host page (see public/app.html). */
+  --arazzo-font-sans: 'Nunito Sans', sans-serif;
+  --arazzo-font-heading: 'Sora', sans-serif;
+  --arazzo-font-mono: 'Geist Mono', ui-monospace, monospace;
 }
 
 /* Base container */
 .arazzo-ui {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--arazzo-font-sans);
   font-size: 14px;
   line-height: 1.5;
   color: var(--arazzo-fg-lighter);
@@ -240,4 +247,30 @@
 
 .arazzo-ui .react-flow__attribution a {
   color: var(--arazzo-subtle-fg);
+}
+
+/* ==========================================================================
+   Brand typography
+   ========================================================================== */
+
+.arazzo-ui h1,
+.arazzo-ui h2,
+.arazzo-ui h3,
+.arazzo-ui h4,
+.arazzo-ui h5,
+.arazzo-ui h6,
+.arazzo-ui button,
+.arazzo-ui-standalone button {
+  font-family: var(--arazzo-font-heading);
+}
+
+.arazzo-ui-standalone input {
+  font-family: var(--arazzo-font-sans);
+}
+
+.arazzo-ui code,
+.arazzo-ui pre,
+.arazzo-ui kbd,
+.arazzo-ui samp {
+  font-family: var(--arazzo-font-mono);
 }

@@ -8,7 +8,7 @@ interface RequestBodyDialogProps {
   onClose: () => void;
 }
 
-const monoFont = "'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace";
+const monoFont = 'var(--arazzo-font-mono)';
 
 const cellStyle: React.CSSProperties = {
   padding: '6px 10px',
