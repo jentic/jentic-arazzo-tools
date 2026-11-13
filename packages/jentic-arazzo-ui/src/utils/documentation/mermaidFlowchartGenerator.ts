@@ -28,7 +28,7 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
         step.description.length > 40 ? step.description.substring(0, 37) + '...' : step.description;
       lines.push(`    ${stepId} -.-> Note${stepNum}[/"${shortDesc}"/]`);
       lines.push(
-        `    style Note${stepNum} fill:${palette.bgSecondary},stroke:${palette.info},color:${palette.fgLighter},stroke-width:1px`,
+        `    style Note${stepNum} fill:${palette.bgSecondary},stroke:${palette.fg},color:${palette.fgLighter},stroke-width:1px`,
       );
     }
 
