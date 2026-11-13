@@ -3,14 +3,20 @@ import { DiagnosticSeverity } from 'vscode-languageserver-types';
 import type { Diagnostic } from 'vscode-languageserver-types';
 import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import { getLanguageService, LogLevel, type LanguageServiceContext } from '@speclynx/apidom-ls';
-import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
-import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
 import type { PartialDeep } from 'type-fest';
 import { mergeDeepRight } from 'ramda';
 
 import { config } from '../config/config.ts';
 import ApilintCodes from '../config/codes.ts';
 import { Arazzo1JsonSchemaValidationProvider } from './json-schema-provider.ts';
+import {
+  createVersionPositionMapper,
+  detectArazzoVersion,
+  isSupportedArazzoVersion,
+  latestSupportedArazzoVersion,
+  replaceArazzoVersion,
+  supportedArazzoVersions,
+} from './arazzo-version.ts';
 
 /**
  * Default language service context for validation.
@@ -83,9 +89,9 @@ export async function validate(
   context: PartialDeep<LanguageServiceContext> = {},
 ): Promise<Diagnostic[]> {
   const content = textDocument.getText();
-  const isArazzo = (await detectArazzoJSON(content)) || (await detectArazzoYAML(content));
+  const detected = await detectArazzoVersion(content);
 
-  if (!isArazzo) {
+  if (detected === undefined) {
     const lastChar = textDocument.positionAt(content.length);
     return [
       {
@@ -108,7 +114,45 @@ export async function validate(
   const languageService = getLanguageService(mergedContext);
 
   try {
-    return await languageService.doValidation(textDocument);
+    if (isSupportedArazzoVersion(detected.version)) {
+      return await languageService.doValidation(textDocument);
+    }
+
+    // the bundled rules and JSON Schema only target supported versions, so an unsupported
+    // version would otherwise skip all checks; validate against the latest supported version instead
+    const versionDiagnostic: Diagnostic = {
+      range: {
+        start: textDocument.positionAt(detected.start),
+        end: textDocument.positionAt(detected.end),
+      },
+      message: `Arazzo version ${detected.version} is not supported (supported: ${supportedArazzoVersions.join(', ')}); validated against Arazzo ${latestSupportedArazzoVersion} rules`,
+      severity: DiagnosticSeverity.Error,
+      code: ApilintCodes.ARAZZO_SPEC_FIELD_ARAZZO_VERSION_SUPPORTED,
+      source: 'apilint',
+    };
+    const rewrittenDocument = TextDocument.create(
+      textDocument.uri,
+      textDocument.languageId,
+      textDocument.version,
+      replaceArazzoVersion(content, detected, latestSupportedArazzoVersion),
+    );
+    const mapPosition = createVersionPositionMapper(
+      textDocument,
+      detected,
+      latestSupportedArazzoVersion,
+    );
+    const diagnostics = await languageService.doValidation(rewrittenDocument);
+
+    return [
+      versionDiagnostic,
+      ...diagnostics.map((diagnostic) => ({
+        ...diagnostic,
+        range: {
+          start: mapPosition(diagnostic.range.start),
+          end: mapPosition(diagnostic.range.end),
+        },
+      })),
+    ];
   } finally {
     languageService.terminate();
   }

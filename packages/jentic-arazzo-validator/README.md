@@ -7,6 +7,8 @@ It performs JSON Schema validation, semantic validation, and semantic linting us
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
 - [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
 
+Documents declaring any other Arazzo version (e.g. `1.1.0`) produce an error (code `9020103`) and are validated against the rules of the latest supported version.
+
 **Requirements:**
 - Node.js >= 20.10.0
 
