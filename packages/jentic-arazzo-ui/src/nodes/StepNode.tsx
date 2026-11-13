@@ -72,9 +72,13 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
   const hasSuccessCriteria = step.successCriteria && step.successCriteria.length > 0;
 
   // Selection styles - more prominent
-  const borderColor = selected ? '#3b82f6' : isValid ? '#e5e7eb' : '#ef4444';
+  const borderColor = selected
+    ? 'var(--arazzo-ring)'
+    : isValid
+      ? 'var(--arazzo-border)'
+      : 'var(--arazzo-danger)';
   const boxShadow = selected
-    ? '0 0 0 3px rgba(59, 130, 246, 0.3), 0 8px 24px rgba(59, 130, 246, 0.25)'
+    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px var(--arazzo-ring-glow)'
     : '0 2px 8px rgba(0,0,0,0.1)';
 
   return (
@@ -82,7 +86,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
       <div
         className={`step-node ${selected ? 'step-node--selected' : ''} ${!isValid ? 'step-node--invalid' : ''}`}
         style={{
-          background: selected ? '#fafbff' : '#fff',
+          background: selected ? 'var(--arazzo-card-selected)' : 'var(--arazzo-card)',
           border: `2px solid ${borderColor}`,
           borderRadius: '8px',
           width: '420px',
@@ -91,24 +95,28 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
           transform: selected ? 'scale(1.02)' : 'scale(1)',
         }}
       >
-        <Handle type="target" position={Position.Top} style={{ background: '#6b7280' }} />
+        <Handle
+          type="target"
+          position={Position.Top}
+          style={{ background: 'var(--arazzo-border-hover)' }}
+        />
 
         {/* Header */}
         <div
           style={{
             padding: '12px',
-            borderBottom: `1px solid ${selected ? '#bfdbfe' : '#e5e7eb'}`,
+            borderBottom: `1px solid ${selected ? 'var(--arazzo-info-border)' : 'var(--arazzo-border)'}`,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            background: selected ? '#eff6ff' : '#f9fafb',
+            background: selected ? 'var(--arazzo-info-bg)' : 'var(--arazzo-bg-secondary)',
             borderRadius: '6px 6px 0 0',
             transition: 'all 0.15s ease-in-out',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
             <span style={{ fontSize: '16px' }}>●</span>
-            <span style={{ fontWeight: 600, fontSize: '14px', color: '#1f2937' }}>
+            <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--arazzo-fg)' }}>
               {step.stepId}
             </span>
           </div>
@@ -118,8 +126,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
               fontWeight: 600,
               padding: '2px 8px',
               borderRadius: '4px',
-              background: operationType === 'API' ? '#dbeafe' : '#fef3c7',
-              color: operationType === 'API' ? '#1e40af' : '#92400e',
+              background:
+                operationType === 'API' ? 'var(--arazzo-info-bg)' : 'var(--arazzo-warning-bg)',
+              color: operationType === 'API' ? 'var(--arazzo-info)' : 'var(--arazzo-warning)',
             }}
           >
             {operationType}
@@ -127,10 +136,10 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
         </div>
 
         {/* Operation */}
-        <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+        <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
             <span style={{ fontSize: '12px' }}>🔗</span>
-            <span style={{ fontSize: '13px', fontWeight: 500, color: '#3b82f6' }}>
+            <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--arazzo-primary)' }}>
               {getOperationDisplay()}
             </span>
             {httpMethod && (
@@ -155,7 +164,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
             <p
               style={{
                 fontSize: '12px',
-                color: '#6b7280',
+                color: 'var(--arazzo-muted-fg)',
                 margin: '4px 0 0',
                 lineHeight: '1.4',
                 display: '-webkit-box',
@@ -171,9 +180,14 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
 
         {/* Inputs */}
         {hasInputs && (
-          <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
             <div
-              style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--arazzo-muted-fg)',
+                marginBottom: '6px',
+              }}
             >
               INPUTS:
             </div>
@@ -187,7 +201,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                     key={idx}
                     style={{
                       fontSize: '11px',
-                      color: '#374151',
+                      color: 'var(--arazzo-fg-lighter)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
@@ -196,13 +210,21 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                     <span>•</span>
                     <span style={{ fontWeight: 500 }}>{param.name}</span>
                     {typeof param.value === 'string' && param.value.startsWith('$') && (
-                      <span style={{ color: '#9333ea', fontSize: '10px' }}>← {param.value}</span>
+                      <span style={{ color: 'var(--arazzo-accent-orange)', fontSize: '10px' }}>
+                        ← {param.value}
+                      </span>
                     )}
                   </div>
                 );
               })}
               {step.parameters && step.parameters.length > 3 && (
-                <div style={{ fontSize: '10px', color: '#9ca3af', fontStyle: 'italic' }}>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: 'var(--arazzo-subtle-fg)',
+                    fontStyle: 'italic',
+                  }}
+                >
                   +{step.parameters.length - 3} more...
                 </div>
               )}
@@ -212,15 +234,22 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
 
         {/* Request Body */}
         {requestBody && (
-          <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
             <div
-              style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--arazzo-muted-fg)',
+                marginBottom: '6px',
+              }}
             >
               REQUEST BODY:
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               {requestBody.contentType && (
-                <span style={{ fontSize: '11px', color: '#374151', fontWeight: 500 }}>
+                <span
+                  style={{ fontSize: '11px', color: 'var(--arazzo-fg-lighter)', fontWeight: 500 }}
+                >
                   {requestBody.contentType}
                 </span>
               )}
@@ -235,9 +264,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                   fontSize: '10px',
                   padding: '2px 8px',
                   borderRadius: '4px',
-                  border: '1px solid #bfdbfe',
-                  background: '#eff6ff',
-                  color: '#1e40af',
+                  border: '1px solid var(--arazzo-info-border)',
+                  background: 'var(--arazzo-info-bg)',
+                  color: 'var(--arazzo-info)',
                   cursor: 'pointer',
                 }}
               >
@@ -256,9 +285,14 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
 
         {/* Outputs */}
         {hasOutputs && (
-          <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
             <div
-              style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--arazzo-muted-fg)',
+                marginBottom: '6px',
+              }}
             >
               OUTPUTS:
             </div>
@@ -270,7 +304,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                     key={key}
                     style={{
                       fontSize: '11px',
-                      color: '#374151',
+                      color: 'var(--arazzo-fg-lighter)',
                       display: 'flex',
                       alignItems: 'center',
                       gap: '4px',
@@ -278,11 +312,19 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                   >
                     <span>•</span>
                     <span style={{ fontWeight: 500 }}>{key}</span>
-                    <span style={{ color: '#9333ea', fontSize: '10px' }}>→ {value}</span>
+                    <span style={{ color: 'var(--arazzo-accent-orange)', fontSize: '10px' }}>
+                      → {value}
+                    </span>
                   </div>
                 ))}
               {step.outputs && Object.keys(step.outputs).length > 3 && (
-                <div style={{ fontSize: '10px', color: '#9ca3af', fontStyle: 'italic' }}>
+                <div
+                  style={{
+                    fontSize: '10px',
+                    color: 'var(--arazzo-subtle-fg)',
+                    fontStyle: 'italic',
+                  }}
+                >
                   +{Object.keys(step.outputs).length - 3} more...
                 </div>
               )}
@@ -292,10 +334,10 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
 
         {/* Success Criteria */}
         {hasSuccessCriteria && (
-          <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+          <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
               <span style={{ fontSize: '14px' }}>✓</span>
-              <span style={{ fontSize: '11px', color: '#059669', fontWeight: 500 }}>
+              <span style={{ fontSize: '11px', color: 'var(--arazzo-success)', fontWeight: 500 }}>
                 {step.successCriteria?.[0]?.condition || 'Has success criteria'}
               </span>
             </div>
@@ -305,10 +347,19 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
         {/* onSuccess Actions */}
         {step.onSuccess && step.onSuccess.filter(isSuccessAction).length > 0 && (
           <div
-            style={{ padding: '12px', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}
+            style={{
+              padding: '12px',
+              background: 'var(--arazzo-success-bg)',
+              borderBottom: '1px solid var(--arazzo-success-border)',
+            }}
           >
             <div
-              style={{ fontSize: '11px', fontWeight: 600, color: '#166534', marginBottom: '8px' }}
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--arazzo-success)',
+                marginBottom: '8px',
+              }}
             >
               ON SUCCESS:
             </div>
@@ -320,9 +371,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                   style={{
                     fontSize: '11px',
                     padding: '10px 12px',
-                    background: '#fff',
+                    background: 'var(--arazzo-card)',
                     borderRadius: '4px',
-                    border: '1px solid #86efac',
+                    border: '1px solid var(--arazzo-success-border)',
                     position: 'relative',
                     cursor: action.type === 'goto' ? 'pointer' : 'default',
                   }}
@@ -338,7 +389,8 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                     <span
                       style={{
                         fontWeight: 600,
-                        color: action.type === 'end' ? '#dc2626' : '#166534',
+                        color:
+                          action.type === 'end' ? 'var(--arazzo-danger)' : 'var(--arazzo-success)',
                       }}
                     >
                       {action.name || `action-${idx}`}
@@ -350,16 +402,16 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                         borderRadius: '3px',
                         background:
                           action.type === 'end'
-                            ? '#dc2626'
+                            ? 'var(--arazzo-danger)'
                             : action.type === 'goto'
-                              ? '#dbeafe'
-                              : '#f3f4f6',
+                              ? 'var(--arazzo-info-bg)'
+                              : 'var(--arazzo-bg-secondary)',
                         color:
                           action.type === 'end'
-                            ? '#fff'
+                            ? 'var(--arazzo-on-accent)'
                             : action.type === 'goto'
-                              ? '#1e40af'
-                              : '#374151',
+                              ? 'var(--arazzo-info)'
+                              : 'var(--arazzo-fg-lighter)',
                         fontWeight: action.type === 'end' ? 600 : 400,
                         display: 'flex',
                         alignItems: 'center',
@@ -372,7 +424,13 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                     </span>
                   </div>
                   {action.criteria && action.criteria.length > 0 && (
-                    <div style={{ fontSize: '10px', color: '#6b7280', fontStyle: 'italic' }}>
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        color: 'var(--arazzo-muted-fg)',
+                        fontStyle: 'italic',
+                      }}
+                    >
                       {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                     </div>
                   )}
@@ -382,7 +440,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                       position={Position.Right}
                       id={`success-${action.name || idx}`}
                       style={{
-                        background: '#10b981',
+                        background: 'var(--arazzo-success)',
                         right: '-8px',
                         top: '50%',
                         transform: 'translateY(-50%)',
@@ -420,15 +478,15 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
               <div
                 style={{
                   padding: '12px',
-                  background: '#f0fdf4',
-                  borderBottom: '1px solid #bbf7d0',
+                  background: 'var(--arazzo-success-bg)',
+                  borderBottom: '1px solid var(--arazzo-success-border)',
                 }}
               >
                 <div
                   style={{
                     fontSize: '11px',
                     fontWeight: 600,
-                    color: '#166534',
+                    color: 'var(--arazzo-success)',
                     marginBottom: '8px',
                   }}
                 >
@@ -443,9 +501,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                         style={{
                           fontSize: '11px',
                           padding: '6px 8px',
-                          background: '#fff',
+                          background: 'var(--arazzo-card)',
                           borderRadius: '4px',
-                          border: '1px solid #86efac',
+                          border: '1px solid var(--arazzo-success-border)',
                           position: 'relative',
                           cursor: action.type === 'goto' ? 'pointer' : 'default',
                         }}
@@ -457,13 +515,13 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               fontWeight: 600,
                               padding: '2px 4px',
                               borderRadius: '3px',
-                              background: 'rgb(219, 234, 254)',
-                              color: 'rgb(30, 64, 175)',
+                              background: 'var(--arazzo-info-bg)',
+                              color: 'var(--arazzo-info)',
                             }}
                           >
                             INHERITED
                           </span>
-                          <span style={{ fontWeight: 600, color: '#166534' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--arazzo-success)' }}>
                             {action.name || `action-${idx}`}
                           </span>
                           <span
@@ -471,8 +529,14 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               fontSize: '10px',
                               padding: '2px 6px',
                               borderRadius: '3px',
-                              background: action.type === 'end' ? '#dc2626' : '#dbeafe',
-                              color: action.type === 'end' ? '#fff' : '#1e40af',
+                              background:
+                                action.type === 'end'
+                                  ? 'var(--arazzo-danger)'
+                                  : 'var(--arazzo-info-bg)',
+                              color:
+                                action.type === 'end'
+                                  ? 'var(--arazzo-on-accent)'
+                                  : 'var(--arazzo-info)',
                               fontWeight: action.type === 'end' ? 600 : 400,
                             }}
                           >
@@ -482,7 +546,13 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                           </span>
                         </div>
                         {action.criteria && action.criteria.length > 0 && (
-                          <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>
+                          <div
+                            style={{
+                              fontSize: '10px',
+                              color: 'var(--arazzo-muted-fg)',
+                              marginTop: '4px',
+                            }}
+                          >
                             {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                           </div>
                         )}
@@ -492,7 +562,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                             position={Position.Right}
                             id={`workflow-success-${action.name || actionIdx}`}
                             style={{
-                              background: '#10b981',
+                              background: 'var(--arazzo-success)',
                               right: '-8px',
                               top: '50%',
                               transform: 'translateY(-50%)',
@@ -509,9 +579,14 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
 
         {/* onFailure Actions */}
         {step.onFailure && step.onFailure.filter(isFailureAction).length > 0 && (
-          <div style={{ padding: '12px', background: '#fef2f2' }}>
+          <div style={{ padding: '12px', background: 'var(--arazzo-danger-bg)' }}>
             <div
-              style={{ fontSize: '11px', fontWeight: 600, color: '#991b1b', marginBottom: '8px' }}
+              style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: 'var(--arazzo-danger)',
+                marginBottom: '8px',
+              }}
             >
               ON FAILURE:
             </div>
@@ -523,9 +598,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                   style={{
                     fontSize: '11px',
                     padding: '10px 12px',
-                    background: '#fff',
+                    background: 'var(--arazzo-card)',
                     borderRadius: '4px',
-                    border: '1px solid #fca5a5',
+                    border: '1px solid var(--arazzo-danger-border)',
                     position: 'relative',
                     cursor: action.type === 'goto' ? 'pointer' : 'default',
                   }}
@@ -538,7 +613,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                       marginBottom: action.criteria?.length ? '4px' : '0',
                     }}
                   >
-                    <span style={{ fontWeight: 600, color: '#991b1b' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--arazzo-danger)' }}>
                       {action.name || `action-${idx}`}
                     </span>
                     <span
@@ -548,20 +623,20 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                         borderRadius: '3px',
                         background:
                           action.type === 'end'
-                            ? '#dc2626'
+                            ? 'var(--arazzo-danger)'
                             : action.type === 'goto'
-                              ? '#dbeafe'
+                              ? 'var(--arazzo-info-bg)'
                               : action.type === 'retry'
-                                ? '#fef3c7'
-                                : '#f3f4f6',
+                                ? 'var(--arazzo-warning-bg)'
+                                : 'var(--arazzo-bg-secondary)',
                         color:
                           action.type === 'end'
-                            ? '#fff'
+                            ? 'var(--arazzo-on-accent)'
                             : action.type === 'goto'
-                              ? '#1e40af'
+                              ? 'var(--arazzo-info)'
                               : action.type === 'retry'
-                                ? '#92400e'
-                                : '#374151',
+                                ? 'var(--arazzo-warning)'
+                                : 'var(--arazzo-fg-lighter)',
                         fontWeight: action.type === 'end' ? 600 : 400,
                         display: 'flex',
                         alignItems: 'center',
@@ -575,7 +650,13 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                     </span>
                   </div>
                   {action.criteria && action.criteria.length > 0 && (
-                    <div style={{ fontSize: '10px', color: '#6b7280', fontStyle: 'italic' }}>
+                    <div
+                      style={{
+                        fontSize: '10px',
+                        color: 'var(--arazzo-muted-fg)',
+                        fontStyle: 'italic',
+                      }}
+                    >
                       {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                     </div>
                   )}
@@ -585,7 +666,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                       position={Position.Left}
                       id={`failure-${action.name || idx}`}
                       style={{
-                        background: '#ef4444',
+                        background: 'var(--arazzo-danger)',
                         left: '-8px',
                         top: '50%',
                         transform: 'translateY(-50%)',
@@ -620,12 +701,12 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
             if (inheritedActionsWithIdx.length === 0) return null;
 
             return (
-              <div style={{ padding: '12px', background: '#fef2f2' }}>
+              <div style={{ padding: '12px', background: 'var(--arazzo-danger-bg)' }}>
                 <div
                   style={{
                     fontSize: '11px',
                     fontWeight: 600,
-                    color: '#991b1b',
+                    color: 'var(--arazzo-danger)',
                     marginBottom: '8px',
                   }}
                 >
@@ -640,9 +721,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                         style={{
                           fontSize: '11px',
                           padding: '6px 8px',
-                          background: '#fff',
+                          background: 'var(--arazzo-card)',
                           borderRadius: '4px',
-                          border: '1px solid #fca5a5',
+                          border: '1px solid var(--arazzo-danger-border)',
                           position: 'relative',
                           cursor: action.type === 'goto' ? 'pointer' : 'default',
                         }}
@@ -654,13 +735,13 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               fontWeight: 600,
                               padding: '2px 4px',
                               borderRadius: '3px',
-                              background: 'rgb(219, 234, 254)',
-                              color: 'rgb(30, 64, 175)',
+                              background: 'var(--arazzo-info-bg)',
+                              color: 'var(--arazzo-info)',
                             }}
                           >
                             INHERITED
                           </span>
-                          <span style={{ fontWeight: 600, color: '#991b1b' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--arazzo-danger)' }}>
                             {action.name || `action-${idx}`}
                           </span>
                           <span
@@ -670,16 +751,16 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               borderRadius: '3px',
                               background:
                                 action.type === 'end'
-                                  ? '#dc2626'
+                                  ? 'var(--arazzo-danger)'
                                   : action.type === 'goto'
-                                    ? '#dbeafe'
-                                    : '#fef3c7',
+                                    ? 'var(--arazzo-info-bg)'
+                                    : 'var(--arazzo-warning-bg)',
                               color:
                                 action.type === 'end'
-                                  ? '#fff'
+                                  ? 'var(--arazzo-on-accent)'
                                   : action.type === 'goto'
-                                    ? '#1e40af'
-                                    : '#92400e',
+                                    ? 'var(--arazzo-info)'
+                                    : 'var(--arazzo-warning)',
                               fontWeight: action.type === 'end' ? 600 : 400,
                             }}
                           >
@@ -692,7 +773,13 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                           </span>
                         </div>
                         {action.criteria && action.criteria.length > 0 && (
-                          <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>
+                          <div
+                            style={{
+                              fontSize: '10px',
+                              color: 'var(--arazzo-muted-fg)',
+                              marginTop: '4px',
+                            }}
+                          >
                             {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                           </div>
                         )}
@@ -702,7 +789,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                             position={Position.Left}
                             id={`workflow-failure-${action.name || actionIdx}`}
                             style={{
-                              background: '#ef4444',
+                              background: 'var(--arazzo-danger)',
                               left: '-8px',
                               top: '50%',
                               transform: 'translateY(-50%)',
@@ -722,7 +809,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
           type="source"
           position={Position.Bottom}
           id="sequential"
-          style={{ background: '#6b7280' }}
+          style={{ background: 'var(--arazzo-border-hover)' }}
         />
       </div>
     </>

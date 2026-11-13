@@ -61,8 +61,12 @@ export const BundledSuccessEdge: React.FC<EdgeProps<BundledSuccessEdgeData>> = (
   const maxY = Math.max(...sourcePositions.map((p) => p.y));
 
   // Base color for success edges
-  const baseColor = '#10b981';
-  const strokeColor = selected ? '#3b82f6' : isHovered ? '#34d399' : baseColor;
+  const baseColor = 'var(--arazzo-success)';
+  const strokeColor = selected
+    ? 'var(--arazzo-ring)'
+    : isHovered
+      ? 'var(--arazzo-success-hover)'
+      : baseColor;
   const stubWidth = selected ? 2 : isHovered ? 1.5 : 1;
   const mainWidth = selected ? 3 : isHovered ? 2.5 : 2;
 
@@ -162,10 +166,9 @@ export const BundledSuccessEdge: React.FC<EdgeProps<BundledSuccessEdgeData>> = (
         <path
           d={mainPath}
           fill="none"
-          stroke="#3b82f6"
           strokeWidth={8}
           strokeOpacity={0.2}
-          style={{ pointerEvents: 'none' }}
+          style={{ stroke: 'var(--arazzo-ring)', pointerEvents: 'none' }}
         />
       )}
 
@@ -176,8 +179,8 @@ export const BundledSuccessEdge: React.FC<EdgeProps<BundledSuccessEdgeData>> = (
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             fontSize: 10,
             fontWeight: 600,
-            background: selected ? '#3b82f6' : baseColor,
-            color: '#fff',
+            background: selected ? 'var(--arazzo-ring)' : baseColor,
+            color: 'var(--arazzo-on-accent)',
             padding: '2px 6px',
             borderRadius: 4,
             pointerEvents: 'all',

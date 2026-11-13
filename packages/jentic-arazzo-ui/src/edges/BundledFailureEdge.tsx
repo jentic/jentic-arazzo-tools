@@ -73,8 +73,12 @@ export const BundledFailureEdge: React.FC<EdgeProps<BundledFailureEdgeData>> = (
   const maxY = Math.max(...sourcePositions.map((p) => p.y));
 
   // Base color for failure edges
-  const baseColor = '#ef4444';
-  const strokeColor = selected ? '#3b82f6' : isHovered ? '#f87171' : baseColor;
+  const baseColor = 'var(--arazzo-danger)';
+  const strokeColor = selected
+    ? 'var(--arazzo-ring)'
+    : isHovered
+      ? 'var(--arazzo-danger-hover)'
+      : baseColor;
   const stubWidth = selected ? 2 : isHovered ? 1.5 : 1;
   const mainWidth = selected ? 3 : isHovered ? 2.5 : 2;
 
@@ -174,10 +178,9 @@ export const BundledFailureEdge: React.FC<EdgeProps<BundledFailureEdgeData>> = (
         <path
           d={mainPath}
           fill="none"
-          stroke="#3b82f6"
           strokeWidth={8}
           strokeOpacity={0.2}
-          style={{ pointerEvents: 'none' }}
+          style={{ stroke: 'var(--arazzo-ring)', pointerEvents: 'none' }}
         />
       )}
 
@@ -188,8 +191,8 @@ export const BundledFailureEdge: React.FC<EdgeProps<BundledFailureEdgeData>> = (
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             fontSize: 10,
             fontWeight: 600,
-            background: selected ? '#3b82f6' : baseColor,
-            color: '#fff',
+            background: selected ? 'var(--arazzo-ring)' : baseColor,
+            color: 'var(--arazzo-on-accent)',
             padding: '2px 6px',
             borderRadius: 4,
             pointerEvents: 'all',

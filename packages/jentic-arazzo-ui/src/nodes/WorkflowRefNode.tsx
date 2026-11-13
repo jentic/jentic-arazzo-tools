@@ -44,16 +44,20 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
   };
 
   // Selection styles - more prominent
-  const borderColor = selected ? '#3b82f6' : isValid ? '#e5e7eb' : '#ef4444';
+  const borderColor = selected
+    ? 'var(--arazzo-ring)'
+    : isValid
+      ? 'var(--arazzo-border)'
+      : 'var(--arazzo-danger)';
   const boxShadow = selected
-    ? '0 0 0 3px rgba(59, 130, 246, 0.3), 0 8px 24px rgba(245, 158, 11, 0.2)'
+    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px rgb(241 227 139 / 0.2)'
     : '0 2px 8px rgba(0,0,0,0.1)';
 
   return (
     <div
       className={`workflow-ref-node ${selected ? 'workflow-ref-node--selected' : ''} ${!isValid ? 'workflow-ref-node--invalid' : ''}`}
       style={{
-        background: selected ? '#fffbeb' : '#fff',
+        background: selected ? 'var(--arazzo-warning-bg)' : 'var(--arazzo-card)',
         border: `2px solid ${borderColor}`,
         borderRadius: '8px',
         width: '420px',
@@ -62,24 +66,30 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
         transform: selected ? 'scale(1.02)' : 'scale(1)',
       }}
     >
-      <Handle type="target" position={Position.Top} style={{ background: '#6b7280' }} />
+      <Handle
+        type="target"
+        position={Position.Top}
+        style={{ background: 'var(--arazzo-border-hover)' }}
+      />
 
       {/* Header */}
       <div
         style={{
           padding: '12px',
-          borderBottom: `1px solid ${selected ? '#fcd34d' : '#e5e7eb'}`,
+          borderBottom: `1px solid ${selected ? 'var(--arazzo-warning-border)' : 'var(--arazzo-border)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: selected ? '#fef9c3' : '#fef3c7',
+          background: selected ? 'var(--arazzo-warning-bg)' : 'var(--arazzo-warning-bg)',
           borderRadius: '6px 6px 0 0',
           transition: 'all 0.15s ease-in-out',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
           <span style={{ fontSize: '16px' }}>●</span>
-          <span style={{ fontWeight: 600, fontSize: '14px', color: '#1f2937' }}>{step.stepId}</span>
+          <span style={{ fontWeight: 600, fontSize: '14px', color: 'var(--arazzo-fg)' }}>
+            {step.stepId}
+          </span>
         </div>
         <span
           style={{
@@ -87,8 +97,8 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
             fontWeight: 600,
             padding: '2px 8px',
             borderRadius: '4px',
-            background: '#fef3c7',
-            color: '#92400e',
+            background: 'var(--arazzo-warning-bg)',
+            color: 'var(--arazzo-warning)',
           }}
         >
           WORKFLOW
@@ -96,10 +106,10 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
       </div>
 
       {/* Workflow Reference */}
-      <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
+      <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
           <span style={{ fontSize: '12px' }}>🔄</span>
-          <span style={{ fontSize: '13px', fontWeight: 500, color: '#f59e0b' }}>
+          <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--arazzo-warning)' }}>
             ↳ {targetWorkflowId}
           </span>
         </div>
@@ -107,7 +117,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
           <p
             style={{
               fontSize: '12px',
-              color: '#6b7280',
+              color: 'var(--arazzo-muted-fg)',
               margin: '4px 0 0',
               lineHeight: '1.4',
             }}
@@ -119,8 +129,15 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
 
       {/* Inputs */}
       {step.parameters && step.parameters.length > 0 && (
-        <div style={{ padding: '12px', borderBottom: '1px solid #f3f4f6' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: '#6b7280', marginBottom: '6px' }}>
+        <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'var(--arazzo-muted-fg)',
+              marginBottom: '6px',
+            }}
+          >
             INPUTS:
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -133,7 +150,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                   key={idx}
                   style={{
                     fontSize: '11px',
-                    color: '#374151',
+                    color: 'var(--arazzo-fg-lighter)',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '4px',
@@ -142,13 +159,17 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                   <span>•</span>
                   <span style={{ fontWeight: 500 }}>{param.name}</span>
                   {typeof param.value === 'string' && param.value.startsWith('$') && (
-                    <span style={{ color: '#9333ea', fontSize: '10px' }}>← {param.value}</span>
+                    <span style={{ color: 'var(--arazzo-accent-orange)', fontSize: '10px' }}>
+                      ← {param.value}
+                    </span>
                   )}
                 </div>
               );
             })}
             {step.parameters.length > 3 && (
-              <div style={{ fontSize: '10px', color: '#9ca3af', fontStyle: 'italic' }}>
+              <div
+                style={{ fontSize: '10px', color: 'var(--arazzo-subtle-fg)', fontStyle: 'italic' }}
+              >
                 +{step.parameters.length - 3} more...
               </div>
             )}
@@ -158,8 +179,21 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
 
       {/* Step-level onSuccess Actions */}
       {step.onSuccess && step.onSuccess.filter(isSuccessAction).length > 0 && (
-        <div style={{ padding: '12px', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: '#166534', marginBottom: '8px' }}>
+        <div
+          style={{
+            padding: '12px',
+            background: 'var(--arazzo-success-bg)',
+            borderBottom: '1px solid var(--arazzo-success-border)',
+          }}
+        >
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'var(--arazzo-success)',
+              marginBottom: '8px',
+            }}
+          >
             ON SUCCESS:
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -170,9 +204,9 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                 style={{
                   fontSize: '11px',
                   padding: '10px 12px',
-                  background: '#fff',
+                  background: 'var(--arazzo-card)',
                   borderRadius: '4px',
-                  border: '1px solid #86efac',
+                  border: '1px solid var(--arazzo-success-border)',
                   position: 'relative',
                   cursor: action.type === 'goto' ? 'pointer' : 'default',
                 }}
@@ -188,7 +222,8 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                   <span
                     style={{
                       fontWeight: 600,
-                      color: action.type === 'end' ? '#dc2626' : '#166534',
+                      color:
+                        action.type === 'end' ? 'var(--arazzo-danger)' : 'var(--arazzo-success)',
                     }}
                   >
                     {action.name || `action-${idx}`}
@@ -200,16 +235,16 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                       borderRadius: '3px',
                       background:
                         action.type === 'end'
-                          ? '#dc2626'
+                          ? 'var(--arazzo-danger)'
                           : action.type === 'goto'
-                            ? '#dbeafe'
-                            : '#f3f4f6',
+                            ? 'var(--arazzo-info-bg)'
+                            : 'var(--arazzo-bg-secondary)',
                       color:
                         action.type === 'end'
-                          ? '#fff'
+                          ? 'var(--arazzo-on-accent)'
                           : action.type === 'goto'
-                            ? '#1e40af'
-                            : '#374151',
+                            ? 'var(--arazzo-info)'
+                            : 'var(--arazzo-fg-lighter)',
                       fontWeight: action.type === 'end' ? 600 : 400,
                       display: 'flex',
                       alignItems: 'center',
@@ -222,7 +257,13 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                   </span>
                 </div>
                 {action.criteria && action.criteria.length > 0 && (
-                  <div style={{ fontSize: '10px', color: '#6b7280', fontStyle: 'italic' }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      color: 'var(--arazzo-muted-fg)',
+                      fontStyle: 'italic',
+                    }}
+                  >
                     {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                   </div>
                 )}
@@ -232,7 +273,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                     position={Position.Right}
                     id={`success-${action.name || idx}`}
                     style={{
-                      background: '#10b981',
+                      background: 'var(--arazzo-success)',
                       right: '-8px',
                       top: '50%',
                       transform: 'translateY(-50%)',
@@ -268,10 +309,19 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
 
           return (
             <div
-              style={{ padding: '12px', background: '#f0fdf4', borderBottom: '1px solid #bbf7d0' }}
+              style={{
+                padding: '12px',
+                background: 'var(--arazzo-success-bg)',
+                borderBottom: '1px solid var(--arazzo-success-border)',
+              }}
             >
               <div
-                style={{ fontSize: '11px', fontWeight: 600, color: '#166534', marginBottom: '8px' }}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: 'var(--arazzo-success)',
+                  marginBottom: '8px',
+                }}
               >
                 ON SUCCESS (INHERITED):
               </div>
@@ -284,9 +334,9 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                       style={{
                         fontSize: '11px',
                         padding: '6px 8px',
-                        background: '#fff',
+                        background: 'var(--arazzo-card)',
                         borderRadius: '4px',
-                        border: '1px solid #86efac',
+                        border: '1px solid var(--arazzo-success-border)',
                         position: 'relative',
                         cursor: action.type === 'goto' ? 'pointer' : 'default',
                       }}
@@ -298,13 +348,13 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                             fontWeight: 600,
                             padding: '2px 4px',
                             borderRadius: '3px',
-                            background: 'rgb(219, 234, 254)',
-                            color: 'rgb(30, 64, 175)',
+                            background: 'var(--arazzo-info-bg)',
+                            color: 'var(--arazzo-info)',
                           }}
                         >
                           INHERITED
                         </span>
-                        <span style={{ fontWeight: 600, color: '#166534' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--arazzo-success)' }}>
                           {action.name || `action-${idx}`}
                         </span>
                         <span
@@ -312,8 +362,14 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                             fontSize: '10px',
                             padding: '2px 6px',
                             borderRadius: '3px',
-                            background: action.type === 'end' ? '#dc2626' : '#dbeafe',
-                            color: action.type === 'end' ? '#fff' : '#1e40af',
+                            background:
+                              action.type === 'end'
+                                ? 'var(--arazzo-danger)'
+                                : 'var(--arazzo-info-bg)',
+                            color:
+                              action.type === 'end'
+                                ? 'var(--arazzo-on-accent)'
+                                : 'var(--arazzo-info)',
                             fontWeight: action.type === 'end' ? 600 : 400,
                           }}
                         >
@@ -323,7 +379,13 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                         </span>
                       </div>
                       {action.criteria && action.criteria.length > 0 && (
-                        <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>
+                        <div
+                          style={{
+                            fontSize: '10px',
+                            color: 'var(--arazzo-muted-fg)',
+                            marginTop: '4px',
+                          }}
+                        >
                           {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                         </div>
                       )}
@@ -333,7 +395,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                           position={Position.Right}
                           id={`workflow-success-${action.name || actionIdx}`}
                           style={{
-                            background: '#10b981',
+                            background: 'var(--arazzo-success)',
                             right: '-8px',
                             top: '50%',
                             transform: 'translateY(-50%)',
@@ -350,8 +412,15 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
 
       {/* Step-level onFailure Actions */}
       {step.onFailure && step.onFailure.filter(isFailureAction).length > 0 && (
-        <div style={{ padding: '12px', background: '#fef2f2' }}>
-          <div style={{ fontSize: '11px', fontWeight: 600, color: '#991b1b', marginBottom: '8px' }}>
+        <div style={{ padding: '12px', background: 'var(--arazzo-danger-bg)' }}>
+          <div
+            style={{
+              fontSize: '11px',
+              fontWeight: 600,
+              color: 'var(--arazzo-danger)',
+              marginBottom: '8px',
+            }}
+          >
             ON FAILURE:
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -362,9 +431,9 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                 style={{
                   fontSize: '11px',
                   padding: '10px 12px',
-                  background: '#fff',
+                  background: 'var(--arazzo-card)',
                   borderRadius: '4px',
-                  border: '1px solid #fca5a5',
+                  border: '1px solid var(--arazzo-danger-border)',
                   position: 'relative',
                   cursor: action.type === 'goto' ? 'pointer' : 'default',
                 }}
@@ -377,7 +446,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                     marginBottom: action.criteria?.length ? '4px' : '0',
                   }}
                 >
-                  <span style={{ fontWeight: 600, color: '#991b1b' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--arazzo-danger)' }}>
                     {action.name || `action-${idx}`}
                   </span>
                   <span
@@ -387,20 +456,20 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                       borderRadius: '3px',
                       background:
                         action.type === 'end'
-                          ? '#dc2626'
+                          ? 'var(--arazzo-danger)'
                           : action.type === 'goto'
-                            ? '#dbeafe'
+                            ? 'var(--arazzo-info-bg)'
                             : action.type === 'retry'
-                              ? '#fef3c7'
-                              : '#f3f4f6',
+                              ? 'var(--arazzo-warning-bg)'
+                              : 'var(--arazzo-bg-secondary)',
                       color:
                         action.type === 'end'
-                          ? '#fff'
+                          ? 'var(--arazzo-on-accent)'
                           : action.type === 'goto'
-                            ? '#1e40af'
+                            ? 'var(--arazzo-info)'
                             : action.type === 'retry'
-                              ? '#92400e'
-                              : '#374151',
+                              ? 'var(--arazzo-warning)'
+                              : 'var(--arazzo-fg-lighter)',
                       fontWeight: action.type === 'end' ? 600 : 400,
                       display: 'flex',
                       alignItems: 'center',
@@ -414,7 +483,13 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                   </span>
                 </div>
                 {action.criteria && action.criteria.length > 0 && (
-                  <div style={{ fontSize: '10px', color: '#6b7280', fontStyle: 'italic' }}>
+                  <div
+                    style={{
+                      fontSize: '10px',
+                      color: 'var(--arazzo-muted-fg)',
+                      fontStyle: 'italic',
+                    }}
+                  >
                     {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                   </div>
                 )}
@@ -424,7 +499,8 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                     position={Position.Left}
                     id={`failure-${action.name || idx}`}
                     style={{
-                      background: action.type === 'retry' ? '#f59e0b' : '#ef4444',
+                      background:
+                        action.type === 'retry' ? 'var(--arazzo-warning)' : 'var(--arazzo-danger)',
                       left: '-8px',
                       top: '50%',
                       transform: 'translateY(-50%)',
@@ -459,9 +535,14 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
           if (inheritedActionsWithIdx.length === 0) return null;
 
           return (
-            <div style={{ padding: '12px', background: '#fef2f2' }}>
+            <div style={{ padding: '12px', background: 'var(--arazzo-danger-bg)' }}>
               <div
-                style={{ fontSize: '11px', fontWeight: 600, color: '#991b1b', marginBottom: '8px' }}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: 'var(--arazzo-danger)',
+                  marginBottom: '8px',
+                }}
               >
                 ON FAILURE (INHERITED):
               </div>
@@ -474,9 +555,9 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                       style={{
                         fontSize: '11px',
                         padding: '6px 8px',
-                        background: '#fff',
+                        background: 'var(--arazzo-card)',
                         borderRadius: '4px',
-                        border: '1px solid #fca5a5',
+                        border: '1px solid var(--arazzo-danger-border)',
                         position: 'relative',
                         cursor: action.type === 'goto' ? 'pointer' : 'default',
                       }}
@@ -488,13 +569,13 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                             fontWeight: 600,
                             padding: '2px 4px',
                             borderRadius: '3px',
-                            background: 'rgb(219, 234, 254)',
-                            color: 'rgb(30, 64, 175)',
+                            background: 'var(--arazzo-info-bg)',
+                            color: 'var(--arazzo-info)',
                           }}
                         >
                           INHERITED
                         </span>
-                        <span style={{ fontWeight: 600, color: '#991b1b' }}>
+                        <span style={{ fontWeight: 600, color: 'var(--arazzo-danger)' }}>
                           {action.name || `action-${idx}`}
                         </span>
                         <span
@@ -504,16 +585,16 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                             borderRadius: '3px',
                             background:
                               action.type === 'end'
-                                ? '#dc2626'
+                                ? 'var(--arazzo-danger)'
                                 : action.type === 'goto'
-                                  ? '#dbeafe'
-                                  : '#fef3c7',
+                                  ? 'var(--arazzo-info-bg)'
+                                  : 'var(--arazzo-warning-bg)',
                             color:
                               action.type === 'end'
-                                ? '#fff'
+                                ? 'var(--arazzo-on-accent)'
                                 : action.type === 'goto'
-                                  ? '#1e40af'
-                                  : '#92400e',
+                                  ? 'var(--arazzo-info)'
+                                  : 'var(--arazzo-warning)',
                             fontWeight: action.type === 'end' ? 600 : 400,
                           }}
                         >
@@ -526,7 +607,13 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                         </span>
                       </div>
                       {action.criteria && action.criteria.length > 0 && (
-                        <div style={{ fontSize: '10px', color: '#6b7280', marginTop: '4px' }}>
+                        <div
+                          style={{
+                            fontSize: '10px',
+                            color: 'var(--arazzo-muted-fg)',
+                            marginTop: '4px',
+                          }}
+                        >
                           {action.criteria.map((c: Criterion) => c.condition).join(' && ')}
                         </div>
                       )}
@@ -536,7 +623,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                           position={Position.Left}
                           id={`workflow-failure-${action.name || actionIdx}`}
                           style={{
-                            background: '#ef4444',
+                            background: 'var(--arazzo-danger)',
                             left: '-8px',
                             top: '50%',
                             transform: 'translateY(-50%)',
@@ -555,7 +642,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
         type="source"
         position={Position.Bottom}
         id="sequential"
-        style={{ background: '#6b7280' }}
+        style={{ background: 'var(--arazzo-border-hover)' }}
       />
     </div>
   );

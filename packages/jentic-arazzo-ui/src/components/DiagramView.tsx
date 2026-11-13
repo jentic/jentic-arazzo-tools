@@ -19,6 +19,7 @@ import {
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useArazzoViewer } from '../context/ArazzoViewerContext';
+import { palette } from '../styles/palette';
 import {
   StepNode,
   WorkflowRefNode,
@@ -289,7 +290,7 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
             selectionKeyCode={null}
             deleteKeyCode={null}
           >
-            <Background />
+            <Background color={palette.border} />
             <Controls />
           </ReactFlow>
         </ErrorBoundary>

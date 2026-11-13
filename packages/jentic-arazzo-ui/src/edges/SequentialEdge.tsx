@@ -28,8 +28,12 @@ export const SequentialEdge: React.FC<EdgeProps<SequentialEdgeData>> = ({
   });
 
   // Edge color based on state
-  const baseColor = '#6b7280';
-  const strokeColor = selected ? '#3b82f6' : isHovered ? '#9ca3af' : baseColor;
+  const baseColor = 'var(--arazzo-subtle-fg)';
+  const strokeColor = selected
+    ? 'var(--arazzo-ring)'
+    : isHovered
+      ? 'var(--arazzo-border-hover)'
+      : baseColor;
   const strokeWidth = selected ? 3 : isHovered ? 2.5 : 2;
 
   return (
@@ -60,10 +64,9 @@ export const SequentialEdge: React.FC<EdgeProps<SequentialEdgeData>> = ({
         <path
           d={edgePath}
           fill="none"
-          stroke="#3b82f6"
           strokeWidth={8}
           strokeOpacity={0.2}
-          style={{ pointerEvents: 'none' }}
+          style={{ stroke: 'var(--arazzo-ring)', pointerEvents: 'none' }}
         />
       )}
     </g>

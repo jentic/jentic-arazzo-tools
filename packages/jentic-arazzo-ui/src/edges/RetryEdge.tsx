@@ -89,8 +89,12 @@ export const RetryEdge: React.FC<EdgeProps<RetryEdgeData>> = ({
   const label = `${retryInfo}${delayInfo}`;
 
   // Amber color for retry
-  const baseColor = '#f59e0b';
-  const strokeColor = selected ? '#3b82f6' : isHovered ? '#fbbf24' : baseColor;
+  const baseColor = 'var(--arazzo-warning)';
+  const strokeColor = selected
+    ? 'var(--arazzo-ring)'
+    : isHovered
+      ? 'var(--arazzo-warning-hover)'
+      : baseColor;
   const strokeWidth = selected ? 3 : isHovered ? 2.5 : 2;
 
   return (
@@ -122,10 +126,9 @@ export const RetryEdge: React.FC<EdgeProps<RetryEdgeData>> = ({
         <path
           d={edgePath}
           fill="none"
-          stroke="#3b82f6"
           strokeWidth={8}
           strokeOpacity={0.2}
-          style={{ pointerEvents: 'none' }}
+          style={{ stroke: 'var(--arazzo-ring)', pointerEvents: 'none' }}
         />
       )}
       <EdgeLabelRenderer>
@@ -135,8 +138,8 @@ export const RetryEdge: React.FC<EdgeProps<RetryEdgeData>> = ({
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             fontSize: 10,
             fontWeight: 600,
-            background: selected ? '#3b82f6' : baseColor,
-            color: '#fff',
+            background: selected ? 'var(--arazzo-ring)' : baseColor,
+            color: 'var(--arazzo-on-accent)',
             padding: '2px 6px',
             borderRadius: 4,
             pointerEvents: 'all',

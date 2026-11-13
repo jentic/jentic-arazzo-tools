@@ -12,9 +12,9 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
 }) => {
   const { workflowId, workflow, onClick } = data;
 
-  const borderColor = selected ? '#3b82f6' : '#e5e7eb';
+  const borderColor = selected ? 'var(--arazzo-ring)' : 'var(--arazzo-border)';
   const boxShadow = selected
-    ? '0 0 0 3px rgba(59, 130, 246, 0.3), 0 8px 24px rgba(59, 130, 246, 0.25)'
+    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px var(--arazzo-ring-glow)'
     : '0 2px 8px rgba(0,0,0,0.1)';
 
   const handleClick = () => {
@@ -27,7 +27,7 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
     <div
       onClick={handleClick}
       style={{
-        background: selected ? '#fafbff' : '#fff',
+        background: selected ? 'var(--arazzo-card-selected)' : 'var(--arazzo-card)',
         border: `2px solid ${borderColor}`,
         borderRadius: '10px',
         width: '420px',
@@ -42,24 +42,26 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
         type="target"
         position={Position.Bottom}
         id="bottom"
-        style={{ background: '#6b7280' }}
+        style={{ background: 'var(--arazzo-border-hover)' }}
       />
 
       {/* Header */}
       <div
         style={{
           padding: '12px 14px',
-          borderBottom: `1px solid ${selected ? '#bfdbfe' : '#e5e7eb'}`,
+          borderBottom: `1px solid ${selected ? 'var(--arazzo-info-border)' : 'var(--arazzo-border)'}`,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          background: selected ? '#eff6ff' : '#f9fafb',
+          background: selected ? 'var(--arazzo-info-bg)' : 'var(--arazzo-bg-secondary)',
           borderRadius: '8px 8px 0 0',
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ fontSize: '16px' }}>⚡</span>
-          <span style={{ fontWeight: 600, fontSize: '13px', color: '#1f2937' }}>{workflowId}</span>
+          <span style={{ fontWeight: 600, fontSize: '13px', color: 'var(--arazzo-fg)' }}>
+            {workflowId}
+          </span>
         </div>
         <span
           style={{
@@ -67,8 +69,8 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
             fontWeight: 600,
             padding: '2px 8px',
             borderRadius: '4px',
-            background: '#dbeafe',
-            color: '#1e40af',
+            background: 'var(--arazzo-info-bg)',
+            color: 'var(--arazzo-info)',
           }}
         >
           WORKFLOW
@@ -81,7 +83,7 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
           <p
             style={{
               fontSize: '11px',
-              color: '#6b7280',
+              color: 'var(--arazzo-muted-fg)',
               margin: '0 0 8px',
               lineHeight: '1.4',
             }}
@@ -92,7 +94,7 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
           <p
             style={{
               fontSize: '11px',
-              color: '#6b7280',
+              color: 'var(--arazzo-muted-fg)',
               margin: '0 0 8px',
               lineHeight: '1.4',
               overflow: 'hidden',
@@ -106,7 +108,14 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
           </p>
         ) : null}
 
-        <div style={{ display: 'flex', gap: '12px', fontSize: '11px', color: '#6b7280' }}>
+        <div
+          style={{
+            display: 'flex',
+            gap: '12px',
+            fontSize: '11px',
+            color: 'var(--arazzo-muted-fg)',
+          }}
+        >
           {workflow && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <span>📋</span>
@@ -129,11 +138,11 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
         <div
           style={{
             padding: '8px 14px',
-            borderTop: '1px solid #f3f4f6',
+            borderTop: '1px solid var(--arazzo-border)',
             textAlign: 'center',
             fontSize: '10px',
-            color: '#9ca3af',
-            background: '#fafafa',
+            color: 'var(--arazzo-subtle-fg)',
+            background: 'var(--arazzo-bg-secondary)',
             borderRadius: '0 0 8px 8px',
           }}
         >

@@ -21,18 +21,18 @@ export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data, selected }
 
   // Selection styles - more prominent
   const boxShadow = selected
-    ? '0 0 0 3px rgba(59, 130, 246, 0.4), 0 8px 24px rgba(16, 185, 129, 0.3)'
+    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px rgb(94 222 185 / 0.3)'
     : '0 2px 8px rgba(0,0,0,0.15)';
 
   return (
     <div
       className={`start-node ${selected ? 'start-node--selected' : ''}`}
       style={{
-        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        border: `3px solid ${selected ? '#3b82f6' : '#059669'}`,
+        background: 'var(--arazzo-success)',
+        border: `3px solid ${selected ? 'var(--arazzo-ring)' : 'var(--arazzo-success)'}`,
         borderRadius: '12px',
         width: '420px',
-        color: '#fff',
+        color: 'var(--arazzo-on-accent)',
         boxShadow,
         transition: 'all 0.15s ease-in-out',
         transform: selected ? 'scale(1.03)' : 'scale(1)',
@@ -89,7 +89,7 @@ export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data, selected }
         <div
           style={{
             padding: '12px 16px',
-            borderTop: '1px solid rgba(255,255,255,0.3)',
+            borderTop: '1px solid rgb(255 255 255 / 0.3)',
             fontSize: '11px',
           }}
         >
@@ -128,7 +128,11 @@ export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data, selected }
         </div>
       )}
 
-      <Handle type="source" position={Position.Bottom} style={{ background: '#fff' }} />
+      <Handle
+        type="source"
+        position={Position.Bottom}
+        style={{ background: 'var(--arazzo-on-accent)' }}
+      />
     </div>
   );
 };

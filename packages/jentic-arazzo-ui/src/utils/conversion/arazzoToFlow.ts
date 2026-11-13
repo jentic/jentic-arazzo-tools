@@ -1,5 +1,6 @@
 import { MarkerType } from 'reactflow';
 
+import { palette } from '../../styles/palette';
 import { Workflow, Step, ArazzoDocument } from '../../types/arazzo';
 import {
   ArazzoNode,
@@ -162,7 +163,7 @@ export function convertWorkflowToFlow(
       target: firstStepNodeId,
       type: 'sequential',
       data: { type: 'sequential' } as SequentialEdgeData,
-      markerEnd: { type: MarkerType.ArrowClosed, color: '#6b7280' },
+      markerEnd: { type: MarkerType.ArrowClosed, color: palette.subtleFg },
     });
   }
 
@@ -216,7 +217,7 @@ export function convertWorkflowToFlow(
           sourceHandle: 'sequential',
           type: 'sequential',
           data: { type: 'sequential' } as SequentialEdgeData,
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#6b7280' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.subtleFg },
         });
       } else {
         // Last step to end
@@ -227,7 +228,7 @@ export function convertWorkflowToFlow(
           sourceHandle: 'sequential',
           type: 'sequential',
           data: { type: 'sequential' } as SequentialEdgeData,
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#6b7280' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.subtleFg },
         });
       }
     }
@@ -261,7 +262,7 @@ export function convertWorkflowToFlow(
               action,
               criteria: action.criteria,
             } as SuccessEdgeData,
-            markerEnd: { type: MarkerType.ArrowClosed, color: '#10b981' },
+            markerEnd: { type: MarkerType.ArrowClosed, color: palette.success },
           });
         }
         // Note: 'end' actions don't create edges - they show a terminator badge in the node
@@ -297,7 +298,7 @@ export function convertWorkflowToFlow(
               action,
               criteria: action.criteria,
             } as FailureEdgeData,
-            markerEnd: { type: MarkerType.ArrowClosed, color: '#ef4444' },
+            markerEnd: { type: MarkerType.ArrowClosed, color: palette.danger },
           });
         } else if (action.type === 'retry') {
           // Retry targets either a specified step, workflow, or loops back to current step
@@ -325,7 +326,7 @@ export function convertWorkflowToFlow(
               retryLimit: action.retryLimit,
               criteria: action.criteria,
             },
-            markerEnd: { type: MarkerType.ArrowClosed, color: '#f59e0b' },
+            markerEnd: { type: MarkerType.ArrowClosed, color: palette.warning },
           });
         }
         // Note: 'end' actions don't create edges - they show a terminator badge in the node
@@ -497,7 +498,7 @@ export function convertWorkflowToFlow(
             sources: group.sources,
             actionIdx: group.actionIdx,
           } as BundledSuccessEdgeData,
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#10b981' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.success },
         });
       } else if (group.edgeType === 'failure') {
         edges.push({
@@ -513,7 +514,7 @@ export function convertWorkflowToFlow(
             sources: group.sources,
             actionIdx: group.actionIdx,
           } as BundledFailureEdgeData,
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#ef4444' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.danger },
         });
       } else if (group.edgeType === 'retry') {
         edges.push({
@@ -531,7 +532,7 @@ export function convertWorkflowToFlow(
             sources: group.sources,
             actionIdx: group.actionIdx,
           } as BundledRetryEdgeData,
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#f59e0b' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.warning },
         });
       }
     } else if (group.sources.length === 1) {
@@ -551,7 +552,7 @@ export function convertWorkflowToFlow(
             criteria: group.action.criteria,
             isInherited: true,
           },
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#10b981' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.success },
         });
       } else if (group.edgeType === 'failure') {
         edges.push({
@@ -567,7 +568,7 @@ export function convertWorkflowToFlow(
             criteria: group.action.criteria,
             isInherited: true,
           },
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#ef4444' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.danger },
         });
       } else if (group.edgeType === 'retry') {
         edges.push({
@@ -585,7 +586,7 @@ export function convertWorkflowToFlow(
             criteria: group.action.criteria,
             isInherited: true,
           },
-          markerEnd: { type: MarkerType.ArrowClosed, color: '#f59e0b' },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.warning },
         });
       }
     }
