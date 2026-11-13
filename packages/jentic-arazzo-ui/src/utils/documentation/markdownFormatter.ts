@@ -186,7 +186,9 @@ export function formatWorkflowWithNotes(
     const requestBodyView = getRequestBodyView(step.requestBody);
     const listNotes = (key: string, keys: (string | number)[] | undefined): ListNotes =>
       keys && keys.length > 0 ? notes.takeList([...stepPath, key], keys) : emptyListNotes;
-    const indices = (list: unknown[] | undefined) => list?.map((_, i) => i);
+    // invalid documents can hold a non-array here (e.g. `parameters: {}`); those sections aren't
+    // rendered, so their diagnostics fall back to the step
+    const indices = (list: unknown) => (Array.isArray(list) ? list.map((_, i) => i) : undefined);
     const parameterNotes = listNotes('parameters', indices(step.parameters));
     const requestBodyNotes = requestBodyView ? notes.take([...stepPath, 'requestBody']) : [];
     const criteriaNotes = listNotes('successCriteria', indices(step.successCriteria));
