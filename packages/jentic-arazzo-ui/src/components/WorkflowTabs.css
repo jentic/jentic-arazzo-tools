@@ -61,7 +61,7 @@
 
 .arazzo-workflow-tabs__tab--active {
   color: var(--arazzo-info);
-  border-bottom-color: var(--arazzo-ring);
+  border-bottom-color: var(--arazzo-fg);
   background: var(--arazzo-card);
 }
 
