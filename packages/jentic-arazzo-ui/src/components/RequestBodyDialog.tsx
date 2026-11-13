@@ -88,7 +88,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
         margin: 0,
         padding: 0,
         border: 'none',
-        background: 'rgb(14 26 29 / 0.75)',
+        background: 'var(--arazzo-overlay)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -104,7 +104,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
           maxHeight: '80vh',
           display: 'flex',
           flexDirection: 'column',
-          boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+          boxShadow: 'var(--arazzo-shadow-dialog)',
         }}
       >
         <div

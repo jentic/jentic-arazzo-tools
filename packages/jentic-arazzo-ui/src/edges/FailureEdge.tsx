@@ -179,7 +179,7 @@ export const FailureEdge: React.FC<EdgeProps<FailureEdgeData>> = ({
             borderRadius: 4,
             pointerEvents: 'all',
             cursor: 'pointer',
-            boxShadow: isHovered || selected ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
+            boxShadow: isHovered || selected ? 'var(--arazzo-shadow-label)' : 'none',
             transition: 'background 0.15s ease, box-shadow 0.15s ease',
           }}
           className="nodrag nopan"

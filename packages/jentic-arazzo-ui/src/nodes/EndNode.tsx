@@ -8,8 +8,8 @@ export const EndNode: React.FC<NodeProps<EndNodeData>> = ({ data, selected }) =>
 
   // Selection styles - more prominent
   const boxShadow = selected
-    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px rgb(0 0 0 / 0.3)'
-    : '0 2px 8px rgba(0,0,0,0.15)';
+    ? '0 0 0 3px var(--arazzo-ring-glow), var(--arazzo-glow-neutral)'
+    : 'var(--arazzo-shadow-node-strong)';
 
   return (
     <div

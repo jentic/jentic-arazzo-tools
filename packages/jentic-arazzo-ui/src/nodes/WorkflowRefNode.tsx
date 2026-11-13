@@ -50,8 +50,8 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
       ? 'var(--arazzo-border)'
       : 'var(--arazzo-danger)';
   const boxShadow = selected
-    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px rgb(241 227 139 / 0.2)'
-    : '0 2px 8px rgba(0,0,0,0.1)';
+    ? '0 0 0 3px var(--arazzo-ring-glow), var(--arazzo-glow-warning)'
+    : 'var(--arazzo-shadow-node)';
 
   return (
     <div

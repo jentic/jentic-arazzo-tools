@@ -21,8 +21,8 @@ export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data, selected }
 
   // Selection styles - more prominent
   const boxShadow = selected
-    ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px rgb(94 222 185 / 0.3)'
-    : '0 2px 8px rgba(0,0,0,0.15)';
+    ? '0 0 0 3px var(--arazzo-ring-glow), var(--arazzo-glow-success)'
+    : 'var(--arazzo-shadow-node-strong)';
 
   return (
     <div
@@ -89,7 +89,7 @@ export const StartNode: React.FC<NodeProps<StartNodeData>> = ({ data, selected }
         <div
           style={{
             padding: '12px 16px',
-            borderTop: '1px solid rgb(255 255 255 / 0.3)',
+            borderTop: '1px solid var(--arazzo-on-accent-divider)',
             fontSize: '11px',
           }}
         >

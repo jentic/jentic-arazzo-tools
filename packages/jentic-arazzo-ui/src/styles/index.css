@@ -83,6 +83,21 @@
   /* elevation - soft neutral shadows for light surfaces */
   --arazzo-shadow: 0 1px 2px 0 rgb(21 40 34 / 0.06);
   --arazzo-shadow-pop: 0 16px 40px -12px rgb(21 40 34 / 0.18), 0 4px 12px -4px rgb(21 40 34 / 0.1);
+  --arazzo-shadow-node: 0 2px 8px rgb(0 0 0 / 0.1);
+  --arazzo-shadow-node-strong: 0 2px 8px rgb(0 0 0 / 0.15);
+  --arazzo-shadow-label: 0 2px 8px rgb(0 0 0 / 0.2);
+  --arazzo-shadow-dialog: 0 20px 50px rgb(0 0 0 / 0.3);
+
+  /* glow under a selected start / end / workflow-ref node */
+  --arazzo-glow-success: 0 8px 24px rgb(12 141 94 / 0.3);
+  --arazzo-glow-warning: 0 8px 24px rgb(212 134 17 / 0.2);
+  --arazzo-glow-neutral: 0 8px 24px rgb(0 0 0 / 0.3);
+
+  /* backdrop behind modal dialogs */
+  --arazzo-overlay: rgb(21 40 34 / 0.75);
+
+  /* hairline divider drawn on a solid accent fill */
+  --arazzo-on-accent-divider: rgb(255 255 255 / 0.3);
 
   /* typography - Jentic website brand fonts: Sora for headings, labels and
      buttons; Nunito Sans for body text; Geist Mono for code. Each stack starts

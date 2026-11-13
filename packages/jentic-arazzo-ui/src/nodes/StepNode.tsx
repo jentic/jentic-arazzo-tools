@@ -79,7 +79,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
       : 'var(--arazzo-danger)';
   const boxShadow = selected
     ? '0 0 0 3px var(--arazzo-ring-glow), 0 8px 24px var(--arazzo-ring-glow)'
-    : '0 2px 8px rgba(0,0,0,0.1)';
+    : 'var(--arazzo-shadow-node)';
 
   return (
     <>
