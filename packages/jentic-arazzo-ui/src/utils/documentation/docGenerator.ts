@@ -1,16 +1,19 @@
 import { ArazzoDocument } from '../../types/arazzo';
 import { DocumentationMetadata, ViewerStep, WorkflowDocumentation } from '../../types/viewer';
 import { generateMetadata } from './metadataGenerator';
+import type { DocumentDiagnostic } from '../validation';
 import {
   formatAsMarkdown,
   formatHeaderAsMarkdown,
-  formatWorkflowAsMarkdown,
+  formatWorkflowWithNotes,
 } from './markdownFormatter';
 
 export interface GenerateDocumentationOptions {
   includeMetadata?: boolean;
   includeDiagrams?: boolean;
   documentURL?: string | null;
+  // validator diagnostics with resolved document paths, shown inline next to the elements
+  diagnostics?: DocumentDiagnostic[];
 }
 
 export interface DocumentationOutput {
@@ -19,6 +22,8 @@ export interface DocumentationOutput {
   markdown: string;
   headerMarkdown: string;
   workflowMarkdowns: Map<string, string>;
+  // validation notes shown inline in each workflow, keyed by workflowId
+  workflowNotes: Map<string, DocumentDiagnostic[]>;
 }
 
 /**
@@ -28,7 +33,7 @@ export function generateDocumentation(
   document: ArazzoDocument,
   options: GenerateDocumentationOptions = {},
 ): DocumentationOutput {
-  const { includeMetadata = true, includeDiagrams = false, documentURL } = options;
+  const { includeMetadata = true, includeDiagrams = false, documentURL, diagnostics } = options;
 
   // Extract metadata
   const metadata = generateMetadata(document);
@@ -64,8 +69,11 @@ export function generateDocumentation(
 
   // Generate per-workflow markdown
   const workflowMarkdowns = new Map<string, string>();
-  workflows.forEach((wf) => {
-    workflowMarkdowns.set(wf.workflowId, formatWorkflowAsMarkdown(metadata, wf));
+  const workflowNotes = new Map<string, DocumentDiagnostic[]>();
+  workflows.forEach((wf, workflowIndex) => {
+    const formatted = formatWorkflowWithNotes(metadata, wf, { workflowIndex, diagnostics });
+    workflowMarkdowns.set(wf.workflowId, formatted.markdown);
+    workflowNotes.set(wf.workflowId, formatted.notes);
   });
 
   // Full markdown (legacy)
@@ -77,5 +85,6 @@ export function generateDocumentation(
     markdown,
     headerMarkdown,
     workflowMarkdowns,
+    workflowNotes,
   };
 }

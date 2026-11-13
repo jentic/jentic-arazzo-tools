@@ -62,6 +62,7 @@ export type {
   JSONSchema,
 } from './types/arazzo';
 import { stripInternalIds } from './utils/internalIds';
+import { validateArazzoSource, type ValidationState } from './utils/validation';
 
 import './styles/index.css';
 
@@ -153,6 +154,31 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     };
   }, [rawDocument]);
 
+  const [validation, setValidation] = useState<ValidationState>({ status: 'loading' });
+
+  useEffect(() => {
+    let cancelled = false;
+
+    setValidation({ status: 'loading' });
+
+    validateArazzoSource(rawDocument)
+      .then((result) => {
+        if (!cancelled) setValidation(result);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setValidation({
+            status: 'error',
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [rawDocument]);
+
   const events = useMemo(
     () => ({
       onNodeSelect,
@@ -228,7 +254,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
         events={events}
       >
         <ReactFlowProvider>
-          <ArazzoUIInner ref={ref} view={view} />
+          <ArazzoUIInner ref={ref} view={view} validation={validation} />
         </ReactFlowProvider>
       </ArazzoViewerProvider>
     </div>
@@ -237,10 +263,11 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
 
 interface ArazzoUIInnerProps {
   view: ViewerMode;
+  validation: ValidationState;
 }
 
 const ArazzoUIInner = forwardRef<ArazzoUIRef, ArazzoUIInnerProps>(function ArazzoUIInner(
-  { view },
+  { view, validation },
   ref,
 ) {
   const diagramRef = useRef<DiagramViewRef>(null);
@@ -287,7 +314,7 @@ const ArazzoUIInner = forwardRef<ArazzoUIRef, ArazzoUIInnerProps>(function Arazz
       )}
       {showDocs && (
         <div style={{ flex: 1, minWidth: 0, height: '100%', overflow: 'auto' }}>
-          <DocsView />
+          <DocsView validation={validation} />
         </div>
       )}
     </>

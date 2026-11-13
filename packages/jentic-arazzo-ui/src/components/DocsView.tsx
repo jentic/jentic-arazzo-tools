@@ -10,11 +10,124 @@ import {
   generateMermaidSequence,
   generateMermaidFlowchart,
 } from '../utils/documentation/index';
+import { worstSeverity } from '../utils/documentation/inlineDiagnostics';
+import type { DiagnosticSeverityName, ValidationState } from '../utils/validation';
 
 export interface DocsViewProps {
   diagramType?: string;
   onDiagramTypeChange?: (type: string) => void;
+  validation?: ValidationState;
 }
+
+const severityLabels: Record<DiagnosticSeverityName, [singular: string, plural: string]> = {
+  error: ['error', 'errors'],
+  warning: ['warning', 'warnings'],
+  info: ['info', 'info'],
+  hint: ['hint', 'hints'],
+};
+
+interface ValidationSectionProps {
+  validation: ValidationState;
+  showInlineNotes: boolean;
+  onShowInlineNotesChange: (show: boolean) => void;
+}
+
+const ValidationSection: React.FC<ValidationSectionProps> = ({
+  validation,
+  showInlineNotes,
+  onShowInlineNotesChange,
+}) => {
+  // only errors and warnings are shown inline, so the switch is pointless without them
+  const hasInlineNotes =
+    validation.status === 'done' &&
+    validation.diagnostics.some((d) => d.severity === 'error' || d.severity === 'warning');
+  let summary: React.ReactNode = null;
+  let body: React.ReactNode;
+
+  if (validation.status === 'loading') {
+    body = <div className="validation-empty">Validating document…</div>;
+  } else if (validation.status === 'error') {
+    body = (
+      <div className="validation-empty validation-failed">
+        Validation could not be run: {validation.message}
+      </div>
+    );
+  } else if (validation.diagnostics.length === 0) {
+    body = <div className="validation-empty validation-ok">✓ No issues found</div>;
+  } else {
+    const counts = validation.diagnostics.reduce<Partial<Record<DiagnosticSeverityName, number>>>(
+      (acc, d) => ({ ...acc, [d.severity]: (acc[d.severity] ?? 0) + 1 }),
+      {},
+    );
+    summary = (Object.keys(severityLabels) as DiagnosticSeverityName[])
+      .filter((severity) => counts[severity])
+      .map((severity) => {
+        const count = counts[severity]!;
+        const [singular, plural] = severityLabels[severity];
+        return (
+          <span key={severity} className={`validation-count validation-count-${severity}`}>
+            {count} {count === 1 ? singular : plural}
+          </span>
+        );
+      });
+    body = (
+      <ul className="validation-list">
+        {validation.diagnostics.map((d, i) => (
+          <li key={i} className="validation-item">
+            <span className={`validation-severity validation-severity-${d.severity}`}>
+              {d.severity}
+            </span>
+            {validation.hasSourcePositions && (
+              <span className="validation-location">
+                {d.line}:{d.column}
+              </span>
+            )}
+            <span className="validation-message">{d.message}</span>
+            {d.code && <span className="validation-code">{d.code}</span>}
+          </li>
+        ))}
+      </ul>
+    );
+  }
+
+  return (
+    <section className="validation-section" data-validation-status={validation.status}>
+      <div className="workflows-header-row">
+        <span className="validation-title">
+          <span className="sources-header" style={{ margin: 0 }}>
+            Validation
+          </span>
+          {hasInlineNotes && (
+            <button
+              type="button"
+              role="switch"
+              aria-checked={showInlineNotes}
+              className="validation-inline-switch"
+              title={
+                showInlineNotes
+                  ? 'Hide validation notes in the workflows above'
+                  : 'Show validation notes in the workflows above'
+              }
+              onClick={() => onShowInlineNotesChange(!showInlineNotes)}
+            >
+              <span className="validation-inline-switch-track" aria-hidden="true">
+                <span className="validation-inline-switch-thumb" />
+              </span>
+              Inline notes
+            </button>
+          )}
+        </span>
+        {summary && <span className="validation-summary">{summary}</span>}
+      </div>
+      <div className="validation-card">
+        {validation.status === 'done' && validation.notice && (
+          <div className="validation-notice">{validation.notice}</div>
+        )}
+        {body}
+      </div>
+    </section>
+  );
+};
 
 type WorkflowViewMode = 'docs' | 'sequence' | 'flowchart';
 
@@ -67,7 +180,7 @@ const MermaidDiagram: React.FC<{ source: string }> = ({ source }) => {
 const markdownPlugins = [remarkGfm];
 const rehypePlugins = [rehypeHighlight, rehypeRaw];
 
-export const DocsView: React.FC<DocsViewProps> = () => {
+export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
   const { document, documentURL, selectedNodeId, nodes, activeWorkflowId } = useArazzoViewer();
   const mermaidInitialized = useRef(false);
   const docsContainerRef = useRef<HTMLDivElement>(null);
@@ -165,14 +278,19 @@ export const DocsView: React.FC<DocsViewProps> = () => {
   }, [activeWorkflowId]);
 
   // Generate documentation (memoized)
+  const [showInlineNotes, setShowInlineNotes] = useState(true);
+  const diagnostics =
+    showInlineNotes && validation?.status === 'done' ? validation.diagnostics : undefined;
+
   const documentation = useMemo(() => {
     if (!document) return null;
     return generateDocumentation(document, {
       includeMetadata: true,
       includeDiagrams: false,
       documentURL,
+      diagnostics,
     });
-  }, [document, documentURL]);
+  }, [document, documentURL, diagnostics]);
 
   // Pre-generate all diagrams (memoized)
   const sequenceDiagrams = useMemo(() => {
@@ -666,6 +784,92 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             color: #9ca3af;
           }
 
+          /* Inline validation notes */
+          .step-detail-issues {
+            font-size: 10px;
+            font-weight: 700;
+            padding: 0 6px;
+            border-radius: 8px;
+            line-height: 16px;
+          }
+
+          .step-detail-issues-error {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+
+          .step-detail-issues-warning {
+            background: #fef3c7;
+            color: #92400e;
+          }
+
+          .step-detail-issues-info, .step-detail-issues-hint {
+            background: #dbeafe;
+            color: #1e40af;
+          }
+
+          .workflow-issues {
+            margin-left: auto;
+            font-size: 11px;
+            line-height: 20px;
+            padding: 0 8px;
+            border-radius: 10px;
+          }
+
+          .workflow-diagnostics,
+          .step-card > .step-diagnostics {
+            margin-top: 8px;
+          }
+
+          .step-diagnostics {
+            grid-column: 1 / -1;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            margin: 2px 0 6px;
+          }
+
+          .step-diagnostic {
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
+            padding: 3px 8px;
+            border-left: 2px solid;
+            border-radius: 0 4px 4px 0;
+            font-size: 12px;
+            line-height: 1.5;
+          }
+
+          .step-diagnostic-error {
+            background: #fef2f2;
+            border-color: #f87171;
+            color: #991b1b;
+          }
+
+          .step-diagnostic-warning {
+            background: #fffbeb;
+            border-color: #fbbf24;
+            color: #92400e;
+          }
+
+          .step-diagnostic-info, .step-diagnostic-hint {
+            background: #eff6ff;
+            border-color: #60a5fa;
+            color: #1e40af;
+          }
+
+          .step-diagnostic-severity {
+            flex-shrink: 0;
+            font-size: 9px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+          }
+
+          .step-diagnostic-message {
+            word-break: break-word;
+          }
+
           .step-detail-body {
             padding: 2px 0 4px 14px;
             font-size: 13px;
@@ -899,6 +1103,183 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             height: auto;
           }
 
+          /* Validation */
+          .validation-section {
+            margin-bottom: 24px;
+          }
+
+          .validation-summary {
+            display: flex;
+            gap: 6px;
+          }
+
+          .validation-title {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+          }
+
+          .validation-inline-switch {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            background: none;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+          }
+
+          .validation-inline-switch:hover {
+            color: #374151;
+          }
+
+          .validation-inline-switch:focus-visible {
+            outline: 2px solid #93c5fd;
+            outline-offset: 2px;
+            border-radius: 4px;
+          }
+
+          .validation-inline-switch-track {
+            position: relative;
+            width: 28px;
+            height: 16px;
+            border-radius: 8px;
+            background: #d1d5db;
+            transition: background 0.15s;
+          }
+
+          .validation-inline-switch-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            transition: transform 0.15s;
+          }
+
+          .validation-inline-switch[aria-checked='true'] .validation-inline-switch-track {
+            background: #6BA543;
+          }
+
+          .validation-inline-switch[aria-checked='true'] .validation-inline-switch-thumb {
+            transform: translateX(12px);
+          }
+
+          .validation-count {
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+          }
+
+          .validation-card {
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+          }
+
+          .validation-empty {
+            padding: 14px 20px;
+            font-size: 13px;
+            color: #6b7280;
+          }
+
+          .validation-ok {
+            color: #6BA543;
+            font-weight: 600;
+          }
+
+          .validation-failed {
+            color: #991b1b;
+          }
+
+          .validation-notice {
+            padding: 10px 20px;
+            font-size: 12px;
+            color: #92400e;
+            background: #fffbeb;
+            border-bottom: 1px solid #fde68a;
+          }
+
+          .arazzo-docs-view ul.validation-list {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+          }
+
+          .arazzo-docs-view li.validation-item {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            margin: 0;
+            padding: 10px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 13px;
+            line-height: 1.5;
+          }
+
+          .arazzo-docs-view li.validation-item:last-child {
+            border-bottom: none;
+          }
+
+          .validation-severity {
+            flex-shrink: 0;
+            box-sizing: border-box;
+            width: 70px;
+            text-align: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+          }
+
+          .validation-severity-error, .validation-count-error {
+            background: #fee2e2;
+            color: #991b1b;
+          }
+
+          .validation-severity-warning, .validation-count-warning {
+            background: #fef3c7;
+            color: #92400e;
+          }
+
+          .validation-severity-info, .validation-count-info,
+          .validation-severity-hint, .validation-count-hint {
+            background: #dbeafe;
+            color: #1e40af;
+          }
+
+          .validation-location {
+            flex-shrink: 0;
+            min-width: 48px;
+            font-size: 12px;
+            color: #9ca3af;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+          }
+
+          .validation-message {
+            flex: 1;
+            color: #374151;
+            word-break: break-word;
+          }
+
+          .validation-code {
+            flex-shrink: 0;
+            font-size: 11px;
+            color: #9ca3af;
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+          }
+
         `}</style>
         <article className="arazzo-docs-prose">
           {/* Header: title, version, sources */}
@@ -920,6 +1301,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             const stepCount = workflow.steps.length;
             const currentView = getWorkflowView(workflow.workflowId);
             const workflowMd = documentation.workflowMarkdowns.get(workflow.workflowId) || '';
+            const workflowNotes = documentation.workflowNotes.get(workflow.workflowId) ?? [];
 
             const sequenceSource = sequenceDiagrams.get(workflow.workflowId) || null;
             const flowchartSource = flowchartDiagrams.get(workflow.workflowId) || null;
@@ -938,6 +1320,14 @@ export const DocsView: React.FC<DocsViewProps> = () => {
                   <span className="workflow-summary-title">{workflow.workflowId}</span>
                   {workflow.summary && (
                     <span className="workflow-summary-text">{workflow.summary}</span>
+                  )}
+                  {workflowNotes.length > 0 && (
+                    <span
+                      className={`step-detail-issues workflow-issues step-detail-issues-${worstSeverity(workflowNotes)}`}
+                      title={`${workflowNotes.length} validation ${workflowNotes.length === 1 ? 'issue' : 'issues'}`}
+                    >
+                      ⚠ {workflowNotes.length}
+                    </span>
                   )}
                 </summary>
                 <div className="workflow-details-content">
@@ -972,6 +1362,14 @@ export const DocsView: React.FC<DocsViewProps> = () => {
               </details>
             );
           })}
+
+          {validation && (
+            <ValidationSection
+              validation={validation}
+              showInlineNotes={showInlineNotes}
+              onShowInlineNotesChange={setShowInlineNotes}
+            />
+          )}
         </article>
       </div>
     </div>

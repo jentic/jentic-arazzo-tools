@@ -137,12 +137,18 @@ const getPayloadView = (
 export function getRequestBodyView(requestBody?: RequestBody): RequestBodyView | undefined {
   if (!requestBody) return undefined;
 
-  const payload = getPayloadView(requestBody.payload, requestBody.contentType);
+  // invalid documents can carry a non-string contentType (e.g. `contentType: 42`); show it as
+  // text rather than crashing the whole viewer
+  const rawContentType: unknown = requestBody.contentType;
+  const contentType =
+    rawContentType === undefined || rawContentType === null ? undefined : String(rawContentType);
+
+  const payload = getPayloadView(requestBody.payload, contentType);
   const replacements = (requestBody.replacements ?? []).map((r) =>
     toKeyValueRow(r.target, r.value),
   );
 
-  if (!payload && !requestBody.contentType && replacements.length === 0) return undefined;
+  if (!payload && !contentType && replacements.length === 0) return undefined;
 
-  return { contentType: requestBody.contentType, payload, replacements };
+  return { contentType, payload, replacements };
 }

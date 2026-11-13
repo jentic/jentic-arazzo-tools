@@ -2,6 +2,8 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
+import { apidomSideEffects } from './plugins/apidomSideEffects';
+
 const isEsm = process.env.BUILD_FORMAT === 'esm';
 const entry = process.env.BUILD_ENTRY || 'ArazzoUI';
 const packageRoot = resolve(__dirname, '../../');
@@ -36,7 +38,7 @@ function isExternal(id: string) {
 
 export default defineConfig({
   define: isEsm ? {} : { 'process.env.NODE_ENV': JSON.stringify('production') },
-  plugins: [react()],
+  plugins: [react(), apidomSideEffects()],
   resolve: isEsm
     ? undefined
     : {
