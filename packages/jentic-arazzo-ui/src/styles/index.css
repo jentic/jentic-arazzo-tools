@@ -78,10 +78,11 @@
   --arazzo-info: var(--arazzo-accent-blue);
   --arazzo-info-bg: rgb(32 107 182 / 0.08);
   --arazzo-info-border: rgb(32 107 182 / 0.3);
-  --arazzo-accent-orange-bg: rgb(212 134 17 / 0.1);
-  /* accent orange darkened for small text (5.3:1+ on white and its tint); the
-     brighter --arazzo-accent-orange stays for decorative use */
-  --arazzo-accent-orange-fg: #8e5a0b;
+  --arazzo-accent-orange-bg: rgb(179 69 15 / 0.08);
+  /* burnt orange for small text (4.8:1+ on white and its tint), redder than the
+     gold --arazzo-warning so PATCH and PUT pills stay distinct; the brighter
+     --arazzo-accent-orange stays for decorative use */
+  --arazzo-accent-orange-fg: #b3450f;
 
   /* elevation - soft neutral shadows for light surfaces */
   --arazzo-shadow: 0 1px 2px 0 rgb(21 40 34 / 0.06);
