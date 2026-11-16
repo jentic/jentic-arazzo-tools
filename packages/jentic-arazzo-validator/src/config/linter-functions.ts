@@ -8,7 +8,7 @@ import {
   type FunctionItem,
   type LinterFunctionsMap,
   type LinterFunction,
-} from '@speclynx/apidom-ls';
+} from '@speclynx/api-languageservice';
 import type {
   Element,
   ArrayElement,

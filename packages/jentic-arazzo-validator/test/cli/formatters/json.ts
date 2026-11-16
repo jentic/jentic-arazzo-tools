@@ -38,4 +38,18 @@ describe('json', function () {
     assert.equal(parsed.summary.truncated, true);
     assert.equal(parsed.summary.originalTotal, 2);
   });
+
+  const markupDiagnostic: Diagnostic = {
+    range: { start: { line: 1, character: 0 }, end: { line: 1, character: 4 } },
+    message: { kind: 'markdown', value: 'Field `foo` is not allowed' },
+    severity: DiagnosticSeverity.Error,
+    code: 'not-allowed',
+  };
+
+  specify('should output a MarkupContent message as a plain string', function () {
+    const output = formatJSON('/path/to/file.yaml', [markupDiagnostic]);
+    const parsed = JSON.parse(output);
+
+    assert.strictEqual(parsed.diagnostics[0].message, 'Field `foo` is not allowed');
+  });
 });

@@ -30,3 +30,6 @@ jobs:
         run: npm run typescript:check-types
       - name: Execute tests in monorepo
         run: npm run test
+      # catches upstream releases that break fresh installs without any change in this repo
+      - name: Check packages install and validate without the lockfile
+        run: npm run test:fresh-install

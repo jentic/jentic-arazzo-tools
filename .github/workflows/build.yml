@@ -90,6 +90,26 @@ jobs:
       - name: Execute tests in monorepo
         run: npm run test
 
+  # the lockfile can hide dependency drift that consumers hit on a fresh install
+  test-fresh-install:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v7
+      - name: Use Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 26.3.1
+          cache: 'npm'
+          cache-dependency-path: 'package-lock.json'
+      - name: Install dependencies
+        run: npm ci --engine-strict=false
+      - name: Build monorepo
+        run: npm run build:es
+      - name: Check packages install and validate without the lockfile
+        run: npm run test:fresh-install
+
   build:
     runs-on: ubuntu-latest
 

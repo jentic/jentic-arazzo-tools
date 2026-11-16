@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import type { Diagnostic } from 'vscode-languageserver-types';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
-import { severityToString, formatLocation, type FormatOptions } from './stylish.ts';
+import { severityToString, formatLocation, formatMessage, type FormatOptions } from './stylish.ts';
 
 function formatCodeSnippet(
   sourceLines: string[],
@@ -70,7 +70,7 @@ export function formatCodeframe(
     const severity = severityToString(diagnostic.severity);
     const codeStr = diagnostic.code ? String(diagnostic.code) : '';
     const code = codeStr ? chalk.cyan(codeStr.padEnd(maxCodeLength)) : ' '.repeat(maxCodeLength);
-    const message = diagnostic.message;
+    const message = formatMessage(diagnostic);
 
     lines.push(`  ${location}  ${severity}  ${code}  ${message}`);
 

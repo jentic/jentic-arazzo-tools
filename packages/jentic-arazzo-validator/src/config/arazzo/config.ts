@@ -66,7 +66,8 @@ export default {
   failureAction: failureActionMeta,
   components: componentsMeta,
   criterion: criterionMeta,
-  criterionExpressionType: criterionExpressionTypeMeta,
+  // keyed by element name, which ApiDOM 7 renamed from `criterionExpressionType`
+  expressionType: criterionExpressionTypeMeta,
   requestBody: requestBodyMeta,
   payloadReplacement: payloadReplacementMeta,
   reusable: reusableMeta,

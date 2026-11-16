@@ -98,7 +98,7 @@ For complete documentation, see the [@jentic/arazzo-resolver README](./packages/
 
 ## Validator
 
-The Validator validates and lints Arazzo Documents against JSON Schema and performs semantic validation using [SpecLynx ApiDOM Language Service](https://www.npmjs.com/package/@speclynx/apidom-ls).
+The Validator validates and lints Arazzo Documents against JSON Schema and performs semantic validation using [SpecLynx API Language Service](https://www.npmjs.com/package/@speclynx/api-languageservice).
 
 ### CLI
 

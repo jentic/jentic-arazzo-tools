@@ -1,5 +1,5 @@
 import { DiagnosticSeverity, Diagnostic } from 'vscode-languageserver-types';
-import type { LanguageServiceContext } from '@speclynx/apidom-ls';
+import type { LanguageServiceContext } from '@speclynx/api-languageservice';
 
 export { Diagnostic, DiagnosticSeverity };
 export type { LanguageServiceContext };
