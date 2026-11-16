@@ -15,7 +15,7 @@ export const palette = {
   subtleFg: '#8a9792',
   primary: '#0b7a51',
   onAccent: '#ffffff',
-  success: '#0c8d5e',
+  success: '#06744c',
   warning: '#8e5a0b',
   danger: '#c32230',
   info: '#206bb6',

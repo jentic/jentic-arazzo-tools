@@ -5,7 +5,7 @@ const HTTP_METHOD_COLORS: Record<string, { background: string; color: string }> 
   GET: { background: 'var(--arazzo-info-bg)', color: 'var(--arazzo-info)' },
   POST: { background: 'var(--arazzo-success-bg)', color: 'var(--arazzo-success)' },
   PUT: { background: 'var(--arazzo-warning-bg)', color: 'var(--arazzo-warning)' },
-  PATCH: { background: 'var(--arazzo-accent-orange-bg)', color: 'var(--arazzo-accent-orange)' },
+  PATCH: { background: 'var(--arazzo-accent-orange-bg)', color: 'var(--arazzo-accent-orange-fg)' },
   DELETE: { background: 'var(--arazzo-danger-bg)', color: 'var(--arazzo-danger)' },
 };
 

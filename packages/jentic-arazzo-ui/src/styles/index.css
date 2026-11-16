@@ -62,8 +62,8 @@
   --arazzo-on-accent: #ffffff;
 
   /* state */
-  --arazzo-success: var(--arazzo-accent-green);
-  --arazzo-success-hover: var(--arazzo-primary-500);
+  --arazzo-success: var(--arazzo-primary-500); /* 5.1:1+ as text on its tint, 5.8:1 under white */
+  --arazzo-success-hover: var(--arazzo-accent-green);
   --arazzo-success-bg: rgb(12 141 94 / 0.08);
   --arazzo-success-border: rgb(12 141 94 / 0.3);
   --arazzo-warning: #8e5a0b; /* gold, darkened so badge text clears 4.5:1 */
@@ -79,6 +79,9 @@
   --arazzo-info-bg: rgb(32 107 182 / 0.08);
   --arazzo-info-border: rgb(32 107 182 / 0.3);
   --arazzo-accent-orange-bg: rgb(212 134 17 / 0.1);
+  /* accent orange darkened for small text (5.3:1+ on white and its tint); the
+     brighter --arazzo-accent-orange stays for decorative use */
+  --arazzo-accent-orange-fg: #8e5a0b;
 
   /* elevation - soft neutral shadows for light surfaces */
   --arazzo-shadow: 0 1px 2px 0 rgb(21 40 34 / 0.06);
