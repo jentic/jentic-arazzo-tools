@@ -232,6 +232,33 @@ export function applyEdits(content: string, edits: readonly TextEdit[]): Prepare
 // equivalent JSON/YAML spelling of the `arazzo` key that the detection regexes don't match
 const NEUTRALIZED_KEY = '"\\u0061razzo"';
 
+// finds every match either language service detector could pick: the YAML regex
+// includes the JSON regex as an alternative
+const detectionMatchesRegExp = new RegExp(
+  arazzoYAMLDetectionRegExp.source,
+  `${arazzoYAMLDetectionRegExp.flags.replace('g', '')}g`,
+);
+
+/**
+ * Finds the scalar whose source range contains `offset`, relying on scalars being
+ * sorted by start and not overlapping.
+ */
+const findScalar = (scalars: readonly SourceScalar[], offset: number): SourceScalar | undefined => {
+  let low = 0;
+  let high = scalars.length - 1;
+  let candidate: SourceScalar | undefined;
+  while (low <= high) {
+    const middle = (low + high) >> 1;
+    if (scalars[middle].start <= offset) {
+      candidate = scalars[middle];
+      low = middle + 1;
+    } else {
+      high = middle - 1;
+    }
+  }
+  return candidate !== undefined && offset < candidate.end ? candidate : undefined;
+};
+
 /**
  * Edit that stops a detection regex match at `matchStart` from matching without
  * changing the parsed document, or `undefined` if no such edit is known.
@@ -247,7 +274,7 @@ const neutralizeMatch = (
   scalars: readonly SourceScalar[],
   matchStart: number,
 ): TextEdit | undefined => {
-  const scalar = scalars.find(({ start, end }) => start <= matchStart && matchStart < end);
+  const scalar = findScalar(scalars, matchStart);
 
   if (scalar !== undefined) {
     if (scalar.isKey && scalar.value === 'arazzo') {
@@ -274,6 +301,9 @@ const neutralizeMatch = (
  * changing the parsed document (see {@link neutralizeMatch}), and the root version
  * is replaced with `targetVersion` if it differs.
  *
+ * Earlier matches are collected in one scan and neutralized together, so the
+ * document is rebuilt and detected once however many there are.
+ *
  * @returns the prepared content, or `undefined` if the language service wouldn't
  * recognize it as an Arazzo document
  * @internal
@@ -287,10 +317,32 @@ export async function prepareForLanguageService(
   if (detected.version !== targetVersion) {
     edits.push({ start: detected.start, end: detected.end, text: targetVersion });
   }
+  const editStarts = new Set(edits.map(({ start }) => start));
+  let prepared = applyEdits(content, edits);
 
-  // each iteration neutralizes one earlier match, so this ends after one pass over them
+  // neutralizing the matches doesn't create new ones, so this normally ends after one
+  // round; another round only runs if detection still finds an earlier match, and
+  // every round must add an edit, so it always ends
   for (;;) {
-    const prepared = applyEdits(content, edits);
+    let added = false;
+    for (const match of prepared.content.matchAll(detectionMatchesRegExp)) {
+      const version = match.groups?.version_json ?? match.groups?.version_yaml;
+      if (version === undefined) return undefined;
+      // the `arazzo` key contains no digits, so the first occurrence is the value
+      const versionStart = prepared.mapOffset(match.index + match[0].indexOf(version));
+      if (versionStart >= detected.start) break;
+
+      // matches before the root field lie outside every edit, so they map back exactly
+      const edit = neutralizeMatch(content, detected.scalars, prepared.mapOffset(match.index));
+      if (edit === undefined) return undefined;
+      // several matches inside one scalar share the edit that respells the whole scalar
+      if (editStarts.has(edit.start)) continue;
+      editStarts.add(edit.start);
+      edits.push(edit);
+      added = true;
+    }
+    if (added) prepared = applyEdits(content, edits);
+
     let regExp: RegExp;
     if (await detectArazzoJSON(prepared.content)) {
       regExp = arazzoJSONDetectionRegExp;
@@ -305,15 +357,10 @@ export async function prepareForLanguageService(
 
     const version = match.groups?.version_json ?? match.groups?.version_yaml;
     if (version === undefined) return undefined;
-    // the `arazzo` key contains no digits, so the first occurrence is the value
     const versionStart = prepared.mapOffset(match.index + match[0].indexOf(version));
     if (versionStart === detected.start) return prepared;
-    // a later match can't be found before the root field has been matched
-    if (versionStart > detected.start) return undefined;
-
-    // matches before the root field lie outside every edit, so they map back exactly
-    const edit = neutralizeMatch(content, detected.scalars, prepared.mapOffset(match.index));
-    if (edit === undefined) return undefined;
-    edits.push(edit);
+    // a later match can't be found before the root field has been matched, and an
+    // earlier match that the scan didn't neutralize won't be neutralized by another round
+    if (versionStart > detected.start || !added) return undefined;
   }
 }

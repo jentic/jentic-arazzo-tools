@@ -166,5 +166,72 @@ describe('arazzo-version', function () {
         assert.equal(prepared.mapOffset(match.index! + match[0].indexOf(version)), detected.start);
       },
     );
+
+    specify('should neutralize many earlier matches at once', async function () {
+      const count = 200;
+      const entries = Array.from({ length: count }, (_, i) => i);
+      const contents = {
+        JSON: JSON.stringify(
+          {
+            'x-ext': Object.fromEntries(entries.map((i) => [`e${i}`, { arazzo: '1.0.1' }])),
+            arazzo: '1.1.0',
+            info: {},
+          },
+          null,
+          2,
+        ),
+        YAML: [
+          'x-ext:',
+          ...entries.map((i) => `  e${i}: {"arazzo": "1.0.1"}`),
+          'arazzo: 1.1.0',
+          'info: {}',
+          '',
+        ].join('\n'),
+      };
+
+      for (const [name, content] of Object.entries(contents)) {
+        const detected = (await detectArazzoVersion(content))!;
+        const prepared = (await prepareForLanguageService(content, detected, '1.1.0'))!;
+        assert.isDefined(prepared, name);
+
+        const reparsed = (await detectArazzoVersion(prepared.content))!;
+        assert.deepEqual(
+          reparsed.scalars.map((scalar) => [scalar.value, scalar.isKey]),
+          detected.scalars.map((scalar) => [scalar.value, scalar.isKey]),
+          name,
+        );
+
+        const match = prepared.content.match(
+          name === 'JSON' ? jsonDetectionRegExp : yamlDetectionRegExp,
+        )!;
+        const version = match.groups!.version_json ?? match.groups!.version_yaml;
+        assert.equal(
+          prepared.mapOffset(match.index! + match[0].indexOf(version)),
+          detected.start,
+          name,
+        );
+      }
+    });
+
+    specify('should respell a scalar with several matches only once', async function () {
+      const content = [
+        'x-example: |',
+        '  {"arazzo": "1.0.0"}',
+        '  {"arazzo": "1.0.1"}',
+        '  {"arazzo": "1.1.0"}',
+        'arazzo: 1.1.0',
+        'info: {}',
+        '',
+      ].join('\n');
+      const detected = (await detectArazzoVersion(content))!;
+      const prepared = (await prepareForLanguageService(content, detected, '1.1.0'))!;
+      assert.isDefined(prepared);
+
+      const blockValue = '{"arazzo": "1.0.0"}\n{"arazzo": "1.0.1"}\n{"arazzo": "1.1.0"}\n';
+      assert.equal(
+        prepared.content,
+        `x-example: ${JSON.stringify(blockValue)}\narazzo: 1.1.0\ninfo: {}\n`,
+      );
+    });
   });
 });
