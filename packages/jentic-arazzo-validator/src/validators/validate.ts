@@ -2,7 +2,11 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 import type { Diagnostic } from 'vscode-languageserver-types';
 import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
-import { getLanguageService, LogLevel, type LanguageServiceContext } from '@speclynx/apidom-ls';
+import {
+  getLanguageService,
+  LogLevel,
+  type LanguageServiceContext,
+} from '@speclynx/api-languageservice';
 import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
 import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
 import type { PartialDeep } from 'type-fest';

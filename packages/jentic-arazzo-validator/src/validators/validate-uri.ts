@@ -1,5 +1,5 @@
 import type { Diagnostic } from 'vscode-languageserver-types';
-import type { LanguageServiceContext } from '@speclynx/apidom-ls';
+import type { LanguageServiceContext } from '@speclynx/api-languageservice';
 import { defaultParseArazzoOptions } from '@jentic/arazzo-parser';
 import {
   readFile,

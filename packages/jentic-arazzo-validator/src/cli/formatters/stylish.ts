@@ -30,6 +30,11 @@ export function formatLocation(diagnostic: Diagnostic): string {
   return `${startLine}:${startCol}-${endLine}:${endCol}`;
 }
 
+// LSP 3.18 allows a diagnostic message to be MarkupContent as well as a plain string
+export function formatMessage(diagnostic: Diagnostic): string {
+  return typeof diagnostic.message === 'string' ? diagnostic.message : diagnostic.message.value;
+}
+
 export interface FormatOptions {
   maxProblems?: number;
   sourceContent?: string;
@@ -65,7 +70,7 @@ export function formatStylish(
     const severity = severityToString(diagnostic.severity);
     const codeStr = diagnostic.code ? String(diagnostic.code) : '';
     const code = codeStr ? chalk.cyan(codeStr.padEnd(maxCodeLength)) : ' '.repeat(maxCodeLength);
-    const message = diagnostic.message;
+    const message = formatMessage(diagnostic);
 
     lines.push(`  ${location}  ${severity}  ${code}  ${message}`);
   }

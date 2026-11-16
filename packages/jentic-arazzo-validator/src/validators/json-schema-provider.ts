@@ -2,7 +2,7 @@ import type { Diagnostic } from 'vscode-languageserver-types';
 import {
   Arazzo1JsonSchemaValidationProvider as BaseArazzo1JsonSchemaValidationProvider,
   type ValidationContext,
-} from '@speclynx/apidom-ls';
+} from '@speclynx/api-languageservice';
 
 /**
  * Custom JSON Schema validation provider that assigns proper diagnostic codes.

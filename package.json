@@ -23,6 +23,7 @@
     "typescript:declaration": "lerna run typescript:declaration",
     "clean": "lerna run clean",
     "test": "lerna run test",
+    "test:fresh-install": "node scripts/check-fresh-install.mjs",
     "link": "npm link --workspaces",
     "unlink": "npm unlink --global @jentic/arazzo-parser @jentic/arazzo-resolver @jentic/arazzo-runner @jentic/arazzo-ui"
   },

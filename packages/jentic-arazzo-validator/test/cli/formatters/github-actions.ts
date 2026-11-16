@@ -33,4 +33,30 @@ describe('github-actions', function () {
     const output = formatGitHubActions('/path/to/file.yaml', []);
     assert.equal(output, '');
   });
+
+  const markupDiagnostic: Diagnostic = {
+    range: { start: { line: 1, character: 0 }, end: { line: 1, character: 4 } },
+    message: { kind: 'markdown', value: 'Field `foo` is not allowed' },
+    severity: DiagnosticSeverity.Error,
+    code: 'not-allowed',
+  };
+
+  specify('should print the value of a MarkupContent message', function () {
+    const output = formatGitHubActions('/path/to/file.yaml', [markupDiagnostic]);
+
+    assert.include(output, 'Field `foo` is not allowed');
+    assert.notInclude(output, '[object Object]');
+  });
+
+  specify('should escape % and newlines in a MarkupContent message', function () {
+    const output = formatGitHubActions('/path/to/file.yaml', [
+      {
+        ...markupDiagnostic,
+        message: { kind: 'markdown', value: 'Must be 100%\nnot 50%' },
+      },
+    ]);
+
+    assert.include(output, '::Must be 100%25%0Anot 50%25');
+    assert.notInclude(output, '\nnot 50%');
+  });
 });
