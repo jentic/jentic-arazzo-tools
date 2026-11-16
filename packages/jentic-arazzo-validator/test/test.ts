@@ -222,7 +222,15 @@ describe('validate', function () {
         createTextDocument('memory://arazzo.yaml', specArazzoFullInvalid),
       );
 
-      for (const version of ['1.1.0', '1.10.0', '"1.10.0"', '1.0.2']) {
+      for (const version of [
+        '1.1.0',
+        '1.10.0',
+        '"1.10.0"',
+        '1.0.2',
+        '2.0.0',
+        "'3.1.4'",
+        '10.0.0',
+      ]) {
         const content = specArazzoFullInvalid.replace(/^arazzo: 1\.0\.1$/m, `arazzo: ${version}`);
         assert.notEqual(content, specArazzoFullInvalid);
         const diagnostics = await validate(createTextDocument('memory://arazzo.yaml', content));
@@ -286,7 +294,7 @@ describe('validate', function () {
         );
         assert.isAbove(supported.length, 0);
 
-        for (const version of ['1.1.0', '1.10.0', '1.100.200']) {
+        for (const version of ['1.1.0', '1.10.0', '1.100.200', '2.0.0', '10.20.30']) {
           const shift = version.length - '1.0.1'.length;
           const diagnostics = await validate(
             createTextDocument('memory://arazzo.json', minified(version)),
@@ -308,6 +316,53 @@ describe('validate', function () {
               ),
             shifted,
             version,
+          );
+        }
+      },
+    );
+
+    specify('should report future major versions as unsupported', async function () {
+      for (const version of ['2.0.0', '"3.1.4"', '10.0.0']) {
+        const textDocument = createTextDocument('memory://arazzo.yaml', withVersion(version));
+        const diagnostics = await validate(textDocument);
+        const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
+
+        assert.lengthOf(errors, 1, version);
+        assert.isTrue(isVersionDiagnostic(errors[0]), version);
+      }
+    });
+
+    specify('should not detect versions older than the supported ones', async function () {
+      for (const version of ['0.9.0', '"0.1.0"']) {
+        const textDocument = createTextDocument('memory://arazzo.yaml', withVersion(version));
+        const diagnostics = await validate(textDocument);
+
+        assert.lengthOf(diagnostics, 1, version);
+        assert.equal(diagnostics[0].code, ApilintCodes.ARAZZO_NOT_DETECTED, version);
+      }
+    });
+
+    specify(
+      'should detect malformed documents the same way as supported versions',
+      async function () {
+        const documents = [
+          (v: string) => `arazzo: ${v}\ninfo:\n\t title: bad`,
+          (v: string) => `{ "arazzo": "${v}", invalid }`,
+          (v: string) => `arazzo: ${v}`,
+        ];
+
+        for (const document of documents) {
+          const supported = await validate(createTextDocument('memory://a', document('1.0.1')));
+          const future = await validate(createTextDocument('memory://a', document('2.0.0')));
+          const supportedDetected = !supported.some(
+            (d) => d.code === ApilintCodes.ARAZZO_NOT_DETECTED,
+          );
+
+          assert.equal(future.some(isVersionDiagnostic), supportedDetected, document('2.0.0'));
+          assert.sameMembers(
+            future.filter((d) => !isVersionDiagnostic(d)).map((d) => d.code),
+            supported.map((d) => d.code),
+            document('2.0.0'),
           );
         }
       },

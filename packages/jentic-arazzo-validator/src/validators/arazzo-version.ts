@@ -54,26 +54,15 @@ export const supportedArazzoVersions: readonly string[] = [
  */
 export const latestSupportedArazzoVersion: string = supportedArazzoVersions.at(-1)!;
 
-/**
- * Detects an Arazzo document and locates its root `arazzo` version field.
- *
- * Uses the same detection as the language service so that the located version
- * is exactly the one the language service will validate against.
- *
- * @returns detected version info, or `undefined` if content is not an Arazzo document
- * @internal
- */
-export async function detectArazzoVersion(
-  content: string,
-): Promise<DetectedArazzoVersion | undefined> {
-  let match: RegExpMatchArray | null = null;
+// same shape as the parser adapters' detection regexes, but accepting any major version
+const versionPattern = '(?:[1-9]\\d*|0)\\.(?:[1-9]\\d*|0)\\.(?:[1-9]\\d*|0)';
+const anyVersionJSONRegExp = new RegExp(`"arazzo"\\s*:\\s*"(?<version_json>${versionPattern})"`);
+const anyVersionYAMLRegExp = new RegExp(
+  `(?<YAML>^(["']?)arazzo\\2\\s*:\\s*(["']?)(?<version_yaml>${versionPattern})\\3(?:\\s+|$))|(?<JSON>"arazzo"\\s*:\\s*"(?<version_json>${versionPattern})")`,
+  'm',
+);
 
-  if (await detectArazzoJSON(content)) {
-    match = content.match(arazzoJSONDetectionRegExp);
-  } else if (await detectArazzoYAML(content)) {
-    match = content.match(arazzoYAMLDetectionRegExp);
-  }
-
+const locateVersion = (match: RegExpMatchArray | null): DetectedArazzoVersion | undefined => {
   if (match === null || match.index === undefined) return undefined;
 
   const version = match.groups?.version_json ?? match.groups?.version_yaml;
@@ -83,6 +72,45 @@ export async function detectArazzoVersion(
   const start = match.index + match[0].indexOf(version);
 
   return { version, start, end: start + version.length };
+};
+
+const isArazzo1 = async (content: string): Promise<boolean> =>
+  (await detectArazzoJSON(content)) || (await detectArazzoYAML(content));
+
+/**
+ * Detects an Arazzo document and locates its root `arazzo` version field.
+ *
+ * Arazzo 1.x documents are detected the same way as in the language service, so the
+ * located version is exactly the one the language service will validate against.
+ * Documents declaring a version newer than {@link latestSupportedArazzoVersion} with a
+ * different major version (e.g. `2.0.0`) are detected too, provided they would be
+ * recognized as Arazzo once their version is replaced with the latest supported one.
+ * Older versions (e.g. `0.9.0`) are not detected.
+ *
+ * @returns detected version info, or `undefined` if content is not an Arazzo document
+ * @internal
+ */
+export async function detectArazzoVersion(
+  content: string,
+): Promise<DetectedArazzoVersion | undefined> {
+  if (await detectArazzoJSON(content)) {
+    return locateVersion(content.match(arazzoJSONDetectionRegExp));
+  }
+  if (await detectArazzoYAML(content)) {
+    return locateVersion(content.match(arazzoYAMLDetectionRegExp));
+  }
+
+  // not an Arazzo 1.x document; accept versions newer than the latest supported one
+  for (const regExp of [anyVersionJSONRegExp, anyVersionYAMLRegExp]) {
+    const detected = locateVersion(content.match(regExp));
+    if (detected === undefined) continue;
+    if (compareVersions(detected.version, latestSupportedArazzoVersion) <= 0) continue;
+    if (await isArazzo1(replaceArazzoVersion(content, detected, latestSupportedArazzoVersion))) {
+      return detected;
+    }
+  }
+
+  return undefined;
 }
 
 /**
