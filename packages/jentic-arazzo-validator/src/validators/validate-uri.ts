@@ -10,7 +10,7 @@ import {
 import type { PartialDeep } from 'type-fest';
 
 import { createTextDocument } from '../document.ts';
-import { validate } from './validate.ts';
+import { validate, type ValidateOptions } from './validate.ts';
 
 /**
  * Default resolve options for URI resolution in validateURI.
@@ -32,6 +32,7 @@ export const defaultArazzoResolveOptions = defaultParseArazzoOptions.resolve;
  * @param uri - The file system path or HTTP(S) URL to the Arazzo Document
  * @param context - Optional language service context override (deep merged with defaults)
  * @param resolveOptions - Optional resolve options for fetching the URI
+ * @param options - Optional validator options
  * @returns Promise resolving to an array of Diagnostic objects
  *
  * @example
@@ -64,12 +65,21 @@ export const defaultArazzoResolveOptions = defaultParseArazzoOptions.resolve;
  *   resolverOpts: { timeout: 10000 }
  * });
  * ```
+ *
+ * @example
+ * Don't report unsupported Arazzo versions
+ * ```typescript
+ * const diagnostics = await validateURI('/path/to/arazzo.yaml', {}, {}, {
+ *   ignoreUnsupportedVersion: true
+ * });
+ * ```
  * @public
  */
 export async function validateURI(
   uri: string,
   context: PartialDeep<LanguageServiceContext> = {},
   resolveOptions: PartialDeep<ApiDOMReferenceResolveOptions> = {},
+  options: ValidateOptions = {},
 ): Promise<Diagnostic[]> {
   const mergedOptions = mergeOptions(defaultParseArazzoOptions as ApiDOMReferenceOptions, {
     resolve: resolveOptions,
@@ -78,5 +88,5 @@ export async function validateURI(
   const content = new TextDecoder().decode(buffer);
   const textDocument = createTextDocument(uri, content);
 
-  return validate(textDocument, context);
+  return validate(textDocument, context, options);
 }

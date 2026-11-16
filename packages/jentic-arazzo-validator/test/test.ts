@@ -1,7 +1,7 @@
 import { assert } from 'chai';
 import dedent from 'dedent';
 
-import { validate, DiagnosticSeverity, createTextDocument } from '../src/index.ts';
+import { validate, validateURI, DiagnosticSeverity, createTextDocument } from '../src/index.ts';
 import type { Diagnostic } from '../src/index.ts';
 import ApilintCodes from '../src/config/codes.ts';
 import path from 'node:path';
@@ -367,5 +367,58 @@ describe('validate', function () {
         }
       },
     );
+
+    context('with ignoreUnsupportedVersion option', function () {
+      const options = { ignoreUnsupportedVersion: true };
+
+      specify('should not report unsupported versions', async function () {
+        for (const version of ["'1.1.0'", '2.0.0']) {
+          const textDocument = createTextDocument('memory://arazzo.yaml', withVersion(version));
+          const diagnostics = await validate(textDocument, {}, options);
+          const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
+
+          assert.lengthOf(errors, 0, version);
+        }
+      });
+
+      specify('should still validate against the latest supported version', async function () {
+        const serialize = (d: Diagnostic) => JSON.stringify([d.code, d.message, d.range]);
+        const supported = await validate(
+          createTextDocument('memory://arazzo.yaml', specArazzoFullInvalid),
+        );
+        const content = specArazzoFullInvalid.replace(/^arazzo: 1\.0\.1$/m, 'arazzo: 1.1.0');
+        const diagnostics = await validate(
+          createTextDocument('memory://arazzo.yaml', content),
+          {},
+          options,
+        );
+
+        assert.isAbove(supported.length, 0);
+        assert.sameMembers(diagnostics.map(serialize), supported.map(serialize));
+      });
+
+      specify('should not change results for supported versions', async function () {
+        const textDocument = createTextDocument('memory://arazzo.yaml', specArazzoFullInvalid);
+        const serialize = (d: Diagnostic) => JSON.stringify([d.code, d.message, d.range]);
+        const withOption = await validate(textDocument, {}, options);
+        const without = await validate(textDocument);
+
+        assert.sameMembers(withOption.map(serialize), without.map(serialize));
+      });
+
+      specify('should be passed through by validateURI', async function () {
+        const uri = path.join(__dirname, 'fixtures', 'arazzo-unsupported-version.yaml');
+
+        const reported = await validateURI(uri);
+        assert.isDefined(reported.find(isVersionDiagnostic));
+
+        const ignored = await validateURI(uri, {}, {}, options);
+        assert.isUndefined(ignored.find(isVersionDiagnostic));
+        assert.lengthOf(
+          ignored.filter((d) => d.severity === DiagnosticSeverity.Error),
+          0,
+        );
+      });
+    });
   });
 });

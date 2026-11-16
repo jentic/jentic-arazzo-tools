@@ -51,6 +51,21 @@ export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
 };
 
 /**
+ * Validator options that are not part of the language service context.
+ *
+ * @public
+ */
+export interface ValidateOptions {
+  /**
+   * Don't report error 9020103 for documents declaring an unsupported Arazzo version.
+   * Such documents are still validated against the latest supported version.
+   *
+   * @defaultValue false
+   */
+  ignoreUnsupportedVersion?: boolean;
+}
+
+/**
  * Validates an Arazzo Document from a TextDocument.
  *
  * This is a lower-level API for advanced use cases such as IDE integrations
@@ -58,6 +73,7 @@ export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
  *
  * @param textDocument - The TextDocument containing the Arazzo Document content
  * @param context - Optional language service context override (deep merged with defaults)
+ * @param options - Optional validator options
  * @returns Promise resolving to an array of Diagnostic objects
  *
  * @example
@@ -82,11 +98,18 @@ export const defaultLanguageServiceContext: Partial<LanguageServiceContext> = {
  *   validationContext: { jsonSchemaValidation: false }
  * });
  * ```
+ *
+ * @example
+ * Don't report unsupported Arazzo versions
+ * ```typescript
+ * const diagnostics = await validate(textDocument, {}, { ignoreUnsupportedVersion: true });
+ * ```
  * @public
  */
 export async function validate(
   textDocument: TextDocument,
   context: PartialDeep<LanguageServiceContext> = {},
+  options: ValidateOptions = {},
 ): Promise<Diagnostic[]> {
   const content = textDocument.getText();
   const detected = await detectArazzoVersion(content);
@@ -144,7 +167,7 @@ export async function validate(
     const diagnostics = await languageService.doValidation(rewrittenDocument);
 
     return [
-      versionDiagnostic,
+      ...(options.ignoreUnsupportedVersion ? [] : [versionDiagnostic]),
       ...diagnostics.map((diagnostic) => ({
         ...diagnostic,
         range: {

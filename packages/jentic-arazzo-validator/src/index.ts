@@ -11,4 +11,5 @@ export {
   createTextDocument,
 } from './document.ts';
 export { validate, defaultLanguageServiceContext } from './validators/validate.ts';
+export type { ValidateOptions } from './validators/validate.ts';
 export { validateURI, defaultArazzoResolveOptions } from './validators/validate-uri.ts';
