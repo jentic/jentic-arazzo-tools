@@ -131,5 +131,40 @@ describe('arazzo-version', function () {
       assert.notEqual(prepared.content, content);
       assert.deepEqual(JSON.parse(prepared.content), JSON.parse(content));
     });
+
+    specify(
+      'should neutralize scalar and comment matches without changing values',
+      async function () {
+        const content = [
+          'workflows:',
+          '  - description: |',
+          '      Example: {"arazzo": "1.1.0"}',
+          `    name: '{"arazzo":"1.0.1"}'`,
+          `    other: '{"\\u0061razzo":"1.0.1"}'`,
+          '    value: plain "arazzo":"1.0.1" text',
+          '    x-example: {"arazzo": "1.0.1"}',
+          '# "arazzo": "1.1.0"',
+          'arazzo: 1.1.0',
+          'info: {}',
+          '',
+        ].join('\n');
+        const detected = (await detectArazzoVersion(content))!;
+        const prepared = (await prepareForLanguageService(content, detected, '1.1.0'))!;
+        assert.isDefined(prepared);
+        assert.notEqual(prepared.content, content);
+
+        // the prepared copy parses to exactly the same scalar values
+        const reparsed = (await detectArazzoVersion(prepared.content))!;
+        assert.deepEqual(
+          reparsed.scalars.map((scalar) => [scalar.value, scalar.isKey]),
+          detected.scalars.map((scalar) => [scalar.value, scalar.isKey]),
+        );
+
+        // and the language service's regex now finds the root field first
+        const match = prepared.content.match(yamlDetectionRegExp)!;
+        const version = match.groups!.version_json ?? match.groups!.version_yaml;
+        assert.equal(prepared.mapOffset(match.index! + match[0].indexOf(version)), detected.start);
+      },
+    );
   });
 });

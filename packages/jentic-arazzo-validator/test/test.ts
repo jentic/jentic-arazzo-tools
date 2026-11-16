@@ -537,5 +537,58 @@ describe('validate', function () {
         assert.equal(diagnostics[0].code, ApilintCodes.ARAZZO_NOT_DETECTED);
       },
     );
+
+    context('in YAML scalar values and comments', function () {
+      // `arazzo` text inside scalars and comments before the root field; the two parameter
+      // names differ only by a literal backslash escape, which single quotes keep as-is
+      const yaml = (word: string, rootVersion: string) =>
+        [
+          'workflows:',
+          '  - workflowId: w',
+          '    description: |',
+          `      Example document: {"${word}": "1.1.0"}`,
+          '    steps:',
+          '      - stepId: s',
+          '        operationId: x',
+          '        parameters:',
+          `          - name: '{"${word}":"1.0.1"}'`,
+          '            in: query',
+          `            value: plain "${word}":"1.0.1" text`,
+          `          - name: '{"\\u0061${word.slice(1)}":"1.0.1"}'`,
+          '            in: query',
+          '            value: b',
+          `# "${word}": "1.1.0"`,
+          `arazzo: ${rootVersion}`,
+          'info:',
+          "  version: '1'",
+          'sourceDescriptions:',
+          '  - name: api',
+          '    url: https://example.com/openapi.json',
+          '',
+        ].join('\n');
+
+      for (const rootVersion of ['1.0.1', '2.0.0']) {
+        specify(`should not change scalar values (root version ${rootVersion})`, async function () {
+          // `arazzX` has the same length but isn't matched by the detection regexes
+          const expected = await validate(
+            createTextDocument('memory://arazzo.yaml', yaml('arazzX', rootVersion)),
+          );
+          const actual = await validate(
+            createTextDocument('memory://arazzo.yaml', yaml('arazzo', rootVersion)),
+          );
+
+          assert.isUndefined(
+            actual.find((d) => d.code === ApilintCodes.ARAZZO_STEP_FIELD_PARAMETERS_UNIQUE),
+            'parameter names must stay distinct',
+          );
+          assert.equal(actual.some(isVersionDiagnostic), rootVersion === '2.0.0');
+          assert.isDefined(
+            actual.find((d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED),
+            'expected Arazzo rules to run',
+          );
+          assert.sameMembers(actual.map(serialize), expected.map(serialize));
+        });
+      }
+    });
   });
 });

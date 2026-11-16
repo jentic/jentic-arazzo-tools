@@ -21,7 +21,47 @@ export interface DetectedArazzoVersion {
   start: number;
   /** offset just past the last character of the version (excluding quotes) */
   end: number;
+  /** every string scalar in the document, in source order */
+  scalars: readonly SourceScalar[];
 }
+
+/**
+ * A string scalar (mapping key or value) and its source range, including any
+ * quotes or block scalar indicators.
+ *
+ * @internal
+ */
+export interface SourceScalar {
+  value: string;
+  start: number;
+  end: number;
+  isKey: boolean;
+}
+
+interface SourceElement {
+  element?: string;
+  content?: unknown;
+  startOffset?: number;
+  endOffset?: number;
+}
+
+const collectScalars = (element: unknown, isKey: boolean, scalars: SourceScalar[]): void => {
+  if (element === null || typeof element !== 'object') return;
+  const { content, startOffset, endOffset } = element as SourceElement;
+
+  if (typeof content === 'string') {
+    if (typeof startOffset === 'number' && typeof endOffset === 'number') {
+      scalars.push({ value: content, start: startOffset, end: endOffset, isKey });
+    }
+  } else if (Array.isArray(content)) {
+    for (const item of content) collectScalars(item, false, scalars);
+  } else if (content !== null && typeof content === 'object' && 'key' in content) {
+    // member element: a key/value pair
+    const { key, value } = content as { key: unknown; value: unknown };
+    collectScalars(key, true, scalars);
+    collectScalars(value, false, scalars);
+  }
+};
 
 /**
  * Replacement of `content.slice(start, end)` with `text`, in original offsets.
@@ -127,8 +167,12 @@ export async function detectArazzoVersion(
   const isArazzo1 = version.startsWith('1.');
   if (!isArazzo1 && compareVersions(version, latestSupportedArazzoVersion) <= 0) return undefined;
 
+  const scalars: SourceScalar[] = [];
+  collectScalars(root, false, scalars);
+  scalars.sort((a, b) => a.start - b.start);
+
   const start = element.startOffset + quote.length;
-  return { version, start, end: start + version.length };
+  return { version, start, end: start + version.length, scalars };
 }
 
 /**
@@ -173,16 +217,48 @@ export function applyEdits(content: string, edits: readonly TextEdit[]): Prepare
 
 // equivalent JSON/YAML spelling of the `arazzo` key that the detection regexes don't match
 const NEUTRALIZED_KEY = '"\\u0061razzo"';
-const KEY_TOKEN_REGEXP = /^(["']?)arazzo\1/;
+
+/**
+ * Edit that stops a detection regex match at `matchStart` from matching without
+ * changing the parsed document, or `undefined` if no such edit is known.
+ *
+ * - an `arazzo` mapping key is respelled with a unicode escape;
+ * - text inside any other string scalar (e.g. a single-quoted, plain or block
+ *   scalar containing JSON) is replaced by the same value as a double-quoted scalar,
+ *   whose escaped inner quotes the regexes can't match;
+ * - text inside a YAML comment is changed in place, since comments aren't data.
+ */
+const neutralizeMatch = (
+  content: string,
+  scalars: readonly SourceScalar[],
+  matchStart: number,
+): TextEdit | undefined => {
+  const scalar = scalars.find(({ start, end }) => start <= matchStart && matchStart < end);
+
+  if (scalar !== undefined) {
+    if (scalar.isKey && scalar.value === 'arazzo') {
+      return { start: scalar.start, end: scalar.end, text: NEUTRALIZED_KEY };
+    }
+    // a JSON string literal is a valid YAML double-quoted scalar with the same value
+    return { start: scalar.start, end: scalar.end, text: JSON.stringify(scalar.value) };
+  }
+
+  // outside every scalar, the only text a match can start in is a YAML comment
+  const lineStart = content.lastIndexOf('\n', matchStart - 1) + 1;
+  if (!/(?:^|\s)#/.test(content.slice(lineStart, matchStart))) return undefined;
+  const keyStart = content.indexOf('arazzo', matchStart);
+  return { start: keyStart, end: keyStart + 1, text: 'A' };
+};
 
 /**
  * Prepares content for the language service so that it validates the document
  * as `targetVersion`, using the root `arazzo` field.
  *
  * The language service detects the version with a regex and uses the first match,
- * which may be an `arazzo` property nested before the root field. Every such earlier
- * key is respelled as `"arazzo"`, which parses to the same key but isn't matched,
- * and the root version is replaced with `targetVersion` if it differs.
+ * which may be an `arazzo` property nested before the root field, or JSON-looking
+ * text in a YAML scalar or comment. Every such earlier match is neutralized without
+ * changing the parsed document (see {@link neutralizeMatch}), and the root version
+ * is replaced with `targetVersion` if it differs.
  *
  * @returns the prepared content, or `undefined` if the language service wouldn't
  * recognize it as an Arazzo document
@@ -198,7 +274,7 @@ export async function prepareForLanguageService(
     edits.push({ start: detected.start, end: detected.end, text: targetVersion });
   }
 
-  // each iteration respells one earlier key, so this ends after at most one pass over them
+  // each iteration neutralizes one earlier match, so this ends after one pass over them
   for (;;) {
     const prepared = applyEdits(content, edits);
     let regExp: RegExp;
@@ -221,9 +297,9 @@ export async function prepareForLanguageService(
     // a later match can't be found before the root field has been matched
     if (versionStart > detected.start) return undefined;
 
-    const keyToken = match[0].match(KEY_TOKEN_REGEXP);
-    if (keyToken === null) return undefined;
-    const keyStart = prepared.mapOffset(match.index);
-    edits.push({ start: keyStart, end: keyStart + keyToken[0].length, text: NEUTRALIZED_KEY });
+    // matches before the root field lie outside every edit, so they map back exactly
+    const edit = neutralizeMatch(content, detected.scalars, prepared.mapOffset(match.index));
+    if (edit === undefined) return undefined;
+    edits.push(edit);
   }
 }
