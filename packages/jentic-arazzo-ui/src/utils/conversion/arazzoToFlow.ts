@@ -163,7 +163,7 @@ export function convertWorkflowToFlow(
       target: firstStepNodeId,
       type: 'sequential',
       data: { type: 'sequential' } as SequentialEdgeData,
-      markerEnd: { type: MarkerType.ArrowClosed, color: palette.subtleFg },
+      markerEnd: { type: MarkerType.ArrowClosed, color: palette.fgLighter },
     });
   }
 
@@ -217,7 +217,7 @@ export function convertWorkflowToFlow(
           sourceHandle: 'sequential',
           type: 'sequential',
           data: { type: 'sequential' } as SequentialEdgeData,
-          markerEnd: { type: MarkerType.ArrowClosed, color: palette.subtleFg },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.fgLighter },
         });
       } else {
         // Last step to end
@@ -228,7 +228,7 @@ export function convertWorkflowToFlow(
           sourceHandle: 'sequential',
           type: 'sequential',
           data: { type: 'sequential' } as SequentialEdgeData,
-          markerEnd: { type: MarkerType.ArrowClosed, color: palette.subtleFg },
+          markerEnd: { type: MarkerType.ArrowClosed, color: palette.fgLighter },
         });
       }
     }
