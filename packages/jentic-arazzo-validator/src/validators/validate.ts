@@ -1,6 +1,6 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
-import type { Diagnostic } from 'vscode-languageserver-types';
+import type { Diagnostic, Position } from 'vscode-languageserver-types';
 import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import { getLanguageService, LogLevel, type LanguageServiceContext } from '@speclynx/apidom-ls';
 import type { PartialDeep } from 'type-fest';
@@ -10,11 +10,10 @@ import { config } from '../config/config.ts';
 import ApilintCodes from '../config/codes.ts';
 import { Arazzo1JsonSchemaValidationProvider } from './json-schema-provider.ts';
 import {
-  createVersionPositionMapper,
   detectArazzoVersion,
   isSupportedArazzoVersion,
   latestSupportedArazzoVersion,
-  replaceArazzoVersion,
+  prepareForLanguageService,
   supportedArazzoVersions,
 } from './arazzo-version.ts';
 
@@ -113,8 +112,19 @@ export async function validate(
 ): Promise<Diagnostic[]> {
   const content = textDocument.getText();
   const detected = await detectArazzoVersion(content);
+  const isSupported = detected !== undefined && isSupportedArazzoVersion(detected.version);
+  // the bundled rules and JSON Schema only target supported versions, so an unsupported
+  // version would otherwise skip all checks; validate against the latest supported version instead
+  const prepared =
+    detected === undefined
+      ? undefined
+      : await prepareForLanguageService(
+          content,
+          detected,
+          isSupported ? detected.version : latestSupportedArazzoVersion,
+        );
 
-  if (detected === undefined) {
+  if (detected === undefined || prepared === undefined) {
     const lastChar = textDocument.positionAt(content.length);
     return [
       {
@@ -137,12 +147,32 @@ export async function validate(
   const languageService = getLanguageService(mergedContext);
 
   try {
-    if (isSupportedArazzoVersion(detected.version)) {
-      return await languageService.doValidation(textDocument);
+    const isRewritten = prepared.content !== content;
+    const documentToValidate = isRewritten
+      ? TextDocument.create(
+          textDocument.uri,
+          textDocument.languageId,
+          textDocument.version,
+          prepared.content,
+        )
+      : textDocument;
+    const diagnostics = await languageService.doValidation(documentToValidate);
+    const mapPosition = (position: Position): Position =>
+      textDocument.positionAt(prepared.mapOffset(documentToValidate.offsetAt(position)));
+    const mappedDiagnostics = isRewritten
+      ? diagnostics.map((diagnostic) => ({
+          ...diagnostic,
+          range: {
+            start: mapPosition(diagnostic.range.start),
+            end: mapPosition(diagnostic.range.end),
+          },
+        }))
+      : diagnostics;
+
+    if (isSupported || options.ignoreUnsupportedVersion) {
+      return mappedDiagnostics;
     }
 
-    // the bundled rules and JSON Schema only target supported versions, so an unsupported
-    // version would otherwise skip all checks; validate against the latest supported version instead
     const versionDiagnostic: Diagnostic = {
       range: {
         start: textDocument.positionAt(detected.start),
@@ -153,29 +183,8 @@ export async function validate(
       code: ApilintCodes.ARAZZO_SPEC_FIELD_ARAZZO_VERSION_SUPPORTED,
       source: 'apilint',
     };
-    const rewrittenDocument = TextDocument.create(
-      textDocument.uri,
-      textDocument.languageId,
-      textDocument.version,
-      replaceArazzoVersion(content, detected, latestSupportedArazzoVersion),
-    );
-    const mapPosition = createVersionPositionMapper(
-      textDocument,
-      detected,
-      latestSupportedArazzoVersion,
-    );
-    const diagnostics = await languageService.doValidation(rewrittenDocument);
 
-    return [
-      ...(options.ignoreUnsupportedVersion ? [] : [versionDiagnostic]),
-      ...diagnostics.map((diagnostic) => ({
-        ...diagnostic,
-        range: {
-          start: mapPosition(diagnostic.range.start),
-          end: mapPosition(diagnostic.range.end),
-        },
-      })),
-    ];
+    return [versionDiagnostic, ...mappedDiagnostics];
   } finally {
     languageService.terminate();
   }

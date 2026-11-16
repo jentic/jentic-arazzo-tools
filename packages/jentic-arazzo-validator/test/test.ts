@@ -421,4 +421,121 @@ describe('validate', function () {
       });
     });
   });
+
+  context('given Arazzo document with nested arazzo properties before the root field', function () {
+    const serialize = (d: Diagnostic) => JSON.stringify([d.code, d.message, d.range]);
+    const isVersionDiagnostic = (d: Diagnostic) =>
+      d.code === ApilintCodes.ARAZZO_SPEC_FIELD_ARAZZO_VERSION_SUPPORTED;
+    // info is missing its required title, so Arazzo rules must report it
+    const json = (nestedKey: string, nestedVersion: string, rootVersion: string) =>
+      JSON.stringify(
+        {
+          'x-example': { [nestedKey]: nestedVersion },
+          arazzo: rootVersion,
+          info: { version: '1.0.0' },
+          sourceDescriptions: [
+            { name: 'myApi', type: 'openapi', url: 'https://example.com/openapi.json' },
+          ],
+          workflows: [{ workflowId: 'w', steps: [{ stepId: 's', operationId: 'x' }] }],
+        },
+        null,
+        2,
+      );
+    const validateJSON = (content: string) =>
+      validate(createTextDocument('memory://arazzo.json', content));
+
+    specify('should use a supported root version, not a nested unsupported one', async function () {
+      const diagnostics = await validateJSON(json('arazzo', '1.1.0', '1.0.1'));
+
+      assert.isUndefined(diagnostics.find(isVersionDiagnostic));
+      assert.isDefined(
+        diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED),
+        'expected Arazzo rules to run',
+      );
+    });
+
+    specify(
+      'should report an unsupported root version, not a nested supported one',
+      async function () {
+        const content = json('arazzo', '1.0.1', '1.1.0');
+        const diagnostics = await validateJSON(content);
+        const versionErrors = diagnostics.filter(isVersionDiagnostic);
+
+        assert.lengthOf(versionErrors, 1);
+        assert.include(versionErrors[0].message, 'Arazzo version 1.1.0');
+        const rootOffset = content.indexOf('"arazzo": "1.1.0"') + '"arazzo": "'.length;
+        const document = createTextDocument('memory://arazzo.json', content);
+        assert.deepEqual(versionErrors[0].range, {
+          start: document.positionAt(rootOffset),
+          end: document.positionAt(rootOffset + '1.1.0'.length),
+        });
+        assert.isDefined(
+          diagnostics.find((d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED),
+          'expected Arazzo rules to run',
+        );
+      },
+    );
+
+    specify('should report the same diagnostics as without the nested property', async function () {
+      for (const [nestedVersion, rootVersion] of [
+        ['1.1.0', '1.0.1'],
+        ['1.0.1', '1.1.0'],
+        ['2.0.0', '1.0.1'],
+        ['1.0.1', '2.0.0'],
+      ]) {
+        // `arazzX` has the same length but isn't a detected arazzo property
+        const expected = await validateJSON(json('arazzX', nestedVersion, rootVersion));
+        const actual = await validateJSON(json('arazzo', nestedVersion, rootVersion));
+
+        assert.sameMembers(
+          actual.map(serialize),
+          expected.map(serialize),
+          `${nestedVersion} nested, ${rootVersion} root`,
+        );
+      }
+    });
+
+    specify('should handle nested flow mappings before the root field in YAML', async function () {
+      for (const [nestedVersion, rootVersion, expectVersionError] of [
+        ['1.1.0', '1.0.1', false],
+        ['1.0.1', '2.0.0', true],
+      ] as const) {
+        const yaml = (key: string) => dedent`
+          x-example: {"${key}": "${nestedVersion}"}
+          arazzo: ${rootVersion}
+          info:
+            version: '1.0.0'
+          sourceDescriptions:
+            - name: myApi
+              type: openapi
+              url: https://example.com/openapi.json
+          workflows:
+            - workflowId: w
+              steps:
+                - stepId: s
+                  operationId: x
+        `;
+        const expected = await validate(createTextDocument('memory://arazzo.yaml', yaml('arazzX')));
+        const actual = await validate(createTextDocument('memory://arazzo.yaml', yaml('arazzo')));
+
+        assert.equal(actual.some(isVersionDiagnostic), expectVersionError, rootVersion);
+        assert.sameMembers(actual.map(serialize), expected.map(serialize), rootVersion);
+        assert.isDefined(
+          actual.find((d) => d.code === ApilintCodes.ARAZZO_INFO_FIELD_TITLE_REQUIRED),
+          'expected Arazzo rules to run',
+        );
+      }
+    });
+
+    specify(
+      'should not treat a nested arazzo property alone as an Arazzo document',
+      async function () {
+        const diagnostics = await validateJSON(
+          JSON.stringify({ openapi: '3.1.0', 'x-arazzo': { arazzo: '1.0.1' } }),
+        );
+        assert.lengthOf(diagnostics, 1);
+        assert.equal(diagnostics[0].code, ApilintCodes.ARAZZO_NOT_DETECTED);
+      },
+    );
+  });
 });
