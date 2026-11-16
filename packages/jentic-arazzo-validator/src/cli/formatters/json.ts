@@ -1,5 +1,7 @@
 import type { Diagnostic } from 'vscode-languageserver-types';
 
+import { formatMessage } from './stylish.ts';
+
 export interface FormatOptions {
   maxProblems?: number;
 }
@@ -14,7 +16,11 @@ export function formatJSON(
 
   const output = {
     filePath,
-    diagnostics: limitedDiagnostics,
+    // keep `message` a plain string in the output, as LSP 3.18 also allows MarkupContent
+    diagnostics: limitedDiagnostics.map((diagnostic) => ({
+      ...diagnostic,
+      message: formatMessage(diagnostic),
+    })),
     summary: {
       total: limitedDiagnostics.length,
       truncated: maxProblems ? diagnostics.length > maxProblems : false,
