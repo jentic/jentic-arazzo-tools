@@ -4,8 +4,8 @@ import {
   composeRules,
   assocTargetSpecs,
   ArazzoTargetSpecs,
-} from '@speclynx/apidom-ls';
-import type { LinterMeta } from '@speclynx/apidom-ls';
+} from '@speclynx/api-languageservice';
+import type { LinterMeta } from '@speclynx/api-languageservice';
 
 const { Arazzo } = ArazzoTargetSpecs;
 

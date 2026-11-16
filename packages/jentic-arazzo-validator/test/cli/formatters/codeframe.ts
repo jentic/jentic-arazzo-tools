@@ -78,4 +78,18 @@ info:
     assert.notInclude(output, 'Second error');
     assert.include(output, 'showing 1 of 2 problems');
   });
+
+  const markupDiagnostic: Diagnostic = {
+    range: { start: { line: 1, character: 0 }, end: { line: 1, character: 4 } },
+    message: { kind: 'markdown', value: 'Field `foo` is not allowed' },
+    severity: DiagnosticSeverity.Error,
+    code: 'not-allowed',
+  };
+
+  specify('should print the value of a MarkupContent message', function () {
+    const output = formatCodeframe('/path/to/file.yaml', [markupDiagnostic], { sourceContent });
+
+    assert.include(output, 'Field `foo` is not allowed');
+    assert.notInclude(output, '[object Object]');
+  });
 });

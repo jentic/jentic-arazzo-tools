@@ -1,5 +1,5 @@
-import { ArazzoTargetSpecs } from '@speclynx/apidom-ls';
-import { isArazzoSpecification1Element } from '@speclynx/apidom-ns-arazzo-1';
+import { ArazzoTargetSpecs } from '@speclynx/api-languageservice';
+import { isArazzoSpecification1Element, mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import {
   detect as detectArazzoJSON,
   detectionRegExp as arazzoJSONDetectionRegExp,
@@ -95,6 +95,20 @@ const compareVersions = (a: string, b: string): number => {
   return 0;
 };
 
+// the bundled rules and JSON Schema target Arazzo 1.0.x; target specs use wildcard
+// versions (e.g. `1.0.x`), so concrete versions come from the namespace's media types
+const supportedTargetSpecs = ArazzoTargetSpecs.Arazzo10X.filter(
+  ({ namespace, version }) => namespace === 'arazzo' && typeof version === 'string',
+).map(({ version }) => (version as string).split('.'));
+
+const matchesSupportedTargetSpec = (version: string): boolean => {
+  const parts = version.split('.');
+  return supportedTargetSpecs.some(
+    (spec) =>
+      spec.length === parts.length && spec.every((part, i) => part === 'x' || part === parts[i]),
+  );
+};
+
 /**
  * Arazzo versions that the bundled rules and JSON Schema validation target, in ascending order.
  *
@@ -102,10 +116,10 @@ const compareVersions = (a: string, b: string): number => {
  */
 export const supportedArazzoVersions: readonly string[] = [
   ...new Set(
-    ArazzoTargetSpecs.Arazzo.filter(
-      ({ namespace, version }) =>
-        namespace === 'arazzo' && typeof version === 'string' && /^\d+\.\d+\.\d+$/.test(version),
-    ).map(({ version }) => version as string),
+    mediaTypes
+      .map((mediaType) => /;version=(\d+\.\d+\.\d+)$/.exec(mediaType)?.[1])
+      .filter((version): version is string => version !== undefined)
+      .filter(matchesSupportedTargetSpec),
   ),
 ].sort(compareVersions);
 

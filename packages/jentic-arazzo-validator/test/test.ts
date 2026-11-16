@@ -153,6 +153,79 @@ describe('validate', function () {
     });
   });
 
+  context('given Criterion Expression Type Object', function () {
+    const withExpressionType = (expressionType: string) => dedent`
+      arazzo: '1.0.1'
+      info:
+        title: My Workflow
+        version: '1.0.0'
+      sourceDescriptions:
+        - name: myApi
+          type: openapi
+          url: https://example.com/openapi.json
+      workflows:
+        - workflowId: myWorkflow
+          steps:
+            - stepId: step1
+              operationId: myApi.getUsers
+              successCriteria:
+                - context: $response.body
+                  condition: $.id
+                  type: ${expressionType}
+    `;
+    const expressionTypeCodes = [
+      ApilintCodes.ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_TYPE_REQUIRED,
+      ApilintCodes.ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_TYPE_TYPE,
+      ApilintCodes.ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_TYPE_EQUALS,
+      ApilintCodes.ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_VERSION_REQUIRED,
+      ApilintCodes.ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_VERSION_TYPE,
+    ];
+
+    specify(
+      'should return ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_TYPE_EQUALS error',
+      async function () {
+        const textDocument = createTextDocument(
+          'memory://arazzo.yaml',
+          withExpressionType('{ type: bogus, version: rfc9535 }'),
+        );
+        const diagnostics = await validate(textDocument);
+        const typeEquals = diagnostics.find(
+          (d) => d.code === ApilintCodes.ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_TYPE_EQUALS,
+        );
+        assert.isDefined(typeEquals, 'expected diagnostic with code 9110102');
+        assert.equal(typeEquals!.severity, DiagnosticSeverity.Error);
+      },
+    );
+
+    specify(
+      'should return ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_VERSION_REQUIRED error',
+      async function () {
+        const textDocument = createTextDocument(
+          'memory://arazzo.yaml',
+          withExpressionType('{ type: jsonpath }'),
+        );
+        const diagnostics = await validate(textDocument);
+        const versionRequired = diagnostics.find(
+          (d) => d.code === ApilintCodes.ARAZZO_CRITERION_EXPRESSION_TYPE_FIELD_VERSION_REQUIRED,
+        );
+        assert.isDefined(versionRequired, 'expected diagnostic with code 9110200');
+        assert.equal(versionRequired!.severity, DiagnosticSeverity.Error);
+      },
+    );
+
+    specify('should not return Criterion Expression Type errors when valid', async function () {
+      const textDocument = createTextDocument(
+        'memory://arazzo.yaml',
+        withExpressionType('{ type: jsonpath, version: draft-goessner-dispatch-jsonpath-00 }'),
+      );
+      const diagnostics = await validate(textDocument);
+      const expressionTypeErrors = diagnostics.filter((d) =>
+        expressionTypeCodes.includes(d.code as number),
+      );
+      assert.lengthOf(expressionTypeErrors, 0);
+    });
+  });
+
   context('given OpenAPI document instead of Arazzo', function () {
     const openApiDoc = dedent`
       openapi: '3.0.3'
