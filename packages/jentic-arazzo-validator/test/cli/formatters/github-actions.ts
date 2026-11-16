@@ -47,4 +47,16 @@ describe('github-actions', function () {
     assert.include(output, 'Field `foo` is not allowed');
     assert.notInclude(output, '[object Object]');
   });
+
+  specify('should escape % and newlines in a MarkupContent message', function () {
+    const output = formatGitHubActions('/path/to/file.yaml', [
+      {
+        ...markupDiagnostic,
+        message: { kind: 'markdown', value: 'Must be 100%\nnot 50%' },
+      },
+    ]);
+
+    assert.include(output, '::Must be 100%25%0Anot 50%25');
+    assert.notInclude(output, '\nnot 50%');
+  });
 });
