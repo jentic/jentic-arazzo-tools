@@ -1,4 +1,6 @@
 import { parseArazzo } from '@jentic/arazzo-parser';
+import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
+import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
 
 import type { ArazzoDocument } from '../types/index';
 
@@ -130,9 +132,14 @@ async function resolveDiagnosticPaths(
   }
 }
 
-function looksLikeURI(value: string): boolean {
-  const trimmed = value.trim();
-  return !trimmed.includes('\n') && !trimmed.startsWith('{');
+/**
+ * Detects inline Arazzo content the same way parseArazzo does, so validation reads the same
+ * source the viewer rendered. Returns undefined when the string should be treated as a URI.
+ */
+async function detectInlineFormat(value: string): Promise<'json' | 'yaml' | undefined> {
+  if (await detectArazzoJSON(value, { strict: true })) return 'json';
+  if (await detectArazzoYAML(value, { strict: true })) return 'yaml';
+  return undefined;
 }
 
 async function loadSource(
@@ -149,21 +156,21 @@ async function loadSource(
     };
   }
 
-  if (looksLikeURI(input)) {
-    const uri = new URL(input.trim(), baseURI).toString();
-    const response = await fetch(uri);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch ${uri} (${response.status} ${response.statusText})`);
-    }
-    return { uri, content: await response.text(), hasSourcePositions: true };
+  const inlineFormat = await detectInlineFormat(input);
+  if (inlineFormat) {
+    return {
+      uri: new URL(`arazzo.${inlineFormat}`, baseURI).toString(),
+      content: input,
+      hasSourcePositions: true,
+    };
   }
 
-  const isJSON = input.trim().startsWith('{');
-  return {
-    uri: new URL(isJSON ? 'arazzo.json' : 'arazzo.yaml', baseURI).toString(),
-    content: input,
-    hasSourcePositions: true,
-  };
+  const uri = new URL(input.trim(), baseURI).toString();
+  const response = await fetch(uri);
+  if (!response.ok) {
+    throw new Error(`Failed to fetch ${uri} (${response.status} ${response.statusText})`);
+  }
+  return { uri, content: await response.text(), hasSourcePositions: true };
 }
 
 /**
