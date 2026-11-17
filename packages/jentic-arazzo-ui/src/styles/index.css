@@ -111,6 +111,9 @@
   --arazzo-font-sans: 'Nunito Sans', sans-serif;
   --arazzo-font-heading: 'Sora', sans-serif;
   --arazzo-font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  /* layout - override to fit longer workflow ids in the diagram tab bar */
+  --arazzo-tab-max-width: 320px;
 }
 
 /* Base container */
