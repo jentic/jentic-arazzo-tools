@@ -102,7 +102,7 @@
   --arazzo-glow-neutral: 0 8px 24px rgb(0 0 0 / 0.3);
 
   /* backdrop behind modal dialogs */
-  --arazzo-overlay: rgb(21 40 34 / 0.75);
+  --arazzo-overlay: rgb(21 40 34 / 0.45);
 
   /* hairline divider drawn on a solid accent fill */
   --arazzo-on-accent-divider: rgb(255 255 255 / 0.3);
