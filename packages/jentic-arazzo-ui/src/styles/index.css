@@ -39,6 +39,8 @@
   --arazzo-card-selected: var(--arazzo-primary-50);
   --arazzo-border: #d9e3de;
   --arazzo-border-hover: #7ab8a1;
+  /* form field border, 3.6:1 on white so the field edge is visible */
+  --arazzo-input-border: #7a8a84;
 
   /* text */
   --arazzo-fg: #152822;
@@ -296,6 +298,18 @@
 
 .arazzo-ui-standalone input {
   font-family: var(--arazzo-font-sans);
+}
+
+/* url field: white with a visible border, and the website's green focus ring */
+.arazzo-ui-standalone .arazzo-ui-url-input {
+  background: var(--arazzo-card);
+  border: 1px solid var(--arazzo-input-border);
+  outline: none;
+}
+
+.arazzo-ui-standalone .arazzo-ui-url-input:focus-visible {
+  outline: 3px solid var(--arazzo-primary);
+  outline-offset: 2px;
 }
 
 .arazzo-ui code,

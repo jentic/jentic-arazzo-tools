@@ -238,14 +238,12 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
               onChange={(e) => setUrlInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Enter Arazzo document URL..."
+              className="arazzo-ui-url-input"
               style={{
                 flex: 1,
                 padding: '6px 12px',
-                border: '1px solid var(--arazzo-border)',
                 borderRadius: '6px',
                 fontSize: '13px',
-                outline: 'none',
-                background: 'var(--arazzo-bg-secondary)',
                 color: 'var(--arazzo-fg)',
               }}
             />
