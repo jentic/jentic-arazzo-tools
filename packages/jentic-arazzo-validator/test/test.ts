@@ -662,6 +662,44 @@ describe('validate', function () {
           assert.sameMembers(actual.map(serialize), expected.map(serialize));
         });
       }
+
+      specify('should map related information back to the original positions', async function () {
+        // the block scalar is respelled on one line, so later lines move up in the prepared copy
+        const yamlWithSyntaxError = (word: string) =>
+          [
+            'x-example: |',
+            `  {"${word}": "1.0.0"}`,
+            '  second line',
+            '  third line',
+            'arazzo: 1.0.1',
+            'info:',
+            '  title: t',
+            ' bad: x',
+            '',
+          ].join('\n');
+        const validateWithRelated = (content: string) =>
+          validate(createTextDocument('memory://arazzo.yaml', content), {
+            validationContext: { relatedInformation: true },
+          });
+        const serializeRelated = (d: Diagnostic) =>
+          JSON.stringify([d.code, d.range, d.relatedInformation]);
+
+        const expected = await validateWithRelated(yamlWithSyntaxError('arazzX'));
+        const actual = await validateWithRelated(yamlWithSyntaxError('arazzo'));
+
+        const related = actual.filter((d) => d.relatedInformation !== undefined);
+        assert.isNotEmpty(related, 'expected a syntax diagnostic with related information');
+        for (const diagnostic of related) {
+          for (const { location } of diagnostic.relatedInformation!) {
+            assert.deepEqual(location.range, diagnostic.range);
+          }
+        }
+        assert.sameMembers(actual.map(serializeRelated), expected.map(serializeRelated));
+        assert.isTrue(
+          actual.every((d) => d.relatedInformation !== undefined || !('relatedInformation' in d)),
+          'diagnostics without related information must not gain the property',
+        );
+      });
     });
   });
 });

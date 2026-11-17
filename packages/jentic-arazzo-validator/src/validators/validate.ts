@@ -1,6 +1,6 @@
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
-import type { Diagnostic, Position } from 'vscode-languageserver-types';
+import type { Diagnostic, Position, Range } from 'vscode-languageserver-types';
 import { mediaTypes } from '@speclynx/apidom-ns-arazzo-1';
 import {
   getLanguageService,
@@ -163,13 +163,28 @@ export async function validate(
     const diagnostics = await languageService.doValidation(documentToValidate);
     const mapPosition = (position: Position): Position =>
       textDocument.positionAt(prepared.mapOffset(documentToValidate.offsetAt(position)));
+    const mapRange = ({ start, end }: Range): Range => ({
+      start: mapPosition(start),
+      end: mapPosition(end),
+    });
     const mappedDiagnostics = isRewritten
       ? diagnostics.map((diagnostic) => ({
           ...diagnostic,
-          range: {
-            start: mapPosition(diagnostic.range.start),
-            end: mapPosition(diagnostic.range.end),
-          },
+          range: mapRange(diagnostic.range),
+          // only locations in the validated document use its coordinates
+          ...(diagnostic.relatedInformation && {
+            relatedInformation: diagnostic.relatedInformation.map((information) =>
+              information.location.uri === textDocument.uri
+                ? {
+                    ...information,
+                    location: {
+                      ...information.location,
+                      range: mapRange(information.location.range),
+                    },
+                  }
+                : information,
+            ),
+          }),
         }))
       : diagnostics;
 
