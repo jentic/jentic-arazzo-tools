@@ -89,11 +89,15 @@ export function formatHeaderAsMarkdown(
       sections.push(`<div class="source-card-top">`);
       sections.push(`${sourceIcon(sd.type || 'arazzo')}`);
       sections.push(`<span class="source-type-badge ${typeClass}">${typeLabel}</span>`);
-      sections.push(`<span class="source-name">${sd.name}</span>`);
+      // invalid documents can omit name or url (reported by validation)
+      const name = typeof sd.name === 'string' && sd.name !== '' ? sd.name : '(unnamed)';
+      sections.push(`<span class="source-name">${name}</span>`);
       sections.push(`</div>`);
-      sections.push(
-        `<a class="source-url" href="${sd.url}" target="_blank" rel="noopener noreferrer">${sd.url}</a>`,
-      );
+      if (typeof sd.url === 'string' && sd.url !== '') {
+        sections.push(
+          `<a class="source-url" href="${sd.url}" target="_blank" rel="noopener noreferrer">${sd.url}</a>`,
+        );
+      }
       sections.push(`</div>`);
     });
     sections.push(`</div>`);

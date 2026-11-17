@@ -1,6 +1,7 @@
 import { ArazzoDocument } from '../../types/arazzo';
 import { DocumentationMetadata, ViewerStep, WorkflowDocumentation } from '../../types/viewer';
 import { generateMetadata } from './metadataGenerator';
+import { escapeHtml } from '../escapeHtml';
 import type { DocumentDiagnostic } from '../validation';
 import {
   formatAsMarkdown,
@@ -64,20 +65,30 @@ export function generateDocumentation(
     failureActions: workflow.failureActions,
   }));
 
-  // Generate header markdown
-  const headerMarkdown = formatHeaderAsMarkdown(metadata, { includeMetadata, includeDiagrams });
+  // each part is generated on its own, so an invalid part of the document only replaces that
+  // part with a notice instead of failing the whole docs view
+  const headerMarkdown = renderSafely('The document header', () =>
+    formatHeaderAsMarkdown(metadata, { includeMetadata, includeDiagrams }),
+  );
 
   // Generate per-workflow markdown
   const workflowMarkdowns = new Map<string, string>();
   const workflowNotes = new Map<string, DocumentDiagnostic[]>();
   workflows.forEach((wf, workflowIndex) => {
-    const formatted = formatWorkflowWithNotes(metadata, wf, { workflowIndex, diagnostics });
-    workflowMarkdowns.set(wf.workflowId, formatted.markdown);
-    workflowNotes.set(wf.workflowId, formatted.notes);
+    let notes: DocumentDiagnostic[] = [];
+    const markdown = renderSafely('This workflow', () => {
+      const formatted = formatWorkflowWithNotes(metadata, wf, { workflowIndex, diagnostics });
+      notes = formatted.notes;
+      return formatted.markdown;
+    });
+    workflowMarkdowns.set(wf.workflowId, markdown);
+    workflowNotes.set(wf.workflowId, notes);
   });
 
   // Full markdown (legacy)
-  const markdown = formatAsMarkdown(metadata, workflows, { includeMetadata, includeDiagrams });
+  const markdown = renderSafely('The document', () =>
+    formatAsMarkdown(metadata, workflows, { includeMetadata, includeDiagrams }),
+  );
 
   return {
     metadata,
@@ -87,4 +98,20 @@ export function generateDocumentation(
     workflowMarkdowns,
     workflowNotes,
   };
+}
+
+/**
+ * Runs a markdown generator, rendering a notice instead when an invalid document makes it throw.
+ */
+function renderSafely(label: string, generate: () => string): string {
+  try {
+    return generate();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    return (
+      `<div class="render-error-notice" role="alert">${escapeHtml(label)} couldn't be displayed, ` +
+      'which usually means the document is invalid. The Validation section lists its problems.' +
+      `<details><summary>Details</summary><code>${escapeHtml(message)}</code></details></div>`
+    );
+  }
 }

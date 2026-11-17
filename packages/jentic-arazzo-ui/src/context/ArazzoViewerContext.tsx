@@ -143,8 +143,23 @@ const StandaloneProvider: React.FC<StandaloneProviderProps> = ({
   const currentDocRef = useRef(document);
   currentDocRef.current = document;
 
+  // set when the active workflow can't be turned into a diagram (e.g. an invalid document)
+  const [diagramError, setDiagramError] = useState<string | null>(null);
+
   // Convert active workflow to React Flow nodes/edges with sequential layout
   useEffect(() => {
+    try {
+      buildDiagram();
+      setDiagramError(null);
+    } catch (error) {
+      // an error thrown here would escape every error boundary and blank the whole viewer
+      setNodes([]);
+      setEdges([]);
+      setDiagramError(error instanceof Error ? error.message : String(error));
+    }
+  }, [activeWorkflow]);
+
+  function buildDiagram() {
     if (activeWorkflow) {
       const { nodes: flowNodes, edges: flowEdges } = convertWorkflowToFlow(
         activeWorkflow,
@@ -185,7 +200,7 @@ const StandaloneProvider: React.FC<StandaloneProviderProps> = ({
       setNodes([]);
       setEdges([]);
     }
-  }, [activeWorkflow]);
+  }
 
   const setActiveWorkflow = useCallback(
     (id: string | null) => {
@@ -214,6 +229,7 @@ const StandaloneProvider: React.FC<StandaloneProviderProps> = ({
     setEdges,
     readOnly: true,
     events,
+    diagramError,
   };
 
   return <ArazzoViewerContext.Provider value={value}>{children}</ArazzoViewerContext.Provider>;

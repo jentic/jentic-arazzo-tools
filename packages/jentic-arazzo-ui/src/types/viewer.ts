@@ -90,6 +90,8 @@ export interface ArazzoViewerContextValue {
   setEdges: (edges: ArazzoEdge[]) => void;
   readOnly: boolean;
   events?: ViewerEvents;
+  // why the active workflow couldn't be turned into a diagram, if it couldn't
+  diagramError?: string | null;
 }
 
 // ============================================================================

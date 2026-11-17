@@ -11,6 +11,7 @@ import {
   generateMermaidFlowchart,
 } from '../utils/documentation/index';
 import { worstSeverity } from '../utils/documentation/inlineDiagnostics';
+import { ErrorBoundary } from './ErrorBoundary';
 import type { DiagnosticSeverityName, ValidationState } from '../utils/validation';
 
 export interface DocsViewProps {
@@ -127,6 +128,16 @@ const ValidationSection: React.FC<ValidationSectionProps> = ({
       </div>
     </section>
   );
+};
+
+// invalid documents can hold non-string ids; show them as written
+const displayValue = (value: unknown): string => {
+  if (typeof value === 'string') return `"${value}"`;
+  try {
+    return JSON.stringify(value) ?? String(value);
+  } catch {
+    return String(value);
+  }
 };
 
 type WorkflowViewMode = 'docs' | 'sequence' | 'flowchart';
@@ -297,7 +308,12 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
     if (!document) return new Map<string, string>();
     const diagrams = new Map<string, string>();
     document.workflows.forEach((workflow) => {
-      diagrams.set(workflow.workflowId, generateMermaidSequence(workflow, document));
+      // an invalid workflow just has no diagram; its docs show what went wrong
+      try {
+        diagrams.set(workflow.workflowId, generateMermaidSequence(workflow, document));
+      } catch {
+        // skip
+      }
     });
     return diagrams;
   }, [document]);
@@ -306,7 +322,11 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
     if (!document) return new Map<string, string>();
     const diagrams = new Map<string, string>();
     document.workflows.forEach((workflow) => {
-      diagrams.set(workflow.workflowId, generateMermaidFlowchart(workflow));
+      try {
+        diagrams.set(workflow.workflowId, generateMermaidFlowchart(workflow));
+      } catch {
+        // skip, as for the sequence diagram
+      }
     });
     return diagrams;
   }, [document]);
@@ -1103,6 +1123,28 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             height: auto;
           }
 
+          /* Notice in place of a part of an invalid document that couldn't be rendered */
+          .render-error-notice {
+            margin: 8px 0;
+            padding: 10px 14px;
+            border: 1px solid #fca5a5;
+            border-radius: 6px;
+            background: #fef2f2;
+            color: #991b1b;
+            font-size: 13px;
+            line-height: 1.5;
+          }
+
+          .render-error-notice summary {
+            cursor: pointer;
+            font-size: 12px;
+          }
+
+          .render-error-notice code {
+            font-size: 12px;
+            word-break: break-word;
+          }
+
           /* Validation */
           .validation-section {
             margin-bottom: 24px;
@@ -1283,9 +1325,11 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
         `}</style>
         <article className="arazzo-docs-prose">
           {/* Header: title, version, sources */}
-          <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
-            {documentation.headerMarkdown}
-          </ReactMarkdown>
+          <ErrorBoundary label="The document header" resetKey={document}>
+            <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
+              {documentation.headerMarkdown}
+            </ReactMarkdown>
+          </ErrorBoundary>
 
           {/* Workflows */}
           <div className="workflows-header-row">
@@ -1307,68 +1351,75 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             const flowchartSource = flowchartDiagrams.get(workflow.workflowId) || null;
 
             return (
-              <details
+              <ErrorBoundary
                 key={workflow.workflowId}
-                className="workflow-details"
-                data-workflow-id={workflow.workflowId}
-                onToggle={(e) => handleToggle(workflow.workflowId, e)}
+                label={`Workflow ${displayValue(workflow.workflowId)}`}
+                resetKey={document}
               >
-                <summary className="workflow-summary-bar">
-                  <span className="step-count-badge">
-                    {stepCount} {stepCount === 1 ? 'Step' : 'Steps'}
-                  </span>
-                  <span className="workflow-summary-title">{workflow.workflowId}</span>
-                  {workflow.summary && (
-                    <span className="workflow-summary-text">{workflow.summary}</span>
-                  )}
-                  {workflowNotes.length > 0 && (
-                    <span
-                      className={`step-detail-issues workflow-issues step-detail-issues-${worstSeverity(workflowNotes)}`}
-                      title={`${workflowNotes.length} validation ${workflowNotes.length === 1 ? 'issue' : 'issues'}`}
-                    >
-                      ⚠ {workflowNotes.length}
+                <details
+                  className="workflow-details"
+                  data-workflow-id={workflow.workflowId}
+                  onToggle={(e) => handleToggle(workflow.workflowId, e)}
+                >
+                  <summary className="workflow-summary-bar">
+                    <span className="step-count-badge">
+                      {stepCount} {stepCount === 1 ? 'Step' : 'Steps'}
                     </span>
-                  )}
-                </summary>
-                <div className="workflow-details-content">
-                  <div className="workflow-view-toggle">
-                    {viewModes.map((mode) => (
-                      <button
-                        key={mode}
-                        className={`workflow-view-btn ${currentView === mode ? 'workflow-view-btn-active' : ''}`}
-                        onClick={() => setWorkflowView(workflow.workflowId, mode)}
+                    <span className="workflow-summary-title">{workflow.workflowId}</span>
+                    {workflow.summary && (
+                      <span className="workflow-summary-text">{workflow.summary}</span>
+                    )}
+                    {workflowNotes.length > 0 && (
+                      <span
+                        className={`step-detail-issues workflow-issues step-detail-issues-${worstSeverity(workflowNotes)}`}
+                        title={`${workflowNotes.length} validation ${workflowNotes.length === 1 ? 'issue' : 'issues'}`}
                       >
-                        {viewLabels[mode]}
-                      </button>
-                    ))}
-                  </div>
+                        ⚠ {workflowNotes.length}
+                      </span>
+                    )}
+                  </summary>
+                  <div className="workflow-details-content">
+                    <div className="workflow-view-toggle">
+                      {viewModes.map((mode) => (
+                        <button
+                          key={mode}
+                          className={`workflow-view-btn ${currentView === mode ? 'workflow-view-btn-active' : ''}`}
+                          onClick={() => setWorkflowView(workflow.workflowId, mode)}
+                        >
+                          {viewLabels[mode]}
+                        </button>
+                      ))}
+                    </div>
 
-                  <div style={{ display: currentView === 'docs' ? 'block' : 'none' }}>
-                    <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
-                      {workflowMd}
-                    </ReactMarkdown>
+                    <div style={{ display: currentView === 'docs' ? 'block' : 'none' }}>
+                      <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
+                        {workflowMd}
+                      </ReactMarkdown>
+                    </div>
+                    {sequenceSource && expandedWorkflows.has(workflow.workflowId) && (
+                      <div style={{ display: currentView === 'sequence' ? 'block' : 'none' }}>
+                        <MermaidDiagram source={sequenceSource} />
+                      </div>
+                    )}
+                    {flowchartSource && expandedWorkflows.has(workflow.workflowId) && (
+                      <div style={{ display: currentView === 'flowchart' ? 'block' : 'none' }}>
+                        <MermaidDiagram source={flowchartSource} />
+                      </div>
+                    )}
                   </div>
-                  {sequenceSource && expandedWorkflows.has(workflow.workflowId) && (
-                    <div style={{ display: currentView === 'sequence' ? 'block' : 'none' }}>
-                      <MermaidDiagram source={sequenceSource} />
-                    </div>
-                  )}
-                  {flowchartSource && expandedWorkflows.has(workflow.workflowId) && (
-                    <div style={{ display: currentView === 'flowchart' ? 'block' : 'none' }}>
-                      <MermaidDiagram source={flowchartSource} />
-                    </div>
-                  )}
-                </div>
-              </details>
+                </details>
+              </ErrorBoundary>
             );
           })}
 
           {validation && (
-            <ValidationSection
-              validation={validation}
-              showInlineNotes={showInlineNotes}
-              onShowInlineNotesChange={setShowInlineNotes}
-            />
+            <ErrorBoundary label="The Validation section" resetKey={validation}>
+              <ValidationSection
+                validation={validation}
+                showInlineNotes={showInlineNotes}
+                onShowInlineNotesChange={setShowInlineNotes}
+              />
+            </ErrorBoundary>
           )}
         </article>
       </div>

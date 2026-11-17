@@ -182,23 +182,62 @@ export function findStepOperation(
 }
 
 /**
+ * Options for {@link attachStepOperations}.
+ * @public
+ */
+export interface AttachStepOperationsOptions {
+  /**
+   * Skip workflows and steps of an invalid document instead of throwing: workflows and steps
+   * that aren't objects (or lists of them) are left as they are, and a step whose operation
+   * can't be looked up is left without an `_operation`. Useful for displaying invalid documents.
+   *
+   * @defaultValue false
+   */
+  skipInvalid?: boolean;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
  * Converts an Arazzo Document element to a plain object and sets `_operation` on every step that
  * targets an operation of the `openapi` source descriptions parsed along with it.
  * @param element - The Arazzo Document element, e.g. the (dereferenced) result of the parse result
  * @param parseResult - The result of parsing the Arazzo Document with source descriptions
+ * @param options - See {@link AttachStepOperationsOptions}
  * @returns The plain Arazzo Document, typed with `_operation` on its steps and set on the resolved ones
  * @public
  */
 export function attachStepOperations<T extends StepOperationsDocument = StepOperationsDocument>(
   element: Element | undefined,
   parseResult: ParseResultElement,
+  options: AttachStepOperationsOptions = {},
 ): StepOperationsResult<T> {
   const doc = toValue(element) as StepOperationsDocument;
-  doc?.workflows?.forEach((workflow) =>
-    workflow.steps?.forEach((step) => {
-      const operation = findStepOperation(parseResult, step);
+
+  if (!options.skipInvalid) {
+    doc?.workflows?.forEach((workflow) =>
+      workflow.steps?.forEach((step) => {
+        const operation = findStepOperation(parseResult, step);
+        if (operation) Object.assign(step, { _operation: operation });
+      }),
+    );
+    return doc as StepOperationsResult<T>;
+  }
+
+  const workflows: unknown[] = Array.isArray(doc?.workflows) ? doc.workflows : [];
+  workflows.forEach((workflow) => {
+    if (!isRecord(workflow) || !Array.isArray(workflow.steps)) return;
+    workflow.steps.forEach((step: unknown) => {
+      if (!isRecord(step)) return;
+      let operation: StepOperation | undefined;
+      try {
+        operation = findStepOperation(parseResult, step);
+      } catch {
+        operation = undefined;
+      }
       if (operation) Object.assign(step, { _operation: operation });
-    }),
-  );
+    });
+  });
   return doc as StepOperationsResult<T>;
 }

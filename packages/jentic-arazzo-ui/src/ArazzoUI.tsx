@@ -16,6 +16,7 @@ import {
 import { ArazzoViewerProvider, useArazzoViewer } from './context/ArazzoViewerContext';
 import { DiagramView, DiagramViewRef } from './components/DiagramView';
 import { DocsView } from './components/DocsView';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import type { ArazzoDocument, ArazzoUIProps, ArazzoUIRef, ViewerMode } from './types/index';
 
 export type {
@@ -63,6 +64,7 @@ export type {
 } from './types/arazzo';
 import { stripInternalIds } from './utils/internalIds';
 import { validateArazzoSource, type ValidationState } from './utils/validation';
+import { normalizeDocumentShape } from './utils/documentShape';
 
 import './styles/index.css';
 
@@ -81,18 +83,28 @@ async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocu
     resolve: { baseURI: document.baseURI },
   });
   // Path Items that are only a $ref (local or external) are resolved so their methods are found;
-  // this never rejects, an unresolvable Path Item just gets no badge.
-  await dereferenceSourceDescriptionPathItems(parseResult);
-  const dereferenced = await dereferenceArazzoElement(parseResult, {
-    resolve: {
-      baseURI: document.baseURI,
-    },
-    dereference: {
-      circular: 'error',
-      immutable: false,
-    },
-  });
-  return attachStepOperations<ArazzoDocument>(dereferenced.result, parseResult);
+  // an unresolvable Path Item just gets no badge. The viewer also displays invalid documents, so
+  // their invalid parts are skipped (skipInvalid) here and below, and reported by validation.
+  await dereferenceSourceDescriptionPathItems(parseResult, { skipInvalid: true });
+  let element = parseResult.result;
+  try {
+    const dereferenced = await dereferenceArazzoElement(parseResult, {
+      resolve: {
+        baseURI: document.baseURI,
+      },
+      dereference: {
+        circular: 'error',
+        immutable: false,
+      },
+    });
+    element = dereferenced.result;
+  } catch {
+    // a reference that can't be resolved (e.g. to a missing `$components` entry) would otherwise
+    // hide the whole document; show references as written instead, validation reports them
+  }
+  return normalizeDocumentShape(
+    attachStepOperations<ArazzoDocument>(element, parseResult, { skipInvalid: true }),
+  );
 }
 
 /**
@@ -310,12 +322,16 @@ const ArazzoUIInner = forwardRef<ArazzoUIRef, ArazzoUIInnerProps>(function Arazz
     <>
       {showDiagram && (
         <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
-          <DiagramView ref={diagramRef} showWorkflowTabs={true} />
+          <ErrorBoundary label="The diagram view" resetKey={ctx.document}>
+            <DiagramView ref={diagramRef} showWorkflowTabs={true} />
+          </ErrorBoundary>
         </div>
       )}
       {showDocs && (
         <div style={{ flex: 1, minWidth: 0, height: '100%', overflow: 'auto' }}>
-          <DocsView validation={validation} />
+          <ErrorBoundary label="The docs view" resetKey={ctx.document}>
+            <DocsView validation={validation} />
+          </ErrorBoundary>
         </div>
       )}
     </>

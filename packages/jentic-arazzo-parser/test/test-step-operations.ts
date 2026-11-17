@@ -154,4 +154,47 @@ describe('attachStepOperations', function () {
       [listPets, listPets, listPets, undefined],
     );
   });
+
+  describe('given an invalid document', function () {
+    let invalid: ParseResultElement;
+
+    before(async function () {
+      invalid = await parseArazzo(
+        {
+          arazzo: '1.0.1',
+          info: { title: 'Invalid shapes', version: '1.0.0' },
+          sourceDescriptions: 'not a list',
+          workflows: [
+            null,
+            {
+              workflowId: 'mixed',
+              steps: [
+                null,
+                42,
+                { stepId: 'numericId', operationId: 42 },
+                { stepId: 'numericPath', operationPath: 7 },
+                { stepId: 'unresolvable', operationId: 'listPets' },
+              ],
+            },
+            { workflowId: 'notAList', steps: 'nope' },
+          ],
+        },
+        { parse: { parserOpts: { sourceDescriptions: true } } },
+      );
+    });
+
+    specify('should throw by default', function () {
+      assert.throws(() => attachStepOperations(invalid.api, invalid));
+    });
+
+    specify('should skip workflows and steps of the wrong shape with skipInvalid', function () {
+      const doc = attachStepOperations(invalid.api, invalid, { skipInvalid: true });
+      const steps = (doc.workflows?.[1].steps ?? []) as unknown[];
+
+      assert.deepEqual(steps.slice(0, 2), [null, 42]);
+      assert.isTrue(
+        steps.slice(2).every((step) => (step as { _operation?: unknown })._operation === undefined),
+      );
+    });
+  });
 });
