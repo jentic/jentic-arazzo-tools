@@ -59,6 +59,18 @@ export type ArazzoUIStandaloneProps = Omit<ArazzoUIProps, 'view'> & {
 };
 
 /**
+ * Reads a boolean flag from the query string or hash, e.g. `?ignoreUnsupportedVersion` or
+ * `#…&ignoreUnsupportedVersion=true`. Returns undefined when the flag is absent.
+ */
+function readURLFlag(name: string): boolean | undefined {
+  const value =
+    new URLSearchParams(globalThis.location.search).get(name) ??
+    new URLSearchParams(globalThis.location.hash.slice(1)).get(name);
+  if (value === null) return undefined;
+  return !['false', '0'].includes(value.toLowerCase());
+}
+
+/**
  * ArazzoUIStandalone - Self-contained Arazzo viewer with built-in header
  *
  * Includes Jentic logo, URL input for loading documents, and view mode toggle.
@@ -76,6 +88,9 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
     const queryParam = new URLSearchParams(globalThis.location.search).get('document');
     const hashParam = new URLSearchParams(globalThis.location.hash.slice(1)).get('document');
     const initialDocument = queryParam || hashParam || props.document;
+
+    // read once, as loading a file later rewrites the URL; the arazzo-ui CLI sets this flag
+    const [ignoreUnsupportedVersionParam] = useState(() => readURLFlag('ignoreUnsupportedVersion'));
 
     const [urlInput, setUrlInput] = useState(
       typeof initialDocument === 'string' && /^https?:\/\//i.test(initialDocument)
@@ -295,6 +310,9 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
           <ArazzoUI
             ref={ref}
             {...rest}
+            ignoreUnsupportedVersion={
+              ignoreUnsupportedVersionParam ?? rest.ignoreUnsupportedVersion
+            }
             document={documentSource}
             view={view}
             onViewChange={handleViewChange}
