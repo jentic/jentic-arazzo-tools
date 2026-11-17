@@ -84,6 +84,9 @@
      gold --arazzo-warning so PATCH and PUT pills stay distinct; the brighter
      --arazzo-accent-orange stays for decorative use */
   --arazzo-accent-orange-fg: #b3450f;
+  /* website teal for runtime expressions ($inputs, $response.body): reads as
+     neutral data, not success or failure; 7.5:1+ on every node surface */
+  --arazzo-expression-fg: #305256;
 
   /* elevation - soft neutral shadows for light surfaces */
   --arazzo-shadow: 0 1px 2px 0 rgb(21 40 34 / 0.06);

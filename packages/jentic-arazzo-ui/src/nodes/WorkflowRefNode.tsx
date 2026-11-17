@@ -159,7 +159,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                   <span>•</span>
                   <span style={{ fontWeight: 500 }}>{param.name}</span>
                   {typeof param.value === 'string' && param.value.startsWith('$') && (
-                    <span style={{ color: 'var(--arazzo-accent-orange-fg)', fontSize: '10px' }}>
+                    <span style={{ color: 'var(--arazzo-expression-fg)', fontSize: '10px' }}>
                       ← {param.value}
                     </span>
                   )}
