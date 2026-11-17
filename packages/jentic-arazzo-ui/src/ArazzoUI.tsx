@@ -74,7 +74,7 @@ import {
   PrefetchedResolver,
   type DocumentSource,
 } from './utils/documentSource';
-import { normalizeDocumentShape } from './utils/documentShape';
+import { normalizeDocumentShape, type NormalizedDocument } from './utils/documentShape';
 
 import './styles/index.css';
 
@@ -82,7 +82,7 @@ function detectUrl(value: ArazzoDocument | string): string | null {
   return typeof value === 'string' && /^https?:\/\//i.test(value.trim()) ? value.trim() : null;
 }
 
-async function parseDocument(source: DocumentSource): Promise<ArazzoDocument> {
+async function parseDocument(source: DocumentSource): Promise<NormalizedDocument> {
   // OpenAPI specs from sourceDescriptions are parsed from the client's browser to retrieve HTTP
   // methods for steps. If the server hosting the spec does not include Access-Control-Allow-Origin
   // headers, the browser blocks the fetch and no method badges are shown. Failure to load the
@@ -166,7 +166,8 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
   // loaded once per document and shared, so a document given by URL is fetched once and the
   // validation results describe the same revision that is rendered
   const documentSource = useMemo(() => loadDocumentSource(rawDocument), [rawDocument]);
-  const [parsedDocument, setParsedDocument] = useState<ArazzoDocument | null>(null);
+  const [normalized, setNormalized] = useState<NormalizedDocument | null>(null);
+  const parsedDocument = normalized?.document ?? null;
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -180,14 +181,14 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
       .then(parseDocument)
       .then((doc) => {
         if (!cancelled) {
-          setParsedDocument(doc);
+          setNormalized(doc);
           setLoading(false);
         }
       })
       .catch((err) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : String(err));
-          setParsedDocument(null);
+          setNormalized(null);
           setLoading(false);
         }
       });
@@ -197,7 +198,21 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     };
   }, [documentSource]);
 
-  const [validation, setValidation] = useState<ValidationState>({ status: 'loading' });
+  const [rawValidation, setValidation] = useState<ValidationState>({ status: 'loading' });
+
+  // diagnostics point into the source document; normalizing an invalid one can drop workflows or
+  // steps, so their paths are remapped onto what is displayed before notes are placed inline
+  const validation = useMemo<ValidationState>(() => {
+    if (rawValidation.status !== 'done' || !normalized) return rawValidation;
+    return {
+      ...rawValidation,
+      diagnostics: rawValidation.diagnostics.map((diagnostic) =>
+        diagnostic.path
+          ? { ...diagnostic, path: normalized.remapPath(diagnostic.path) }
+          : diagnostic,
+      ),
+    };
+  }, [rawValidation, normalized]);
 
   useEffect(() => {
     let cancelled = false;
