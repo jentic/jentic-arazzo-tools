@@ -141,7 +141,7 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
             borderTop: '1px solid var(--arazzo-border)',
             textAlign: 'center',
             fontSize: '10px',
-            color: 'var(--arazzo-subtle-fg)',
+            color: 'var(--arazzo-muted-fg)',
             background: 'var(--arazzo-bg-secondary)',
             borderRadius: '0 0 8px 8px',
           }}

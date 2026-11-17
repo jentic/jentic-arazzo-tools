@@ -43,7 +43,8 @@
   /* text */
   --arazzo-fg: #152822;
   --arazzo-fg-lighter: #495a54;
-  --arazzo-muted-fg: #63746e;
+  --arazzo-muted-fg: #5a6b65;
+  /* 3:1 on white: lines, dividers and icons only, never text */
   --arazzo-subtle-fg: #8a9792;
 
   /* brand */
@@ -269,7 +270,7 @@
 }
 
 .arazzo-ui .react-flow__attribution a {
-  color: var(--arazzo-subtle-fg);
+  color: var(--arazzo-muted-fg);
 }
 
 /* ==========================================================================

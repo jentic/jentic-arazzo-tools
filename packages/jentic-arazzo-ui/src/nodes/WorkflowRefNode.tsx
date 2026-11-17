@@ -168,7 +168,7 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
             })}
             {step.parameters.length > 3 && (
               <div
-                style={{ fontSize: '10px', color: 'var(--arazzo-subtle-fg)', fontStyle: 'italic' }}
+                style={{ fontSize: '10px', color: 'var(--arazzo-muted-fg)', fontStyle: 'italic' }}
               >
                 +{step.parameters.length - 3} more...
               </div>

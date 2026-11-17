@@ -221,7 +221,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                 <div
                   style={{
                     fontSize: '10px',
-                    color: 'var(--arazzo-subtle-fg)',
+                    color: 'var(--arazzo-muted-fg)',
                     fontStyle: 'italic',
                   }}
                 >
@@ -321,7 +321,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                 <div
                   style={{
                     fontSize: '10px',
-                    color: 'var(--arazzo-subtle-fg)',
+                    color: 'var(--arazzo-muted-fg)',
                     fontStyle: 'italic',
                   }}
                 >

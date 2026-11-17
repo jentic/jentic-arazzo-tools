@@ -132,7 +132,7 @@ export const WorkflowNode: React.FC<NodeProps<WorkflowNodeData>> = ({ data, sele
           borderTop: '1px solid var(--arazzo-border)',
           textAlign: 'center',
           fontSize: '11px',
-          color: 'var(--arazzo-subtle-fg)',
+          color: 'var(--arazzo-muted-fg)',
           background: 'var(--arazzo-bg-secondary)',
           borderRadius: '0 0 10px 10px',
         }}

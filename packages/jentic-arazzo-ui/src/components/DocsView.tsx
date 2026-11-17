@@ -352,7 +352,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             font-weight: 500;
             border: none;
             background: none;
-            color: var(--arazzo-subtle-fg);
+            color: var(--arazzo-muted-fg);
             cursor: pointer;
             transition: all 0.15s;
             border-bottom: 2px solid transparent;
@@ -698,7 +698,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .step-detail-count {
             font-size: 10px;
             font-weight: 600;
-            color: var(--arazzo-subtle-fg);
+            color: var(--arazzo-muted-fg);
           }
 
           .step-detail-body {
