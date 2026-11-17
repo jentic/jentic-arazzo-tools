@@ -742,6 +742,11 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             color: var(--arazzo-info);
           }
 
+          /* parameter and output names in the step grid's first column */
+          .step-grid-row > span:first-child code {
+            color: var(--arazzo-fg);
+          }
+
           .step-arrow {
             color: var(--arazzo-subtle-fg);
           }
