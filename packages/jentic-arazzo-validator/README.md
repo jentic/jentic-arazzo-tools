@@ -7,6 +7,10 @@ It performs JSON Schema validation, semantic validation, and semantic linting us
 - [Arazzo 1.0.0](https://spec.openapis.org/arazzo/v1.0.0)
 - [Arazzo 1.0.1](https://spec.openapis.org/arazzo/v1.0.1)
 
+Documents declaring a version newer than the latest supported one (e.g. `1.1.0`, `2.0.0` or `3.1.4`) produce an error (code `9020103`) and are validated against the rules of the latest supported version. Use `--ignore-unsupported-version` (CLI) or `ignoreUnsupportedVersion: true` (API) to suppress this error while still validating against the latest supported version.
+
+> **Note:** older or in-between versions get no special handling. Versions older than `1.0.0` (e.g. `0.9.0`) are not recognized as Arazzo and produce error `9000001`. Unsupported `1.x.y` versions that fall between supported ones are reported with `9020103` and validated against the latest supported version, like newer versions. With 1.0.0 and 1.0.1 supported, no such versions exist today.
+
 **Requirements:**
 - Node.js >= 20.10.0
 
@@ -38,6 +42,7 @@ npx @jentic/arazzo-validator arazzo.yaml
 | `--max-problems <n>` | Limit output to N problems |
 | `-q, --quiet` | Suppress output, only return exit code |
 | `-v, --verbose` | Show additional information |
+| `--ignore-unsupported-version` | Do not report unsupported Arazzo versions (`9020103`); still validates against the latest supported version |
 
 ### Output formats
 
@@ -193,6 +198,23 @@ const diagnostics = await validateURI('https://example.com/arazzo.yaml', {}, {
   resolverOpts: {
     timeout: 10000, // HTTP timeout in milliseconds
   },
+});
+```
+
+### Ignoring unsupported versions
+
+Documents declaring an Arazzo version newer than the latest supported one produce error `9020103`.
+Pass `ignoreUnsupportedVersion: true` as the last argument to suppress it. The document is still validated against the rules of the latest supported version:
+
+```js
+import { validateURI, validate } from '@jentic/arazzo-validator';
+
+const diagnostics = await validateURI('/path/to/arazzo.yaml', {}, {}, {
+  ignoreUnsupportedVersion: true,
+});
+
+const textDocumentDiagnostics = await validate(textDocument, {}, {
+  ignoreUnsupportedVersion: true,
 });
 ```
 

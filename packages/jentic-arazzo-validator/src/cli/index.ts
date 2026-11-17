@@ -4,7 +4,7 @@ import type { Diagnostic } from 'vscode-languageserver-types';
 import { DiagnosticSeverity } from 'vscode-languageserver-types';
 
 import { validateURI } from '../validators/validate-uri.ts';
-import { validate as validateDocument } from '../validators/validate.ts';
+import { validate as validateDocument, type ValidateOptions } from '../validators/validate.ts';
 import { createTextDocument } from '../document.ts';
 import {
   formatStylish,
@@ -30,6 +30,7 @@ interface CLIOptions {
   maxProblems?: number;
   quiet: boolean;
   verbose: boolean;
+  ignoreUnsupportedVersion: boolean;
   stdinRetrievalUri?: string;
 }
 
@@ -93,17 +94,20 @@ async function runValidation(
   let diagnostics: Diagnostic[];
   let filePath: string;
   let sourceContent: string | undefined;
+  const validateOptions: ValidateOptions = {
+    ignoreUnsupportedVersion: options.ignoreUnsupportedVersion,
+  };
 
   if (options.stdinRetrievalUri) {
     // read from stdin
     sourceContent = await readStdin();
     filePath = options.stdinRetrievalUri;
     const textDocument = createTextDocument(filePath, sourceContent);
-    diagnostics = await validateDocument(textDocument);
+    diagnostics = await validateDocument(textDocument, {}, validateOptions);
   } else if (file) {
     // validate file/URL
     filePath = file;
-    diagnostics = await validateURI(file);
+    diagnostics = await validateURI(file, {}, {}, validateOptions);
     // try to read file content for code snippets (only for local files)
     if (!file.startsWith('http://') && !file.startsWith('https://')) {
       try {
@@ -149,6 +153,11 @@ export async function main(argv: string[] = process.argv): Promise<void> {
     .option('--max-problems <n>', 'Limit output to N problems', parseMaxProblems)
     .option('-q, --quiet', 'Suppress output, only return exit code', false)
     .option('-v, --verbose', 'Show additional information', false)
+    .option(
+      '--ignore-unsupported-version',
+      'Do not report unsupported Arazzo versions (still validates against the latest supported version)',
+      false,
+    )
     .action(async (file: string | undefined, opts: CLIOptions) => {
       try {
         if (opts.verbose) {
