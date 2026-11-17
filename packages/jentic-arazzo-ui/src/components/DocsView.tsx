@@ -134,7 +134,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           labelTextColor: palette.fg,
           loopTextColor: palette.fgLighter,
           noteBkgColor: palette.bgSecondary,
-          noteBorderColor: palette.fg,
+          noteBorderColor: palette.border,
           noteTextColor: palette.fgLighter,
           activationBkgColor: palette.bgSecondary,
           activationBorderColor: palette.primary,
