@@ -426,11 +426,11 @@ export function formatWorkflowWithNotes(
   });
   sections.push(`</div>\n`); // close timeline
 
-  // whatever no step claimed (workflow fields, workflow-level actions, inputs, outputs)
+  // whatever no step claimed (workflow fields, workflow-level actions, inputs, outputs); the
+  // container is always emitted, as react-markdown keys siblings by position, so adding it only
+  // with notes would remount the timeline and collapse its open sections
   const workflowNotes = renderNotes(notes.take(workflowPath));
-  if (workflowNotes) {
-    sections[workflowNotesIndex] = `<div class="workflow-diagnostics">${workflowNotes}</div>\n`;
-  }
+  sections[workflowNotesIndex] = `<div class="workflow-diagnostics">${workflowNotes}</div>\n`;
 
   // Outputs
   if (workflow.outputs && Object.keys(workflow.outputs).length > 0) {

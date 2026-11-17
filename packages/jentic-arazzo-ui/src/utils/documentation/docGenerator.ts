@@ -22,9 +22,10 @@ export interface DocumentationOutput {
   workflows: WorkflowDocumentation[];
   markdown: string;
   headerMarkdown: string;
-  workflowMarkdowns: Map<string, string>;
-  // validation notes shown inline in each workflow, keyed by workflowId
-  workflowNotes: Map<string, DocumentDiagnostic[]>;
+  // per workflow, by index in `workflows`: ids can be missing or repeated in invalid documents
+  workflowMarkdowns: string[];
+  // validation notes shown inline in each workflow, by index in `workflows`
+  workflowNotes: DocumentDiagnostic[][];
 }
 
 /**
@@ -72,8 +73,8 @@ export function generateDocumentation(
   );
 
   // Generate per-workflow markdown
-  const workflowMarkdowns = new Map<string, string>();
-  const workflowNotes = new Map<string, DocumentDiagnostic[]>();
+  const workflowMarkdowns: string[] = [];
+  const workflowNotes: DocumentDiagnostic[][] = [];
   workflows.forEach((wf, workflowIndex) => {
     let notes: DocumentDiagnostic[] = [];
     const markdown = renderSafely('This workflow', () => {
@@ -81,8 +82,8 @@ export function generateDocumentation(
       notes = formatted.notes;
       return formatted.markdown;
     });
-    workflowMarkdowns.set(wf.workflowId, markdown);
-    workflowNotes.set(wf.workflowId, notes);
+    workflowMarkdowns.push(markdown);
+    workflowNotes.push(notes);
   });
 
   // Full markdown (legacy)

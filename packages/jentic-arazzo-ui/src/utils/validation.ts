@@ -53,13 +53,23 @@ interface SourceElement {
   toValue?: () => unknown;
 }
 
-function contains(element: SourceElement | undefined, offset: number): boolean {
-  return (
-    typeof element?.startOffset === 'number' &&
-    typeof element.endOffset === 'number' &&
-    element.startOffset <= offset &&
-    offset < element.endOffset
-  );
+// a range [start, end) of a diagnostic in the source text
+interface OffsetRange {
+  start: number;
+  end: number;
+}
+
+function contains(
+  element: SourceElement | undefined,
+  { start, end }: OffsetRange,
+  // where the element's own range ends, e.g. a member's value for its key
+  until: SourceElement | undefined = element,
+): boolean {
+  const from = element?.startOffset;
+  const to = until?.endOffset;
+  if (typeof from !== 'number' || typeof to !== 'number') return false;
+  // empty ranges point at a position, which must lie inside the element
+  return from <= start && (start === end ? start < to : end <= to);
 }
 
 function isArrayLike(element: SourceElement | undefined): boolean {
@@ -70,11 +80,12 @@ function isArrayLike(element: SourceElement | undefined): boolean {
 }
 
 /**
- * Finds the path of the deepest element containing `offset`.
+ * Finds the path of the deepest element containing the whole range. Matching by the start alone
+ * would misplace diagnostics about a YAML mapping, which starts where its first key does.
  */
 function resolvePath(
   element: SourceElement,
-  offset: number,
+  range: OffsetRange,
   path: DiagnosticPath = [],
 ): { path: DiagnosticPath; element: SourceElement } {
   if (Array.isArray(element.content)) {
@@ -83,15 +94,15 @@ function resolvePath(
       const child = children[i];
       if (child?.element === 'member') {
         const key = String(child.key?.toValue?.() ?? '');
-        // diagnostics anchored on a key refer to that key's value
-        if (contains(child.key, offset)) {
+        if (child.value && contains(child.value, range)) {
+          return resolvePath(child.value, range, [...path, key]);
+        }
+        // diagnostics anchored on a key, or spanning key and value, refer to that key's value
+        if (contains(child.key, range) || contains(child.key, range, child.value)) {
           return { path: [...path, key], element: child.value ?? child };
         }
-        if (child.value && contains(child.value, offset)) {
-          return resolvePath(child.value, offset, [...path, key]);
-        }
-      } else if (contains(child, offset)) {
-        return resolvePath(child, offset, [...path, i]);
+      } else if (contains(child, range)) {
+        return resolvePath(child, range, [...path, i]);
       }
     }
   }
@@ -99,12 +110,12 @@ function resolvePath(
 }
 
 /**
- * Attaches a document path to each diagnostic by locating its start position in a
- * source-mapped parse of the same content.
+ * Attaches a document path to each diagnostic by locating its range in a source-mapped parse of
+ * the same content.
  */
 async function resolveDiagnosticPaths(
   content: string,
-  diagnostics: { offset: number; diagnostic: DocumentDiagnostic }[],
+  diagnostics: { range: OffsetRange; diagnostic: DocumentDiagnostic }[],
 ): Promise<void> {
   let root: SourceElement | undefined;
   try {
@@ -118,8 +129,8 @@ async function resolveDiagnosticPaths(
   }
   if (!root) return;
 
-  for (const { offset, diagnostic } of diagnostics) {
-    const { path, element } = resolvePath(root, offset);
+  for (const { range, diagnostic } of diagnostics) {
+    const { path, element } = resolvePath(root, range);
     // JSON Schema errors about array items are reported on the array's key, with the
     // item index only in the message (e.g. `"2" property must have required property "value"`)
     const itemIndex = /^"(\d+)" property /.exec(diagnostic.message)?.[1];
@@ -167,7 +178,10 @@ export async function validateArazzoSource(
   }
 
   const located = rawDiagnostics.map((d) => ({
-    offset: textDocument.offsetAt(d.range.start),
+    range: {
+      start: textDocument.offsetAt(d.range.start),
+      end: textDocument.offsetAt(d.range.end),
+    },
     diagnostic: {
       severity: severityNames[d.severity ?? 1] ?? 'error',
       message: d.message,

@@ -90,6 +90,8 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
     diagramError,
   } = useArazzoViewer();
   const reactFlow = useReactFlow();
+  // the diagram recovers from a render error when another workflow or document is shown
+  const diagramResetKey = useMemo(() => [document, activeWorkflowId], [document, activeWorkflowId]);
 
   // Track which workflow we've set the view for
   const viewSetForWorkflow = useRef<string | null>(null);
@@ -274,7 +276,7 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
 
       {/* React Flow Canvas */}
       <div style={{ flex: 1, minHeight: 0 }}>
-        <ErrorBoundary label="The diagram" resetKey={document}>
+        <ErrorBoundary label="The diagram" resetKey={diagramResetKey}>
           <ReactFlow
             nodes={nodesWithSelection}
             edges={edges}

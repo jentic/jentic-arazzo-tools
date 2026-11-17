@@ -49,7 +49,21 @@ export async function loadDocumentSource(input: ArazzoDocument | string): Promis
     };
   }
 
-  const uri = new URL(input.trim(), baseURI).toString();
+  // content the detectors rejected (e.g. YAML or JSON with a syntax error) must not be fetched as
+  // a URL: that sends the document to the page's server and reports it as a garbled URL
+  const notArazzo = new Error(
+    'The document could not be read as Arazzo JSON or YAML; it may contain a syntax error',
+  );
+  if (/[\r\n]/.test(input.trim()) || /^[{[]/.test(input.trim())) throw notArazzo;
+  let resolved: URL;
+  try {
+    resolved = new URL(input.trim(), baseURI);
+  } catch (error) {
+    throw new Error(notArazzo.message, { cause: error });
+  }
+  // e.g. single-line `arazzo: 1.0.1 info` parses as a URL with an `arazzo:` scheme
+  if (!['http:', 'https:', 'file:', 'blob:'].includes(resolved.protocol)) throw notArazzo;
+  const uri = resolved.toString();
   let response: Response;
   try {
     response = await fetch(uri);

@@ -195,17 +195,18 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
   const { document, documentURL, selectedNodeId, nodes, activeWorkflowId } = useArazzoViewer();
   const mermaidInitialized = useRef(false);
   const docsContainerRef = useRef<HTMLDivElement>(null);
-  const [workflowViews, setWorkflowViews] = useState<Record<string, WorkflowViewMode>>({});
+  // by workflow index, as ids can be missing or repeated in invalid documents
+  const [workflowViews, setWorkflowViews] = useState<Record<number, WorkflowViewMode>>({});
   const [expandedWorkflows, setExpandedWorkflows] = useState<Set<string>>(new Set());
 
   const getWorkflowView = useCallback(
-    (workflowId: string): WorkflowViewMode => workflowViews[workflowId] || 'docs',
+    (workflowIndex: number): WorkflowViewMode => workflowViews[workflowIndex] || 'docs',
     [workflowViews],
   );
 
   const setWorkflowView = useCallback(
-    (workflowId: string, view: WorkflowViewMode) =>
-      setWorkflowViews((prev) => ({ ...prev, [workflowId]: view })),
+    (workflowIndex: number, view: WorkflowViewMode) =>
+      setWorkflowViews((prev) => ({ ...prev, [workflowIndex]: view })),
     [],
   );
 
@@ -304,31 +305,29 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
   }, [document, documentURL, diagnostics]);
 
   // Pre-generate all diagrams (memoized)
+  // by workflow index, like the generated documentation
   const sequenceDiagrams = useMemo(() => {
-    if (!document) return new Map<string, string>();
-    const diagrams = new Map<string, string>();
-    document.workflows.forEach((workflow) => {
+    if (!document) return [];
+    return document.workflows.map((workflow) => {
       // an invalid workflow just has no diagram; its docs show what went wrong
       try {
-        diagrams.set(workflow.workflowId, generateMermaidSequence(workflow, document));
+        return generateMermaidSequence(workflow, document);
       } catch {
-        // skip
+        return null;
       }
     });
-    return diagrams;
   }, [document]);
 
   const flowchartDiagrams = useMemo(() => {
-    if (!document) return new Map<string, string>();
-    const diagrams = new Map<string, string>();
-    document.workflows.forEach((workflow) => {
+    if (!document) return [];
+    return document.workflows.map((workflow) => {
       try {
-        diagrams.set(workflow.workflowId, generateMermaidFlowchart(workflow));
+        return generateMermaidFlowchart(workflow);
       } catch {
-        // skip, as for the sequence diagram
+        // as for the sequence diagram
+        return null;
       }
     });
-    return diagrams;
   }, [document]);
 
   // Handle expand/collapse all button
@@ -841,6 +840,10 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             margin-top: 8px;
           }
 
+          .workflow-diagnostics:empty {
+            display: none;
+          }
+
           .step-diagnostics {
             grid-column: 1 / -1;
             display: flex;
@@ -1341,18 +1344,19 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             </button>
           </div>
 
-          {documentation.workflows.map((workflow) => {
+          {documentation.workflows.map((workflow, workflowIndex) => {
             const stepCount = workflow.steps.length;
-            const currentView = getWorkflowView(workflow.workflowId);
-            const workflowMd = documentation.workflowMarkdowns.get(workflow.workflowId) || '';
-            const workflowNotes = documentation.workflowNotes.get(workflow.workflowId) ?? [];
+            const currentView = getWorkflowView(workflowIndex);
+            const workflowMd = documentation.workflowMarkdowns[workflowIndex] || '';
+            const workflowNotes = documentation.workflowNotes[workflowIndex] ?? [];
 
-            const sequenceSource = sequenceDiagrams.get(workflow.workflowId) || null;
-            const flowchartSource = flowchartDiagrams.get(workflow.workflowId) || null;
+            const sequenceSource = sequenceDiagrams[workflowIndex] || null;
+            const flowchartSource = flowchartDiagrams[workflowIndex] || null;
 
             return (
               <ErrorBoundary
-                key={workflow.workflowId}
+                // index keys: ids can be missing or repeated in invalid documents
+                key={workflowIndex}
                 label={`Workflow ${displayValue(workflow.workflowId)}`}
                 resetKey={document}
               >
@@ -1384,7 +1388,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
                         <button
                           key={mode}
                           className={`workflow-view-btn ${currentView === mode ? 'workflow-view-btn-active' : ''}`}
-                          onClick={() => setWorkflowView(workflow.workflowId, mode)}
+                          onClick={() => setWorkflowView(workflowIndex, mode)}
                         >
                           {viewLabels[mode]}
                         </button>
