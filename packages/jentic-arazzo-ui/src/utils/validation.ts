@@ -1,8 +1,6 @@
 import { parseArazzo } from '@jentic/arazzo-parser';
-import { detect as detectArazzoJSON } from '@speclynx/apidom-parser-adapter-arazzo-json-1';
-import { detect as detectArazzoYAML } from '@speclynx/apidom-parser-adapter-arazzo-yaml-1';
 
-import type { ArazzoDocument } from '../types/index';
+import type { DocumentSource } from './documentSource';
 
 export type DiagnosticSeverityName = 'error' | 'warning' | 'info' | 'hint';
 
@@ -132,66 +130,23 @@ async function resolveDiagnosticPaths(
   }
 }
 
-/**
- * Detects inline Arazzo content the same way parseArazzo does, so validation reads the same
- * source the viewer rendered. Returns undefined when the string should be treated as a URI.
- */
-async function detectInlineFormat(value: string): Promise<'json' | 'yaml' | undefined> {
-  if (await detectArazzoJSON(value, { strict: true })) return 'json';
-  if (await detectArazzoYAML(value, { strict: true })) return 'yaml';
-  return undefined;
-}
-
-async function loadSource(
-  input: ArazzoDocument | string,
-): Promise<{ uri: string; content: string; hasSourcePositions: boolean }> {
-  const baseURI = globalThis.document?.baseURI ?? 'file:///';
-
-  if (typeof input !== 'string') {
-    // object input has no original source text; positions refer to the serialized JSON
-    return {
-      uri: new URL('arazzo.json', baseURI).toString(),
-      content: JSON.stringify(input, null, 2),
-      hasSourcePositions: false,
-    };
-  }
-
-  const inlineFormat = await detectInlineFormat(input);
-  if (inlineFormat) {
-    return {
-      uri: new URL(`arazzo.${inlineFormat}`, baseURI).toString(),
-      content: input,
-      hasSourcePositions: true,
-    };
-  }
-
-  const uri = new URL(input.trim(), baseURI).toString();
-  const response = await fetch(uri);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch ${uri} (${response.status} ${response.statusText})`);
-  }
-  return { uri, content: await response.text(), hasSourcePositions: true };
-}
-
-/**
- * Runs @jentic/arazzo-validator against the original Arazzo source.
- *
- * The validator is loaded lazily so it never delays the initial render.
- */
 export interface ValidateArazzoSourceOptions {
   // don't report documents declaring an unsupported Arazzo version (code 9020103)
   ignoreUnsupportedVersion?: boolean;
 }
 
+/**
+ * Runs @jentic/arazzo-validator against the original Arazzo source, the same source text the
+ * viewer parsed.
+ *
+ * The validator is loaded lazily so it never delays the initial render.
+ */
 export async function validateArazzoSource(
-  input: ArazzoDocument | string,
+  source: DocumentSource,
   options: ValidateArazzoSourceOptions = {},
 ): Promise<Extract<ValidationState, { status: 'done' }>> {
   const validateOptions = { ignoreUnsupportedVersion: options.ignoreUnsupportedVersion ?? false };
-  const [{ validate, createTextDocument }, source] = await Promise.all([
-    import('@jentic/arazzo-validator'),
-    loadSource(input),
-  ]);
+  const { validate, createTextDocument } = await import('@jentic/arazzo-validator');
 
   const textDocument = createTextDocument(source.uri, source.content);
 
@@ -232,5 +187,10 @@ export async function validateArazzoSource(
         a.column - b.column,
     );
 
-  return { status: 'done', diagnostics, hasSourcePositions: source.hasSourcePositions, notice };
+  return {
+    status: 'done',
+    diagnostics,
+    hasSourcePositions: source.kind !== 'object',
+    notice,
+  };
 }

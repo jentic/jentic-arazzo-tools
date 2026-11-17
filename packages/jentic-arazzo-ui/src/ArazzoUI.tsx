@@ -7,7 +7,12 @@ import React, {
   useEffect,
 } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { parseArazzo, attachStepOperations } from '@jentic/arazzo-parser';
+import {
+  parseArazzo,
+  attachStepOperations,
+  defaultParseArazzoOptions,
+  type ParseArazzoOptions,
+} from '@jentic/arazzo-parser';
 import {
   dereferenceArazzoElement,
   dereferenceSourceDescriptionPathItems,
@@ -64,6 +69,11 @@ export type {
 } from './types/arazzo';
 import { stripInternalIds } from './utils/internalIds';
 import { validateArazzoSource, type ValidationState } from './utils/validation';
+import {
+  loadDocumentSource,
+  PrefetchedResolver,
+  type DocumentSource,
+} from './utils/documentSource';
 import { normalizeDocumentShape } from './utils/documentShape';
 
 import './styles/index.css';
@@ -72,16 +82,32 @@ function detectUrl(value: ArazzoDocument | string): string | null {
   return typeof value === 'string' && /^https?:\/\//i.test(value.trim()) ? value.trim() : null;
 }
 
-async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocument> {
+async function parseDocument(source: DocumentSource): Promise<ArazzoDocument> {
   // OpenAPI specs from sourceDescriptions are parsed from the client's browser to retrieve HTTP
   // methods for steps. If the server hosting the spec does not include Access-Control-Allow-Origin
   // headers, the browser blocks the fetch and no method badges are shown. Failure to load the
   // OpenAPI spec is not fatal.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parseResult = await parseArazzo(input as any, {
+  const options: ParseArazzoOptions = {
     parse: { parserOpts: { sourceDescriptions: true } },
     resolve: { baseURI: document.baseURI },
-  });
+  };
+  const parseResult =
+    source.kind === 'url'
+      ? // parse by URL, so source descriptions resolve against it, but serve the text already
+        // fetched for validation instead of requesting the document again
+        await parseArazzo(source.uri, {
+          ...options,
+          resolve: {
+            ...options.resolve,
+            resolvers: [
+              new PrefetchedResolver(source),
+              ...(defaultParseArazzoOptions.resolve?.resolvers ?? []),
+            ],
+          },
+        } as ParseArazzoOptions)
+      : source.kind === 'object'
+        ? await parseArazzo(source.object as unknown as Record<string, unknown>, options)
+        : await parseArazzo(source.content, options);
   // Path Items that are only a $ref (local or external) are resolved so their methods are found;
   // an unresolvable Path Item just gets no badge. The viewer also displays invalid documents, so
   // their invalid parts are skipped (skipInvalid) here and below, and reported by validation.
@@ -137,6 +163,9 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
   } = props;
 
   const documentURL = detectUrl(rawDocument);
+  // loaded once per document and shared, so a document given by URL is fetched once and the
+  // validation results describe the same revision that is rendered
+  const documentSource = useMemo(() => loadDocumentSource(rawDocument), [rawDocument]);
   const [parsedDocument, setParsedDocument] = useState<ArazzoDocument | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -147,7 +176,8 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     setLoading(true);
     setError(null);
 
-    parseDocument(rawDocument)
+    documentSource
+      .then(parseDocument)
       .then((doc) => {
         if (!cancelled) {
           setParsedDocument(doc);
@@ -165,7 +195,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     return () => {
       cancelled = true;
     };
-  }, [rawDocument]);
+  }, [documentSource]);
 
   const [validation, setValidation] = useState<ValidationState>({ status: 'loading' });
 
@@ -174,7 +204,8 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
 
     setValidation({ status: 'loading' });
 
-    validateArazzoSource(rawDocument, { ignoreUnsupportedVersion })
+    documentSource
+      .then((source) => validateArazzoSource(source, { ignoreUnsupportedVersion }))
       .then((result) => {
         if (!cancelled) setValidation(result);
       })
@@ -190,7 +221,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     return () => {
       cancelled = true;
     };
-  }, [rawDocument, ignoreUnsupportedVersion]);
+  }, [documentSource, ignoreUnsupportedVersion]);
 
   const events = useMemo(
     () => ({
