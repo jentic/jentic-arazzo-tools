@@ -2,8 +2,6 @@ import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-import { apidomSideEffects } from './plugins/apidomSideEffects';
-
 const packageRoot = resolve(__dirname, '../../');
 const monorepoRoot = resolve(packageRoot, '../../');
 
@@ -15,7 +13,7 @@ export default defineConfig({
       process.env.ARAZZO_UI_IGNORE_UNSUPPORTED_VERSION === 'true',
     ),
   },
-  plugins: [react(), apidomSideEffects()],
+  plugins: [react()],
   resolve: {
     alias: {
       '@jentic/arazzo-ui': resolve(packageRoot, 'src/ArazzoUI.tsx'),
@@ -26,10 +24,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ['mermaid', 'dayjs', 'react', 'react-dom', 'reactflow'],
-    // pre-bundling runs outside the main plugin pipeline, so register the fix here too
-    rolldownOptions: {
-      plugins: [apidomSideEffects()],
-    },
   },
   server: {
     port: 3000,
