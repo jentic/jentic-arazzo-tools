@@ -18,6 +18,7 @@ describe('bin', function () {
       assert.include(result, '--format');
       assert.include(result, '--fail-severity');
       assert.include(result, '--quiet');
+      assert.include(result, '--ignore-unsupported-version');
     });
   });
 
@@ -246,6 +247,35 @@ describe('bin', function () {
         assert.equal(execError.code, 2);
         assert.include(execError.stderr, 'No input provided');
       }
+    });
+  });
+
+  describe('--ignore-unsupported-version', function () {
+    const unsupportedFile = path.join(fixturesPath, 'arazzo-unsupported-version.yaml');
+
+    specify('should report unsupported versions without the flag', async function () {
+      try {
+        await execFileAsync('node', [binPath, '--format', 'json', unsupportedFile]);
+        assert.fail('Should have thrown');
+      } catch (error: unknown) {
+        const execError = error as { code: number; stdout: string };
+        assert.equal(execError.code, 1);
+        const parsed = JSON.parse(execError.stdout);
+        assert.isTrue(
+          parsed.diagnostics.some((d: { code: unknown }) => d.code === 9020103),
+          'expected 9020103',
+        );
+      }
+    });
+
+    specify('should exit with code 0 with the flag', async function () {
+      const { stdout } = await execFileAsync('node', [
+        binPath,
+        '--ignore-unsupported-version',
+        unsupportedFile,
+      ]);
+
+      assert.include(stdout, "No results with a severity of 'error' or higher found!");
     });
   });
 });
