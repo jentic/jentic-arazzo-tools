@@ -366,7 +366,7 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           .workflow-view-btn-active {
             color: var(--arazzo-fg);
             font-weight: 600;
-            border-bottom-color: var(--arazzo-fg);
+            border-bottom-color: var(--arazzo-primary);
           }
 
           .workflow-description {
@@ -820,6 +820,14 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             color: var(--arazzo-info);
           }
 
+          .arazzo-docs-view table code {
+            color: var(--arazzo-fg);
+          }
+
+          .arazzo-docs-view code.content-type {
+            color: var(--arazzo-primary);
+          }
+
           .arazzo-docs-view strong {
             color: var(--arazzo-fg);
             font-weight: 600;
@@ -867,8 +875,9 @@ export const DocsView: React.FC<DocsViewProps> = () => {
           }
 
           .doc-version {
-            background: var(--arazzo-info);
-            color: var(--arazzo-on-accent);
+            background: var(--arazzo-bg-secondary);
+            color: var(--arazzo-fg);
+            border: 1px solid var(--arazzo-border);
           }
 
           .step-count-badge {

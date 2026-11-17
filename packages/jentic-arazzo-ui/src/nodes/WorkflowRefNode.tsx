@@ -348,8 +348,8 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                             fontWeight: 600,
                             padding: '2px 4px',
                             borderRadius: '3px',
-                            background: 'var(--arazzo-info-bg)',
-                            color: 'var(--arazzo-info)',
+                            background: 'var(--arazzo-bg-secondary)',
+                            color: 'var(--arazzo-muted-fg)',
                           }}
                         >
                           INHERITED
@@ -569,8 +569,8 @@ export const WorkflowRefNode: React.FC<NodeProps<WorkflowRefNodeData>> = ({ data
                             fontWeight: 600,
                             padding: '2px 4px',
                             borderRadius: '3px',
-                            background: 'var(--arazzo-info-bg)',
-                            color: 'var(--arazzo-info)',
+                            background: 'var(--arazzo-bg-secondary)',
+                            color: 'var(--arazzo-muted-fg)',
                           }}
                         >
                           INHERITED

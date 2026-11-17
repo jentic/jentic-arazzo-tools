@@ -127,8 +127,8 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
               padding: '2px 8px',
               borderRadius: '4px',
               background:
-                operationType === 'API' ? 'var(--arazzo-info-bg)' : 'var(--arazzo-warning-bg)',
-              color: operationType === 'API' ? 'var(--arazzo-info)' : 'var(--arazzo-warning)',
+                operationType === 'API' ? 'var(--arazzo-bg-secondary)' : 'var(--arazzo-warning-bg)',
+              color: operationType === 'API' ? 'var(--arazzo-muted-fg)' : 'var(--arazzo-warning)',
             }}
           >
             {operationType}
@@ -264,9 +264,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                   fontSize: '10px',
                   padding: '2px 8px',
                   borderRadius: '4px',
-                  border: '1px solid var(--arazzo-info-border)',
-                  background: 'var(--arazzo-info-bg)',
-                  color: 'var(--arazzo-info)',
+                  border: '1px solid var(--arazzo-border)',
+                  background: 'var(--arazzo-card)',
+                  color: 'var(--arazzo-primary)',
                   cursor: 'pointer',
                 }}
               >
@@ -515,8 +515,8 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               fontWeight: 600,
                               padding: '2px 4px',
                               borderRadius: '3px',
-                              background: 'var(--arazzo-info-bg)',
-                              color: 'var(--arazzo-info)',
+                              background: 'var(--arazzo-bg-secondary)',
+                              color: 'var(--arazzo-muted-fg)',
                             }}
                           >
                             INHERITED
@@ -735,8 +735,8 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               fontWeight: 600,
                               padding: '2px 4px',
                               borderRadius: '3px',
-                              background: 'var(--arazzo-info-bg)',
-                              color: 'var(--arazzo-info)',
+                              background: 'var(--arazzo-bg-secondary)',
+                              color: 'var(--arazzo-muted-fg)',
                             }}
                           >
                             INHERITED

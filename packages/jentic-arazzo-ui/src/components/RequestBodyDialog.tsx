@@ -148,7 +148,7 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
           {requestBody.contentType && (
             <div style={{ marginBottom: '12px' }}>
               Content-Type:{' '}
-              <code style={{ fontFamily: monoFont, color: 'var(--arazzo-info)' }}>
+              <code style={{ fontFamily: monoFont, color: 'var(--arazzo-primary)' }}>
                 {requestBody.contentType}
               </code>
             </div>

@@ -240,7 +240,7 @@ export function formatWorkflowAsMarkdown(
       sections.push(`<div class="step-detail-body">`);
       if (requestBody.contentType) {
         sections.push(
-          `<div class="step-row">Content-Type: <code>${escapeHtml(requestBody.contentType)}</code></div>`,
+          `<div class="step-row">Content-Type: <code class="content-type">${escapeHtml(requestBody.contentType)}</code></div>`,
         );
       }
       const keyValueTable = (keyHeader: string, rows: KeyValueRowView[]) =>

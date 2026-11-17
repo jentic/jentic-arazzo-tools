@@ -62,13 +62,13 @@
 }
 
 .arazzo-workflow-tabs .arazzo-workflow-tabs__tab--active {
-  color: var(--arazzo-info);
-  border-bottom-color: var(--arazzo-fg);
+  color: var(--arazzo-fg);
+  border-bottom-color: var(--arazzo-primary);
   background: var(--arazzo-card);
 }
 
 .arazzo-workflow-tabs .arazzo-workflow-tabs__tab--active:hover {
-  color: var(--arazzo-info);
+  color: var(--arazzo-fg);
   background: var(--arazzo-card);
 }
 
