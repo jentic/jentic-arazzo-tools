@@ -321,6 +321,7 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
               style={{
                 background: 'var(--arazzo-bg)',
                 color: 'var(--arazzo-primary)',
+                fontFamily: 'var(--arazzo-font-heading)',
                 padding: '16px 32px',
                 borderRadius: '8px',
                 fontSize: '16px',
