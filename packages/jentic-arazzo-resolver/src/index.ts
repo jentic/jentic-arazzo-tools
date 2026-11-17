@@ -13,5 +13,6 @@ export {
 } from './dereference/openapi.ts';
 
 export { dereferenceSourceDescriptionPathItems } from './dereference/path-items.ts';
+export type { SourceDescriptionPathItemsOptions } from './dereference/path-items.ts';
 
 export { default as DereferenceError } from './errors/DereferenceError.ts';

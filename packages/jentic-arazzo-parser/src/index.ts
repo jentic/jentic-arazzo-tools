@@ -8,6 +8,7 @@ export type { Options as ParseArazzoOptions } from './parse-arazzo.ts';
 
 export { findStepOperation, attachStepOperations } from './step-operations.ts';
 export type {
+  AttachStepOperationsOptions,
   StepOperation,
   StepOperationsDocument,
   StepOperationsResult,

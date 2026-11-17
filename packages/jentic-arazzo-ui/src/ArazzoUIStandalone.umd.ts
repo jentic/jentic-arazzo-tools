@@ -16,6 +16,7 @@ export interface ArazzoUIStandaloneConfig {
   onEdgeSelect?: (edgeId: string, edge: any) => void; // eslint-disable-line @typescript-eslint/no-explicit-any
   onWorkflowSelect?: (workflowId: string) => void;
   onViewChange?: (view: ViewerMode) => void;
+  ignoreUnsupportedVersion?: boolean;
 }
 
 export interface ArazzoUIStandaloneInstance {

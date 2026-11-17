@@ -84,4 +84,31 @@ describe('dereferenceSourceDescriptionPathItems', function () {
 
     await dereferenceSourceDescriptionPathItems(withoutSources);
   });
+
+  describe('given source descriptions that are not a list', function () {
+    let invalid: ParseResultElement;
+
+    beforeEach(async function () {
+      invalid = await parseArazzo({
+        arazzo: '1.0.1',
+        info: { title: 'Invalid', version: '1.0.0' },
+        sourceDescriptions: 'not a list',
+        workflows: [],
+      });
+    });
+
+    specify('should reject by default', async function () {
+      let rejected = false;
+      try {
+        await dereferenceSourceDescriptionPathItems(invalid);
+      } catch {
+        rejected = true;
+      }
+      assert.isTrue(rejected);
+    });
+
+    specify('should resolve with skipInvalid', async function () {
+      await dereferenceSourceDescriptionPathItems(invalid, { skipInvalid: true });
+    });
+  });
 });

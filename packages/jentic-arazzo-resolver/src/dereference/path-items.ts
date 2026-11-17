@@ -61,6 +61,20 @@ const refractorFor = (api: unknown) => {
 };
 
 /**
+ * Options for {@link dereferenceSourceDescriptionPathItems}: reference options plus `skipInvalid`.
+ * @public
+ */
+export type SourceDescriptionPathItemsOptions = Options & {
+  /**
+   * Resolve without doing anything, instead of rejecting, when `sourceDescriptions` of an invalid
+   * document is not a list. Useful for displaying invalid documents.
+   *
+   * @defaultValue false
+   */
+  skipInvalid?: boolean;
+};
+
+/**
  * Replaces the Path Items that consist of a `$ref` in the `openapi` source descriptions parsed
  * along with an Arazzo Document (see the `sourceDescriptions` parser option) with the Path Items
  * they point to, whether local (`#/components/pathItems/...`) or external.
@@ -71,22 +85,26 @@ const refractorFor = (api: unknown) => {
  * the operations behind such Path Items discoverable, e.g. by `findStepOperation` of
  * \@jentic/arazzo-parser.
  *
- * This is best effort and never rejects: a Path Item that can't be resolved is left as is.
+ * This is best effort: a Path Item that can't be resolved is left as is. It only rejects for an
+ * invalid document whose `sourceDescriptions` is not a list, unless `skipInvalid` is set.
  *
  * @param parseResult - The result of parsing an Arazzo Document with source descriptions
- * @param options - Reference options (uses defaultOptions when not provided)
+ * @param options - Reference options (uses defaultOptions when not provided), plus `skipInvalid`
  * @returns A promise that resolves once all resolvable Path Items have been replaced
  * @public
  */
 export async function dereferenceSourceDescriptionPathItems(
   parseResult: ParseResultElement,
-  options: Options = {},
+  options: SourceDescriptionPathItemsOptions = {},
 ): Promise<void> {
   if (!isArazzoSpecification1Element(parseResult.api)) return;
+  const { skipInvalid = false, ...referenceOptions } = options;
+  const { sourceDescriptions } = parseResult.api;
+  if (skipInvalid && !isArrayElement(sourceDescriptions)) return;
 
   const mergedOptions = mergeOptions(
     defaultOpenAPIOptions as ApiDOMReferenceOptions,
-    options,
+    referenceOptions,
   ) as ApiDOMReferenceOptions;
   // external documents are fetched once, however many Path Items point into them
   const documents = new Map<string, Promise<ParseResultElement>>();
@@ -96,7 +114,7 @@ export async function dereferenceSourceDescriptionPathItems(
   };
   const pending: Promise<void>[] = [];
 
-  parseResult.api.sourceDescriptions?.forEach((sourceDescription) => {
+  sourceDescriptions?.forEach((sourceDescription) => {
     if (!isSourceDescriptionElement(sourceDescription)) return;
     const sourceParseResult = sourceDescription.meta.get('parseResult') as
       ParseResultElement | undefined;

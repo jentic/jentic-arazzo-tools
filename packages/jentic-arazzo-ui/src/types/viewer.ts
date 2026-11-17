@@ -51,6 +51,13 @@ export interface ArazzoUIProps {
   onEdgeSelect?: (edgeId: string, edge: ArazzoEdge) => void;
   onWorkflowSelect?: (workflowId: string) => void;
   onViewChange?: (view: ViewerMode) => void;
+  /**
+   * Don't report the validation error for documents declaring an unsupported Arazzo version.
+   * Such documents are still validated against the latest supported version.
+   *
+   * @defaultValue false
+   */
+  ignoreUnsupportedVersion?: boolean;
 }
 
 /** @public */
@@ -83,6 +90,8 @@ export interface ArazzoViewerContextValue {
   setEdges: (edges: ArazzoEdge[]) => void;
   readOnly: boolean;
   events?: ViewerEvents;
+  // why the active workflow couldn't be turned into a diagram, if it couldn't
+  diagramError?: string | null;
 }
 
 // ============================================================================
