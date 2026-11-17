@@ -9,6 +9,12 @@ const monorepoRoot = resolve(packageRoot, '../../');
 
 export default defineConfig({
   root: resolve(packageRoot, 'public'),
+  // set by scripts/dev.mjs from `npm run dev -- --ignore-unsupported-version`
+  define: {
+    __ARAZZO_UI_IGNORE_UNSUPPORTED_VERSION__: JSON.stringify(
+      process.env.ARAZZO_UI_IGNORE_UNSUPPORTED_VERSION === 'true',
+    ),
+  },
   plugins: [react(), apidomSideEffects()],
   resolve: {
     alias: {
