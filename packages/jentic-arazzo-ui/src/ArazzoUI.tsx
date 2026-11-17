@@ -214,7 +214,13 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     };
   }, [rawValidation, normalized]);
 
+  // only the docs view shows validation results, so the validator (and the source descriptions it
+  // fetches) isn't loaded until the docs view is first shown; it then stays validated
+  const [docsShown, setDocsShown] = useState(view !== 'diagram');
+  if (!docsShown && view !== 'diagram') setDocsShown(true);
+
   useEffect(() => {
+    if (!docsShown) return;
     let cancelled = false;
 
     setValidation({ status: 'loading' });
@@ -236,7 +242,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     return () => {
       cancelled = true;
     };
-  }, [documentSource, ignoreUnsupportedVersion]);
+  }, [documentSource, ignoreUnsupportedVersion, docsShown]);
 
   const events = useMemo(
     () => ({

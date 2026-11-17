@@ -1,7 +1,6 @@
 import { ArazzoDocument } from '../../types/arazzo';
 import { DocumentationMetadata, ViewerStep, WorkflowDocumentation } from '../../types/viewer';
 import { generateMetadata } from './metadataGenerator';
-import { escapeHtml } from '../escapeHtml';
 import type { DocumentDiagnostic } from '../validation';
 import {
   formatAsMarkdown,
@@ -24,6 +23,9 @@ export interface DocumentationOutput {
   headerMarkdown: string;
   // per workflow, by index in `workflows`: ids can be missing or repeated in invalid documents
   workflowMarkdowns: string[];
+  // why the header or a workflow (by index) couldn't be generated, shown in place of its markdown
+  headerError?: string;
+  workflowErrors: (string | undefined)[];
   // validation notes shown inline in each workflow, by index in `workflows`
   workflowNotes: DocumentDiagnostic[][];
 }
@@ -68,26 +70,28 @@ export function generateDocumentation(
 
   // each part is generated on its own, so an invalid part of the document only replaces that
   // part with a notice instead of failing the whole docs view
-  const headerMarkdown = renderSafely('The document header', () =>
+  const header = generateSafely(() =>
     formatHeaderAsMarkdown(metadata, { includeMetadata, includeDiagrams }),
   );
 
   // Generate per-workflow markdown
   const workflowMarkdowns: string[] = [];
   const workflowNotes: DocumentDiagnostic[][] = [];
+  const workflowErrors: (string | undefined)[] = [];
   workflows.forEach((wf, workflowIndex) => {
     let notes: DocumentDiagnostic[] = [];
-    const markdown = renderSafely('This workflow', () => {
+    const { markdown, error } = generateSafely(() => {
       const formatted = formatWorkflowWithNotes(metadata, wf, { workflowIndex, diagnostics });
       notes = formatted.notes;
       return formatted.markdown;
     });
     workflowMarkdowns.push(markdown);
     workflowNotes.push(notes);
+    workflowErrors.push(error);
   });
 
   // Full markdown (legacy)
-  const markdown = renderSafely('The document', () =>
+  const { markdown } = generateSafely(() =>
     formatAsMarkdown(metadata, workflows, { includeMetadata, includeDiagrams }),
   );
 
@@ -95,24 +99,22 @@ export function generateDocumentation(
     metadata,
     workflows,
     markdown,
-    headerMarkdown,
+    headerMarkdown: header.markdown,
+    headerError: header.error,
     workflowMarkdowns,
+    workflowErrors,
     workflowNotes,
   };
 }
 
 /**
- * Runs a markdown generator, rendering a notice instead when an invalid document makes it throw.
+ * Runs a markdown generator, returning the error instead when an invalid document makes it throw;
+ * the docs view shows a notice in its place.
  */
-function renderSafely(label: string, generate: () => string): string {
+function generateSafely(generate: () => string): { markdown: string; error?: string } {
   try {
-    return generate();
+    return { markdown: generate() };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    return (
-      `<div class="render-error-notice" role="alert">${escapeHtml(label)} couldn't be displayed, ` +
-      'which usually means the document is invalid. The Validation section lists its problems.' +
-      `<details><summary>Details</summary><code>${escapeHtml(message)}</code></details></div>`
-    );
+    return { markdown: '', error: error instanceof Error ? error.message : String(error) };
   }
 }

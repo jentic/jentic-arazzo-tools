@@ -11,7 +11,7 @@ import {
   generateMermaidFlowchart,
 } from '../utils/documentation/index';
 import { worstSeverity } from '../utils/documentation/inlineDiagnostics';
-import { ErrorBoundary } from './ErrorBoundary';
+import { ErrorBoundary, RenderErrorNotice } from './ErrorBoundary';
 import type { DiagnosticSeverityName, ValidationState } from '../utils/validation';
 
 export interface DocsViewProps {
@@ -803,7 +803,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             color: #9ca3af;
           }
 
-          /* Inline validation notes */
+          /* inline validation notes */
           .step-detail-issues {
             font-size: 10px;
             font-weight: 700;
@@ -1126,29 +1126,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             height: auto;
           }
 
-          /* Notice in place of a part of an invalid document that couldn't be rendered */
-          .render-error-notice {
-            margin: 8px 0;
-            padding: 10px 14px;
-            border: 1px solid #fca5a5;
-            border-radius: 6px;
-            background: #fef2f2;
-            color: #991b1b;
-            font-size: 13px;
-            line-height: 1.5;
-          }
-
-          .render-error-notice summary {
-            cursor: pointer;
-            font-size: 12px;
-          }
-
-          .render-error-notice code {
-            font-size: 12px;
-            word-break: break-word;
-          }
-
-          /* Validation */
+          /* validation section */
           .validation-section {
             margin-bottom: 24px;
           }
@@ -1329,9 +1307,13 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
         <article className="arazzo-docs-prose">
           {/* Header: title, version, sources */}
           <ErrorBoundary label="The document header" resetKey={document}>
-            <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
-              {documentation.headerMarkdown}
-            </ReactMarkdown>
+            {documentation.headerError !== undefined ? (
+              <RenderErrorNotice label="The document header" message={documentation.headerError} />
+            ) : (
+              <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
+                {documentation.headerMarkdown}
+              </ReactMarkdown>
+            )}
           </ErrorBoundary>
 
           {/* Workflows */}
@@ -1348,6 +1330,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             const stepCount = workflow.steps.length;
             const currentView = getWorkflowView(workflowIndex);
             const workflowMd = documentation.workflowMarkdowns[workflowIndex] || '';
+            const workflowError = documentation.workflowErrors[workflowIndex];
             const workflowNotes = documentation.workflowNotes[workflowIndex] ?? [];
 
             const sequenceSource = sequenceDiagrams[workflowIndex] || null;
@@ -1396,9 +1379,16 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
                     </div>
 
                     <div style={{ display: currentView === 'docs' ? 'block' : 'none' }}>
-                      <ReactMarkdown remarkPlugins={markdownPlugins} rehypePlugins={rehypePlugins}>
-                        {workflowMd}
-                      </ReactMarkdown>
+                      {workflowError !== undefined ? (
+                        <RenderErrorNotice label="This workflow" message={workflowError} />
+                      ) : (
+                        <ReactMarkdown
+                          remarkPlugins={markdownPlugins}
+                          rehypePlugins={rehypePlugins}
+                        >
+                          {workflowMd}
+                        </ReactMarkdown>
+                      )}
                     </div>
                     {sequenceSource && expandedWorkflows.has(workflow.workflowId) && (
                       <div style={{ display: currentView === 'sequence' ? 'block' : 'none' }}>

@@ -213,30 +213,24 @@ export function attachStepOperations<T extends StepOperationsDocument = StepOper
   parseResult: ParseResultElement,
   options: AttachStepOperationsOptions = {},
 ): StepOperationsResult<T> {
+  const { skipInvalid = false } = options;
   const doc = toValue(element) as StepOperationsDocument;
+  // by default an invalid document throws as it is iterated; with skipInvalid, workflows and steps
+  // of the wrong shape and failed lookups are skipped
+  const list = (value: unknown) =>
+    (skipInvalid && !Array.isArray(value) ? undefined : value) as unknown[] | undefined;
 
-  if (!options.skipInvalid) {
-    doc?.workflows?.forEach((workflow) =>
-      workflow.steps?.forEach((step) => {
-        const operation = findStepOperation(parseResult, step);
-        if (operation) Object.assign(step, { _operation: operation });
-      }),
-    );
-    return doc as StepOperationsResult<T>;
-  }
-
-  const workflows: unknown[] = Array.isArray(doc?.workflows) ? doc.workflows : [];
-  workflows.forEach((workflow) => {
-    if (!isRecord(workflow) || !Array.isArray(workflow.steps)) return;
-    workflow.steps.forEach((step: unknown) => {
-      if (!isRecord(step)) return;
+  list(doc?.workflows)?.forEach((workflow) => {
+    if (skipInvalid && !isRecord(workflow)) return;
+    list((workflow as { steps?: unknown }).steps)?.forEach((step) => {
+      if (skipInvalid && !isRecord(step)) return;
       let operation: StepOperation | undefined;
       try {
-        operation = findStepOperation(parseResult, step);
-      } catch {
-        operation = undefined;
+        operation = findStepOperation(parseResult, step as Parameters<typeof findStepOperation>[1]);
+      } catch (error) {
+        if (!skipInvalid) throw error;
       }
-      if (operation) Object.assign(step, { _operation: operation });
+      if (operation) Object.assign(step as object, { _operation: operation });
     });
   });
   return doc as StepOperationsResult<T>;

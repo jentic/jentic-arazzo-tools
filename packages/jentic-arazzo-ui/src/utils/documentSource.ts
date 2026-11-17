@@ -64,18 +64,35 @@ export async function loadDocumentSource(input: ArazzoDocument | string): Promis
   // e.g. single-line `arazzo: 1.0.1 info` parses as a URL with an `arazzo:` scheme
   if (!['http:', 'https:', 'file:', 'blob:'].includes(resolved.protocol)) throw notArazzo;
   const uri = resolved.toString();
+  const fetchFailed = (error: unknown) => {
+    const reason =
+      error instanceof Error && error.name === 'TimeoutError'
+        ? `no response within ${FETCH_TIMEOUT_MS / 1000} s`
+        : error instanceof Error
+          ? error.message
+          : String(error);
+    return new Error(`Failed to fetch ${uri} (${reason})`, { cause: error });
+  };
+  // the signal also covers reading the body, so a stalled server can't keep the viewer loading
+  const signal = AbortSignal.timeout(FETCH_TIMEOUT_MS);
   let response: Response;
   try {
-    response = await fetch(uri);
+    response = await fetch(uri, { signal });
   } catch (error) {
-    const reason = error instanceof Error ? error.message : String(error);
-    throw new Error(`Failed to fetch ${uri} (${reason})`, { cause: error });
+    throw fetchFailed(error);
   }
   if (!response.ok) {
     throw new Error(`Failed to fetch ${uri} (${response.status} ${response.statusText})`);
   }
-  return { kind: 'url', uri, content: await response.text() };
+  try {
+    return { kind: 'url', uri, content: await response.text() };
+  } catch (error) {
+    throw fetchFailed(error);
+  }
 }
+
+// as for the HTTP resolver the parser used to fetch documents with
+const FETCH_TIMEOUT_MS = 15000;
 
 const normalizeURI = (uri: string): string => {
   try {
