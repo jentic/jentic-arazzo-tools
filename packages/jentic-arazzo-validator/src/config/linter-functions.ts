@@ -84,6 +84,24 @@ export const linterfunctions: FunctionItem[] = [
     },
   },
   {
+    functionName: 'apilintArazzoWorkflowIdUnique',
+    function: (element: Element): boolean => {
+      // Validate that a workflow's workflowId is unique across all workflow definitions.
+      // Only Workflow Objects are counted; a step's workflowId is a reference, not a definition.
+      if (!element || !isStringElement(element)) return true;
+      const value = toValue(element) as string;
+      const api = root(element);
+      const workflows = getElementsByTypeOrClass(api, 'workflow');
+      const count = workflows.filter(
+        (w: any) =>
+          isObjectElement(w) &&
+          w.hasKey('workflowId') &&
+          toValue((w as ObjectElement).get('workflowId')) === value,
+      ).length;
+      return count <= 1;
+    },
+  },
+  {
     functionName: 'apilintArazzoWorkflowIdResolved',
     function: (element: Element): boolean => {
       // Validate that a workflowId reference resolves to an existing workflow.
