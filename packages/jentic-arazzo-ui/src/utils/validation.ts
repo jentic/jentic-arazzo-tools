@@ -178,9 +178,16 @@ async function loadSource(
  *
  * The validator is loaded lazily so it never delays the initial render.
  */
+export interface ValidateArazzoSourceOptions {
+  // don't report documents declaring an unsupported Arazzo version (code 9020103)
+  ignoreUnsupportedVersion?: boolean;
+}
+
 export async function validateArazzoSource(
   input: ArazzoDocument | string,
+  options: ValidateArazzoSourceOptions = {},
 ): Promise<Extract<ValidationState, { status: 'done' }>> {
+  const validateOptions = { ignoreUnsupportedVersion: options.ignoreUnsupportedVersion ?? false };
   const [{ validate, createTextDocument }, source] = await Promise.all([
     import('@jentic/arazzo-validator'),
     loadSource(input),
@@ -191,13 +198,15 @@ export async function validateArazzoSource(
   let rawDiagnostics: Awaited<ReturnType<typeof validate>>;
   let notice: string | undefined;
   try {
-    rawDiagnostics = await validate(textDocument);
+    rawDiagnostics = await validate(textDocument, {}, validateOptions);
   } catch (error) {
     // resolving some source descriptions (e.g. `type: arazzo` over HTTP) can crash the
     // language service; fall back to validating this document on its own
-    rawDiagnostics = await validate(textDocument, {
-      parseContext: { arazzo: { sourceDescriptionsResolution: false } },
-    });
+    rawDiagnostics = await validate(
+      textDocument,
+      { parseContext: { arazzo: { sourceDescriptionsResolution: false } } },
+      validateOptions,
+    );
     const reason = error instanceof Error ? error.message : String(error);
     notice = `Source descriptions could not be resolved (${reason}), so checks against referenced documents were skipped.`;
   }

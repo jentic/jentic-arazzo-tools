@@ -121,6 +121,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     onEdgeSelect,
     onWorkflowSelect,
     onViewChange,
+    ignoreUnsupportedVersion = false,
   } = props;
 
   const documentURL = detectUrl(rawDocument);
@@ -161,7 +162,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
 
     setValidation({ status: 'loading' });
 
-    validateArazzoSource(rawDocument)
+    validateArazzoSource(rawDocument, { ignoreUnsupportedVersion })
       .then((result) => {
         if (!cancelled) setValidation(result);
       })
@@ -177,7 +178,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     return () => {
       cancelled = true;
     };
-  }, [rawDocument]);
+  }, [rawDocument, ignoreUnsupportedVersion]);
 
   const events = useMemo(
     () => ({

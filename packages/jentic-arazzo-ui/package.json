@@ -41,7 +41,7 @@
     "arazzo-ui": "./bin/arazzo-ui.mjs"
   },
   "scripts": {
-    "dev": "vite serve --config config/vite/vite.dev.config.ts",
+    "dev": "node scripts/dev.mjs",
     "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:umd:ui build:umd:standalone build:esm:ui build:esm:standalone && npm run build:app",
     "build:umd:ui": "cross-env BUILD_ENTRY=ArazzoUI vite build --config config/vite/vite.config.ts",
     "build:umd:standalone": "cross-env BUILD_ENTRY=ArazzoUIStandalone vite build --config config/vite/vite.config.ts",
