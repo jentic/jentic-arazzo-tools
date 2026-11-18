@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.34](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2026-11-18)
+
+### Bug Fixes
+
+- **validator:** ignore step workflowId refs in uniqueness check ([feb550c](https://github.com/jentic/jentic-arazzo-tools/commit/feb550c7907ae3548106c2f46bdc59262e399c52)), closes [#360](https://github.com/jentic/jentic-arazzo-tools/issues/360)
+- **validator:** keep scalar values when hiding earlier arazzo matches ([ec8f710](https://github.com/jentic/jentic-arazzo-tools/commit/ec8f710fc2def3eddb94a1bed446f2fedd147705))
+- **validator:** map related information back to original positions ([2dabb8d](https://github.com/jentic/jentic-arazzo-tools/commit/2dabb8d141ed59fef67e5cceb0db6d862603f859))
+- **validator:** pin apidom-ls to 2.11.6 so fresh installs validate ([4550d2d](https://github.com/jentic/jentic-arazzo-tools/commit/4550d2ddb395b4c2cbe42e25e348134e22b41ece)), closes [#351](https://github.com/jentic/jentic-arazzo-tools/issues/351)
+- **validator:** print MarkupContent messages as text in JSON output ([f619947](https://github.com/jentic/jentic-arazzo-tools/commit/f6199473666f2f497a8b3a4fbfd0439adebdac11))
+- **validator:** remap positions instead of padding version rewrite ([b23f340](https://github.com/jentic/jentic-arazzo-tools/commit/b23f3406a4568c87165d62659123366477e3226c))
+- **validator:** report and validate unsupported Arazzo versions ([f83a695](https://github.com/jentic/jentic-arazzo-tools/commit/f83a69557c25cd533351a927c36bad1bad1e1093))
+- **validator:** restore expression type rules, guard fresh installs ([9d8e7d6](https://github.com/jentic/jentic-arazzo-tools/commit/9d8e7d62505f45f83b9ba37879b78e609590f314))
+- **validator:** treat future major Arazzo versions as unsupported ([01eb576](https://github.com/jentic/jentic-arazzo-tools/commit/01eb57678429c548354efd4e59b6b010258455ed))
+- **validator:** use the root arazzo field, not nested ones ([195fe7b](https://github.com/jentic/jentic-arazzo-tools/commit/195fe7b6ef5c4842d1ff5869d86489db98f937f1))
+- **validator:** validate Arazzo documents on fresh installs ([c00553f](https://github.com/jentic/jentic-arazzo-tools/commit/c00553f3be201f7c8d222789141df49566ae65e0)), closes [#351](https://github.com/jentic/jentic-arazzo-tools/issues/351)
+
+### Features
+
+- **validator:** add option to ignore unsupported Arazzo versions ([069cfc6](https://github.com/jentic/jentic-arazzo-tools/commit/069cfc6eb77b27b249e02a3a5fe55287684ca7ce))
+
+### Performance Improvements
+
+- **validator:** neutralize earlier arazzo matches in one pass ([1ef091c](https://github.com/jentic/jentic-arazzo-tools/commit/1ef091c3a94d883e26f40cb9284bdeb422e7c06e))
+
+### BREAKING CHANGES
+
+- **validator:** public types now come from ApiDOM 7 and
+  @speclynx/api-languageservice 3. The validator's re-exported Diagnostic
+  is from vscode-languageserver-types 3.18.5, where `message` is
+  `string | MarkupContent`. LanguageServiceContext is the
+  api-languageservice 3 type, whose JSON Schema validation providers no
+  longer accept a schema of their own. Elements returned by the parser,
+  resolver and runner are ApiDOM 7 elements, subject to its breaking
+  changes. Documents declaring Arazzo 1.1 used to pass without being
+  checked. They are now validated and rejected, as rule 9020102 only
+  allows 1.0.x.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
 # [1.0.0-alpha.33](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2026-11-09)
 
 **Note:** Version bump only for package @jentic/arazzo-validator

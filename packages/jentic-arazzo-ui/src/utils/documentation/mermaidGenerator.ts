@@ -10,13 +10,17 @@ export function generateMermaidSequence(workflow: Workflow, document: ArazzoDocu
   const lines: string[] = ['sequenceDiagram'];
   lines.push('    participant Client');
 
-  // Add API participants from sourceDescriptions
-  const sources = document.sourceDescriptions || [];
+  // Add API participants from sourceDescriptions; invalid documents can have sources without a
+  // string name (reported by validation), which no step can reference, so they are left out
+  const sources = (document.sourceDescriptions || []).filter(
+    (source) => typeof source?.name === 'string' && source.name !== '',
+  );
   const apiParticipants = new Map<string, string>();
 
   // Create participant names from source descriptions
-  sources.forEach((source) => {
-    const participantName = source.name.replace(/[^a-zA-Z0-9]/g, '');
+  sources.forEach((source, index) => {
+    // names made only of symbols would otherwise produce an empty mermaid identifier
+    const participantName = source.name.replace(/[^a-zA-Z0-9]/g, '') || `Source${index + 1}`;
     apiParticipants.set(source.name, participantName);
     lines.push(`    participant ${participantName} as ${source.name}`);
   });

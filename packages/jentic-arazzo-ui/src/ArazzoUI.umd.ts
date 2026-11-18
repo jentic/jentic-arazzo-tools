@@ -16,6 +16,7 @@ export interface ArazzoUIConfig {
   onEdgeSelect?: ArazzoUIProps['onEdgeSelect'];
   onWorkflowSelect?: ArazzoUIProps['onWorkflowSelect'];
   onViewChange?: ArazzoUIProps['onViewChange'];
+  ignoreUnsupportedVersion?: boolean;
 }
 
 export interface ArazzoUIInstance {

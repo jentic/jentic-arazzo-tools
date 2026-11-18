@@ -5,10 +5,30 @@ import { renderMethodBadgeStyle } from '../operationMethods';
 import { arazzoLogoSvg } from '../arazzoLogo';
 import { describeStepOperation } from '../stepOperationLabel';
 import { sourceIcon } from '../sourceIcon';
+import type { DiagnosticPath, DocumentDiagnostic } from '../validation';
+import {
+  DiagnosticNotes,
+  emptyListNotes,
+  renderIssuesBadge,
+  renderNotes,
+  type ListNotes,
+} from './inlineDiagnostics';
 
 export interface FormatOptions {
   includeMetadata?: boolean;
   includeDiagrams?: boolean;
+}
+
+export interface FormatWorkflowOptions {
+  // position of the workflow in the source document, used to match diagnostic paths
+  workflowIndex?: number;
+  diagnostics?: DocumentDiagnostic[];
+}
+
+export interface FormattedWorkflow {
+  markdown: string;
+  // validation notes shown inline in this workflow, for a summary badge
+  notes: DocumentDiagnostic[];
 }
 
 /**
@@ -63,11 +83,15 @@ export function formatHeaderAsMarkdown(
       sections.push(`<div class="source-card-top">`);
       sections.push(`${sourceIcon(sd.type || 'arazzo')}`);
       sections.push(`<span class="source-type-badge ${typeClass}">${typeLabel}</span>`);
-      sections.push(`<span class="source-name">${sd.name}</span>`);
+      // invalid documents can omit name or url (reported by validation)
+      const name = typeof sd.name === 'string' && sd.name !== '' ? sd.name : '(unnamed)';
+      sections.push(`<span class="source-name">${name}</span>`);
       sections.push(`</div>`);
-      sections.push(
-        `<a class="source-url" href="${sd.url}" target="_blank" rel="noopener noreferrer">${sd.url}</a>`,
-      );
+      if (typeof sd.url === 'string' && sd.url !== '') {
+        sections.push(
+          `<a class="source-url" href="${sd.url}" target="_blank" rel="noopener noreferrer">${sd.url}</a>`,
+        );
+      }
       sections.push(`</div>`);
     });
     sections.push(`</div>`);
@@ -83,7 +107,23 @@ export function formatHeaderAsMarkdown(
 export function formatWorkflowAsMarkdown(
   metadata: DocumentationMetadata,
   workflow: WorkflowDocumentation,
+  options: FormatWorkflowOptions = {},
 ): string {
+  return formatWorkflowWithNotes(metadata, workflow, options).markdown;
+}
+
+/**
+ * Formats a single workflow like `formatWorkflowAsMarkdown`, with validation diagnostics shown
+ * next to the elements they refer to.
+ */
+export function formatWorkflowWithNotes(
+  metadata: DocumentationMetadata,
+  workflow: WorkflowDocumentation,
+  options: FormatWorkflowOptions = {},
+): FormattedWorkflow {
+  const { workflowIndex } = options;
+  const notes = new DiagnosticNotes(workflowIndex === undefined ? [] : options.diagnostics);
+  const workflowPath: DiagnosticPath = ['workflows', workflowIndex ?? -1];
   const sections: string[] = [];
 
   // build source name → type lookup
@@ -95,6 +135,9 @@ export function formatWorkflowAsMarkdown(
   if (workflow.description) {
     sections.push(`<div class="workflow-description">${workflow.description}</div>\n`);
   }
+
+  // filled in once every step has claimed its own diagnostics
+  const workflowNotesIndex = sections.push('') - 1;
 
   // Inputs - parse JSONSchema
   if (workflow.inputs && typeof workflow.inputs === 'object') {
@@ -135,6 +178,23 @@ export function formatWorkflowAsMarkdown(
   sections.push(`\n<div class="timeline">\n`);
   workflow.steps.forEach((step, idx) => {
     const isLast = idx === workflow.steps.length - 1;
+
+    // claim diagnostics for each rendered section first; the rest are shown on the step itself
+    const stepPath: DiagnosticPath = [...workflowPath, 'steps', idx];
+    const requestBodyView = getRequestBodyView(step.requestBody);
+    const listNotes = (key: string, keys: (string | number)[] | undefined): ListNotes =>
+      keys && keys.length > 0 ? notes.takeList([...stepPath, key], keys) : emptyListNotes;
+    // invalid documents can hold a non-array here (e.g. `parameters: {}`); those sections aren't
+    // rendered, so their diagnostics fall back to the step
+    const indices = (list: unknown) => (Array.isArray(list) ? list.map((_, i) => i) : undefined);
+    const parameterNotes = listNotes('parameters', indices(step.parameters));
+    const requestBodyNotes = requestBodyView ? notes.take([...stepPath, 'requestBody']) : [];
+    const criteriaNotes = listNotes('successCriteria', indices(step.successCriteria));
+    const outputNotes = listNotes('outputs', step.outputs ? Object.keys(step.outputs) : undefined);
+    const onSuccessNotes = listNotes('onSuccess', indices(step.onSuccess));
+    const onFailureNotes = listNotes('onFailure', indices(step.onFailure));
+    const stepNotes = notes.take(stepPath);
+
     sections.push(
       `<div class="timeline-item${isLast ? ' timeline-item-last' : ''}" data-step-id="${step.stepId}">`,
     );
@@ -191,13 +251,16 @@ export function formatWorkflowAsMarkdown(
       sections.push(`<div class="step-description">via ${opHtml} ${opKind}</div>`);
     }
 
+    sections.push(renderNotes(stepNotes));
+
     // Parameters
     if (step.parameters && step.parameters.length > 0) {
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Parameters <span class="step-detail-count">${step.parameters.length}</span></summary>`,
+        `<details class="step-detail"><summary class="step-detail-summary">Parameters <span class="step-detail-count">${step.parameters.length}</span>${renderIssuesBadge(parameterNotes.all)}</summary>`,
       );
       sections.push(`<div class="step-detail-body step-grid-3">`);
-      step.parameters.forEach((param) => {
+      sections.push(renderNotes(parameterNotes.list));
+      step.parameters.forEach((param, paramIdx) => {
         if ('$ref' in param) {
           sections.push(
             `<div class="step-row">Reference: <code class="expr">${param.$ref}</code></div>`,
@@ -215,12 +278,13 @@ export function formatWorkflowAsMarkdown(
             `<div class="step-grid-row"><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code class="expr">${value}</code></span></div>`,
           );
         }
+        sections.push(renderNotes(parameterNotes.items.get(paramIdx)));
       });
       sections.push(`</div></details>`);
     }
 
     // Request body
-    const requestBody = getRequestBodyView(step.requestBody);
+    const requestBody = requestBodyView;
     if (requestBody) {
       const { replacements } = requestBody;
       const countHtml =
@@ -228,9 +292,10 @@ export function formatWorkflowAsMarkdown(
           ? ` <span class="step-detail-count">${replacements.length} replacement${replacements.length === 1 ? '' : 's'}</span>`
           : '';
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Request Body${countHtml}</summary>`,
+        `<details class="step-detail"><summary class="step-detail-summary">Request Body${countHtml}${renderIssuesBadge(requestBodyNotes)}</summary>`,
       );
       sections.push(`<div class="step-detail-body">`);
+      sections.push(renderNotes(requestBodyNotes));
       if (requestBody.contentType) {
         sections.push(
           `<div class="step-row">Content-Type: <code class="content-type">${escapeHtml(requestBody.contentType)}</code></div>`,
@@ -260,11 +325,13 @@ export function formatWorkflowAsMarkdown(
     // Success criteria
     if (step.successCriteria && step.successCriteria.length > 0) {
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Success Criteria <span class="step-detail-count">${step.successCriteria.length}</span></summary>`,
+        `<details class="step-detail"><summary class="step-detail-summary">Success Criteria <span class="step-detail-count">${step.successCriteria.length}</span>${renderIssuesBadge(criteriaNotes.all)}</summary>`,
       );
       sections.push(`<div class="step-detail-body">`);
-      step.successCriteria.forEach((c) => {
+      sections.push(renderNotes(criteriaNotes.list));
+      step.successCriteria.forEach((c, criterionIdx) => {
         sections.push(`<div class="step-row"><code class="expr">${c.condition}</code></div>`);
+        sections.push(renderNotes(criteriaNotes.items.get(criterionIdx)));
       });
       sections.push(`</div></details>`);
     }
@@ -273,13 +340,15 @@ export function formatWorkflowAsMarkdown(
     if (step.outputs && Object.keys(step.outputs).length > 0) {
       const outputCount = Object.keys(step.outputs).length;
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Outputs <span class="step-detail-count">${outputCount}</span></summary>`,
+        `<details class="step-detail"><summary class="step-detail-summary">Outputs <span class="step-detail-count">${outputCount}</span>${renderIssuesBadge(outputNotes.all)}</summary>`,
       );
       sections.push(`<div class="step-detail-body step-grid-3">`);
+      sections.push(renderNotes(outputNotes.list));
       Object.entries(step.outputs).forEach(([key, value]) => {
         sections.push(
           `<div class="step-grid-row"><span><code>${key}</code></span><span class="step-arrow">←</span><span><code class="expr">${value}</code></span></div>`,
         );
+        sections.push(renderNotes(outputNotes.items.get(key)));
       });
       sections.push(`</div></details>`);
     }
@@ -290,10 +359,12 @@ export function formatWorkflowAsMarkdown(
     if (allSuccessActions.length > 0 || allFailureActions.length > 0) {
       const actionCount = allSuccessActions.length + allFailureActions.length;
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Actions <span class="step-detail-count">${actionCount}</span></summary>`,
+        `<details class="step-detail"><summary class="step-detail-summary">Actions <span class="step-detail-count">${actionCount}</span>${renderIssuesBadge([...onSuccessNotes.all, ...onFailureNotes.all])}</summary>`,
       );
       sections.push(`<div class="step-detail-body step-grid-3">`);
-      allSuccessActions.forEach((action) => {
+      sections.push(renderNotes([...onSuccessNotes.list, ...onFailureNotes.list]));
+      // workflow-level actions come after the step's own, so only the first ones get step notes
+      allSuccessActions.forEach((action, actionIdx) => {
         if ('$ref' in action) {
           sections.push(
             `<div class="step-grid-row"><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
@@ -311,8 +382,9 @@ export function formatWorkflowAsMarkdown(
             );
           }
         }
+        sections.push(renderNotes(onSuccessNotes.items.get(actionIdx)));
       });
-      allFailureActions.forEach((action) => {
+      allFailureActions.forEach((action, actionIdx) => {
         if ('$ref' in action) {
           sections.push(
             `<div class="step-grid-row"><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
@@ -336,6 +408,7 @@ export function formatWorkflowAsMarkdown(
             );
           }
         }
+        sections.push(renderNotes(onFailureNotes.items.get(actionIdx)));
       });
       sections.push(`</div></details>`);
     }
@@ -345,6 +418,12 @@ export function formatWorkflowAsMarkdown(
     sections.push(`</div>\n`); // close timeline-item
   });
   sections.push(`</div>\n`); // close timeline
+
+  // whatever no step claimed (workflow fields, workflow-level actions, inputs, outputs); the
+  // container is always emitted, as react-markdown keys siblings by position, so adding it only
+  // with notes would remount the timeline and collapse its open sections
+  const workflowNotes = renderNotes(notes.take(workflowPath));
+  sections[workflowNotesIndex] = `<div class="workflow-diagnostics">${workflowNotes}</div>\n`;
 
   // Outputs
   if (workflow.outputs && Object.keys(workflow.outputs).length > 0) {
@@ -359,7 +438,7 @@ export function formatWorkflowAsMarkdown(
     sections.push('\n</div>\n');
   }
 
-  return sections.join('\n');
+  return { markdown: sections.join('\n'), notes: notes.shown };
 }
 
 /**

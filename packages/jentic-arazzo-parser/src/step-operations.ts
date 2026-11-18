@@ -182,23 +182,56 @@ export function findStepOperation(
 }
 
 /**
+ * Options for {@link attachStepOperations}.
+ * @public
+ */
+export interface AttachStepOperationsOptions {
+  /**
+   * Skip workflows and steps of an invalid document instead of throwing: workflows and steps
+   * that aren't objects (or lists of them) are left as they are, and a step whose operation
+   * can't be looked up is left without an `_operation`. Useful for displaying invalid documents.
+   *
+   * @defaultValue false
+   */
+  skipInvalid?: boolean;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
  * Converts an Arazzo Document element to a plain object and sets `_operation` on every step that
  * targets an operation of the `openapi` source descriptions parsed along with it.
  * @param element - The Arazzo Document element, e.g. the (dereferenced) result of the parse result
  * @param parseResult - The result of parsing the Arazzo Document with source descriptions
+ * @param options - See {@link AttachStepOperationsOptions}
  * @returns The plain Arazzo Document, typed with `_operation` on its steps and set on the resolved ones
  * @public
  */
 export function attachStepOperations<T extends StepOperationsDocument = StepOperationsDocument>(
   element: Element | undefined,
   parseResult: ParseResultElement,
+  options: AttachStepOperationsOptions = {},
 ): StepOperationsResult<T> {
+  const { skipInvalid = false } = options;
   const doc = toValue(element) as StepOperationsDocument;
-  doc?.workflows?.forEach((workflow) =>
-    workflow.steps?.forEach((step) => {
-      const operation = findStepOperation(parseResult, step);
-      if (operation) Object.assign(step, { _operation: operation });
-    }),
-  );
+  // by default an invalid document throws as it is iterated; with skipInvalid, workflows and steps
+  // of the wrong shape and failed lookups are skipped
+  const list = (value: unknown) =>
+    (skipInvalid && !Array.isArray(value) ? undefined : value) as unknown[] | undefined;
+
+  list(doc?.workflows)?.forEach((workflow) => {
+    if (skipInvalid && !isRecord(workflow)) return;
+    list((workflow as { steps?: unknown }).steps)?.forEach((step) => {
+      if (skipInvalid && !isRecord(step)) return;
+      let operation: StepOperation | undefined;
+      try {
+        operation = findStepOperation(parseResult, step as Parameters<typeof findStepOperation>[1]);
+      } catch (error) {
+        if (!skipInvalid) throw error;
+      }
+      if (operation) Object.assign(step as object, { _operation: operation });
+    });
+  });
   return doc as StepOperationsResult<T>;
 }

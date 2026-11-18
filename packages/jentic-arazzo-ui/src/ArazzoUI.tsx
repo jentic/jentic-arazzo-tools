@@ -7,7 +7,12 @@ import React, {
   useEffect,
 } from 'react';
 import { ReactFlowProvider } from 'reactflow';
-import { parseArazzo, attachStepOperations } from '@jentic/arazzo-parser';
+import {
+  parseArazzo,
+  attachStepOperations,
+  defaultParseArazzoOptions,
+  type ParseArazzoOptions,
+} from '@jentic/arazzo-parser';
 import {
   dereferenceArazzoElement,
   dereferenceSourceDescriptionPathItems,
@@ -16,6 +21,7 @@ import {
 import { ArazzoViewerProvider, useArazzoViewer } from './context/ArazzoViewerContext';
 import { DiagramView, DiagramViewRef } from './components/DiagramView';
 import { DocsView } from './components/DocsView';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import type { ArazzoDocument, ArazzoUIProps, ArazzoUIRef, ViewerMode } from './types/index';
 
 export type {
@@ -62,6 +68,13 @@ export type {
   JSONSchema,
 } from './types/arazzo';
 import { stripInternalIds } from './utils/internalIds';
+import { validateArazzoSource, type ValidationState } from './utils/validation';
+import {
+  loadDocumentSource,
+  PrefetchedResolver,
+  type DocumentSource,
+} from './utils/documentSource';
+import { normalizeDocumentShape, type NormalizedDocument } from './utils/documentShape';
 
 import './styles/index.css';
 
@@ -69,29 +82,55 @@ function detectUrl(value: ArazzoDocument | string): string | null {
   return typeof value === 'string' && /^https?:\/\//i.test(value.trim()) ? value.trim() : null;
 }
 
-async function parseDocument(input: ArazzoDocument | string): Promise<ArazzoDocument> {
+async function parseDocument(source: DocumentSource): Promise<NormalizedDocument> {
   // OpenAPI specs from sourceDescriptions are parsed from the client's browser to retrieve HTTP
   // methods for steps. If the server hosting the spec does not include Access-Control-Allow-Origin
   // headers, the browser blocks the fetch and no method badges are shown. Failure to load the
   // OpenAPI spec is not fatal.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const parseResult = await parseArazzo(input as any, {
+  const options: ParseArazzoOptions = {
     parse: { parserOpts: { sourceDescriptions: true } },
     resolve: { baseURI: document.baseURI },
-  });
+  };
+  const parseResult =
+    source.kind === 'url'
+      ? // parse by URL, so source descriptions resolve against it, but serve the text already
+        // fetched for validation instead of requesting the document again
+        await parseArazzo(source.uri, {
+          ...options,
+          resolve: {
+            ...options.resolve,
+            resolvers: [
+              new PrefetchedResolver(source),
+              ...(defaultParseArazzoOptions.resolve?.resolvers ?? []),
+            ],
+          },
+        } as ParseArazzoOptions)
+      : source.kind === 'object'
+        ? await parseArazzo(source.object as unknown as Record<string, unknown>, options)
+        : await parseArazzo(source.content, options);
   // Path Items that are only a $ref (local or external) are resolved so their methods are found;
-  // this never rejects, an unresolvable Path Item just gets no badge.
-  await dereferenceSourceDescriptionPathItems(parseResult);
-  const dereferenced = await dereferenceArazzoElement(parseResult, {
-    resolve: {
-      baseURI: document.baseURI,
-    },
-    dereference: {
-      circular: 'error',
-      immutable: false,
-    },
-  });
-  return attachStepOperations<ArazzoDocument>(dereferenced.result, parseResult);
+  // an unresolvable Path Item just gets no badge. The viewer also displays invalid documents, so
+  // their invalid parts are skipped (skipInvalid) here and below, and reported by validation.
+  await dereferenceSourceDescriptionPathItems(parseResult, { skipInvalid: true });
+  let element = parseResult.result;
+  try {
+    const dereferenced = await dereferenceArazzoElement(parseResult, {
+      resolve: {
+        baseURI: document.baseURI,
+      },
+      dereference: {
+        circular: 'error',
+        immutable: false,
+      },
+    });
+    element = dereferenced.result;
+  } catch {
+    // a reference that can't be resolved (e.g. to a missing `$components` entry) would otherwise
+    // hide the whole document; show references as written instead, validation reports them
+  }
+  return normalizeDocumentShape(
+    attachStepOperations<ArazzoDocument>(element, parseResult, { skipInvalid: true }),
+  );
 }
 
 /**
@@ -120,10 +159,15 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     onEdgeSelect,
     onWorkflowSelect,
     onViewChange,
+    ignoreUnsupportedVersion = false,
   } = props;
 
   const documentURL = detectUrl(rawDocument);
-  const [parsedDocument, setParsedDocument] = useState<ArazzoDocument | null>(null);
+  // loaded once per document and shared, so a document given by URL is fetched once and the
+  // validation results describe the same revision that is rendered
+  const documentSource = useMemo(() => loadDocumentSource(rawDocument), [rawDocument]);
+  const [normalized, setNormalized] = useState<NormalizedDocument | null>(null);
+  const parsedDocument = normalized?.document ?? null;
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -133,17 +177,18 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     setLoading(true);
     setError(null);
 
-    parseDocument(rawDocument)
+    documentSource
+      .then(parseDocument)
       .then((doc) => {
         if (!cancelled) {
-          setParsedDocument(doc);
+          setNormalized(doc);
           setLoading(false);
         }
       })
       .catch((err) => {
         if (!cancelled) {
           setError(err instanceof Error ? err.message : String(err));
-          setParsedDocument(null);
+          setNormalized(null);
           setLoading(false);
         }
       });
@@ -151,7 +196,53 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
     return () => {
       cancelled = true;
     };
-  }, [rawDocument]);
+  }, [documentSource]);
+
+  const [rawValidation, setValidation] = useState<ValidationState>({ status: 'loading' });
+
+  // diagnostics point into the source document; normalizing an invalid one can drop workflows or
+  // steps, so their paths are remapped onto what is displayed before notes are placed inline
+  const validation = useMemo<ValidationState>(() => {
+    if (rawValidation.status !== 'done' || !normalized) return rawValidation;
+    return {
+      ...rawValidation,
+      diagnostics: rawValidation.diagnostics.map((diagnostic) =>
+        diagnostic.path
+          ? { ...diagnostic, path: normalized.remapPath(diagnostic.path) }
+          : diagnostic,
+      ),
+    };
+  }, [rawValidation, normalized]);
+
+  // only the docs view shows validation results, so the validator (and the source descriptions it
+  // fetches) isn't loaded until the docs view is first shown; it then stays validated
+  const [docsShown, setDocsShown] = useState(view !== 'diagram');
+  if (!docsShown && view !== 'diagram') setDocsShown(true);
+
+  useEffect(() => {
+    if (!docsShown) return;
+    let cancelled = false;
+
+    setValidation({ status: 'loading' });
+
+    documentSource
+      .then((source) => validateArazzoSource(source, { ignoreUnsupportedVersion }))
+      .then((result) => {
+        if (!cancelled) setValidation(result);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setValidation({
+            status: 'error',
+            message: err instanceof Error ? err.message : String(err),
+          });
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [documentSource, ignoreUnsupportedVersion, docsShown]);
 
   const events = useMemo(
     () => ({
@@ -228,7 +319,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
         events={events}
       >
         <ReactFlowProvider>
-          <ArazzoUIInner ref={ref} view={view} />
+          <ArazzoUIInner ref={ref} view={view} validation={validation} />
         </ReactFlowProvider>
       </ArazzoViewerProvider>
     </div>
@@ -237,10 +328,11 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
 
 interface ArazzoUIInnerProps {
   view: ViewerMode;
+  validation: ValidationState;
 }
 
 const ArazzoUIInner = forwardRef<ArazzoUIRef, ArazzoUIInnerProps>(function ArazzoUIInner(
-  { view },
+  { view, validation },
   ref,
 ) {
   const diagramRef = useRef<DiagramViewRef>(null);
@@ -282,12 +374,16 @@ const ArazzoUIInner = forwardRef<ArazzoUIRef, ArazzoUIInnerProps>(function Arazz
     <>
       {showDiagram && (
         <div style={{ flex: 1, minWidth: 0, height: '100%' }}>
-          <DiagramView ref={diagramRef} showWorkflowTabs={true} />
+          <ErrorBoundary label="The diagram view" resetKey={ctx.document}>
+            <DiagramView ref={diagramRef} showWorkflowTabs={true} />
+          </ErrorBoundary>
         </div>
       )}
       {showDocs && (
         <div style={{ flex: 1, minWidth: 0, height: '100%', overflow: 'auto' }}>
-          <DocsView />
+          <ErrorBoundary label="The docs view" resetKey={ctx.document}>
+            <DocsView validation={validation} />
+          </ErrorBoundary>
         </div>
       )}
     </>

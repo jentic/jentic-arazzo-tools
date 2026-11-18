@@ -226,6 +226,81 @@ describe('validate', function () {
     });
   });
 
+  context('given workflowId uniqueness', function () {
+    const findUniqueErrors = (diagnostics: Awaited<ReturnType<typeof validate>>) =>
+      diagnostics.filter((d) => d.code === ApilintCodes.ARAZZO_WORKFLOW_FIELD_WORKFLOW_ID_UNIQUE);
+
+    specify(
+      'should not return ARAZZO_WORKFLOW_FIELD_WORKFLOW_ID_UNIQUE error when a step references a workflow',
+      async function () {
+        const spec = dedent`
+          arazzo: '1.0.1'
+          info:
+            title: My Workflow
+            version: '1.0.0'
+          sourceDescriptions:
+            - name: myApi
+              type: openapi
+              url: https://example.com/openapi.json
+          workflows:
+            - workflowId: adopt
+              steps:
+                - stepId: create
+                  operationId: myApi.createPet
+            - workflowId: run
+              steps:
+                - stepId: sub
+                  workflowId: adopt
+                - stepId: subAgain
+                  workflowId: adopt
+        `;
+        const textDocument = createTextDocument('memory://arazzo.yaml', spec);
+        const diagnostics = await validate(textDocument);
+        const errors = diagnostics.filter((d) => d.severity === DiagnosticSeverity.Error);
+        assert.lengthOf(findUniqueErrors(diagnostics), 0);
+        assert.lengthOf(errors, 0);
+      },
+    );
+
+    specify(
+      'should return ARAZZO_WORKFLOW_FIELD_WORKFLOW_ID_UNIQUE errors for duplicate workflows',
+      async function () {
+        const spec = dedent`
+          arazzo: '1.0.1'
+          info:
+            title: My Workflow
+            version: '1.0.0'
+          sourceDescriptions:
+            - name: myApi
+              type: openapi
+              url: https://example.com/openapi.json
+          workflows:
+            - workflowId: adopt
+              steps:
+                - stepId: create
+                  operationId: myApi.createPet
+            - workflowId: adopt
+              steps:
+                - stepId: create
+                  operationId: myApi.createPet
+            - workflowId: run
+              steps:
+                - stepId: sub
+                  workflowId: adopt
+        `;
+        const textDocument = createTextDocument('memory://arazzo.yaml', spec);
+        const diagnostics = await validate(textDocument);
+        const uniqueErrors = findUniqueErrors(diagnostics);
+        assert.lengthOf(uniqueErrors, 2);
+        assert.deepEqual(
+          uniqueErrors.map((d) => d.range.start.line),
+          [9, 13],
+        );
+        assert.isTrue(uniqueErrors.every((d) => d.severity === DiagnosticSeverity.Error));
+      },
+    );
+  });
+
   context('given OpenAPI document instead of Arazzo', function () {
     const openApiDoc = dedent`
       openapi: '3.0.3'

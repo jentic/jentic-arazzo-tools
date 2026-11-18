@@ -25,28 +25,61 @@ function openBrowser(url) {
   }
 }
 
-const input = process.argv[2];
+const IGNORE_UNSUPPORTED_VERSION_FLAG = '--ignore-unsupported-version';
 
-if (!input || input === '--help' || input === '-h') {
-  console.log('Usage: arazzo-ui <url-or-file>\n');
+function printUsage() {
+  console.log('Usage: arazzo-ui [options] <url-or-file>\n');
   console.log('Open an Arazzo Document in the browser.\n');
+  console.log('Options:');
+  console.log(
+    `  ${IGNORE_UNSUPPORTED_VERSION_FLAG}  don't report documents declaring an unsupported Arazzo version`,
+  );
+  console.log('  -h, --help                    show this help\n');
   console.log('Examples:');
   console.log(
     '  npx @jentic/arazzo-ui https://arazzo-ui.jentic.com/petstore-order-workflow.arazzo.yaml',
   );
   console.log('  npx @jentic/arazzo-ui ./workflow.arazzo.yaml');
-  process.exit(input ? 0 : 1);
+  console.log(`  npx @jentic/arazzo-ui ${IGNORE_UNSUPPORTED_VERSION_FLAG} ./workflow.arazzo.yaml`);
 }
+
+const args = process.argv.slice(2);
+
+if (args.includes('--help') || args.includes('-h')) {
+  printUsage();
+  process.exit(0);
+}
+
+const ignoreUnsupportedVersion = args.includes(IGNORE_UNSUPPORTED_VERSION_FLAG);
+const unknownOptions = args.filter(
+  (arg) => arg.startsWith('-') && arg !== IGNORE_UNSUPPORTED_VERSION_FLAG,
+);
+const positionals = args.filter((arg) => !arg.startsWith('-'));
+
+if (unknownOptions.length > 0) {
+  console.error(`Unknown option: ${unknownOptions.join(', ')}\n`);
+  printUsage();
+  process.exit(1);
+}
+
+if (positionals.length !== 1) {
+  printUsage();
+  process.exit(1);
+}
+
+const [input] = positionals;
+// viewer options go wherever the document goes: the query string for URLs, the hash for content
+const optionParams = ignoreUnsupportedVersion ? '&ignoreUnsupportedVersion=true' : '';
 
 let viewerURL;
 
 if (urlUtils.isHttpUrl(input)) {
-  viewerURL = `${BASE_URL}?document=${encodeURIComponent(input)}`;
+  viewerURL = `${BASE_URL}?document=${encodeURIComponent(input)}${optionParams}`;
 } else {
   const filePath = resolve(input);
   try {
     const content = await readFile(filePath, 'utf-8');
-    viewerURL = `${BASE_URL}#document=${encodeURIComponent(content)}`;
+    viewerURL = `${BASE_URL}#document=${encodeURIComponent(content)}${optionParams}`;
   } catch (err) {
     console.error(`Failed to read file: ${filePath}\n${err.message}`);
     process.exit(1);

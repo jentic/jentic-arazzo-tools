@@ -1,6 +1,6 @@
 {
   "name": "@jentic/arazzo-ui",
-  "version": "1.0.0-alpha.33",
+  "version": "1.0.0-alpha.34",
   "description": "UI for Arazzo Workflows.",
   "keywords": [
     "arazzo",
@@ -41,7 +41,7 @@
     "arazzo-ui": "./bin/arazzo-ui.mjs"
   },
   "scripts": {
-    "dev": "vite serve --config config/vite/vite.dev.config.ts",
+    "dev": "node scripts/dev.mjs",
     "build": "npm run clean && run-p --max-parallel ${CPU_CORES:-2} typescript:declaration build:umd:ui build:umd:standalone build:esm:ui build:esm:standalone && npm run build:app",
     "build:umd:ui": "cross-env BUILD_ENTRY=ArazzoUI vite build --config config/vite/vite.config.ts",
     "build:umd:standalone": "cross-env BUILD_ENTRY=ArazzoUIStandalone vite build --config config/vite/vite.config.ts",
@@ -64,8 +64,12 @@
   "author": "Jentic <hello@jentic.com>",
   "license": "Apache-2.0",
   "dependencies": {
-    "@jentic/arazzo-parser": "1.0.0-alpha.33",
-    "@jentic/arazzo-resolver": "1.0.0-alpha.33",
+    "@jentic/arazzo-parser": "1.0.0-alpha.34",
+    "@jentic/arazzo-resolver": "1.0.0-alpha.34",
+    "@jentic/arazzo-validator": "1.0.0-alpha.34",
+    "@speclynx/apidom-parser-adapter-arazzo-json-1": "^7.0.1",
+    "@speclynx/apidom-parser-adapter-arazzo-yaml-1": "^7.0.1",
+    "@speclynx/apidom-reference": "^7.0.1",
     "mermaid": "^12.2.0",
     "react-markdown": "^10.1.0",
     "reactflow": "^11.10.4",

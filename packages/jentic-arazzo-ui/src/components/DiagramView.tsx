@@ -39,7 +39,7 @@ import {
 } from '../edges/index';
 import { WorkflowTabs } from './WorkflowTabs';
 import { ArazzoNode, ArazzoEdge } from '../types/index';
-import { ErrorBoundary } from './ErrorBoundary';
+import { ErrorBoundary, RenderErrorNotice } from './ErrorBoundary';
 import './WorkflowTabs.css';
 
 const nodeTypes = {
@@ -87,8 +87,12 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
     selectedNodeId,
     setSelectedNode,
     activeWorkflowId,
+    document,
+    diagramError,
   } = useArazzoViewer();
   const reactFlow = useReactFlow();
+  // the diagram recovers from a render error when another workflow or document is shown
+  const diagramResetKey = useMemo(() => [document, activeWorkflowId], [document, activeWorkflowId]);
 
   // Track which workflow we've set the view for
   const viewSetForWorkflow = useRef<string | null>(null);
@@ -259,11 +263,21 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
       style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}
     >
       {/* Workflow Tabs */}
-      {showWorkflowTabs && <WorkflowTabs onWorkflowSelect={events?.onWorkflowSelect} />}
+      {showWorkflowTabs && (
+        <ErrorBoundary label="The workflow tabs" resetKey={document}>
+          <WorkflowTabs onWorkflowSelect={events?.onWorkflowSelect} />
+        </ErrorBoundary>
+      )}
+
+      {diagramError && (
+        <div style={{ padding: '0 12px' }}>
+          <RenderErrorNotice label="This workflow's diagram" message={diagramError} />
+        </div>
+      )}
 
       {/* React Flow Canvas */}
       <div style={{ flex: 1, minHeight: 0 }}>
-        <ErrorBoundary>
+        <ErrorBoundary label="The diagram" resetKey={diagramResetKey}>
           <ReactFlow
             nodes={nodesWithSelection}
             edges={edges}

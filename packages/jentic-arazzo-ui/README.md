@@ -41,11 +41,16 @@ npx @jentic/arazzo-ui https://arazzo-ui.jentic.com/petstore-order-workflow.arazz
 
 # from a local file
 npx @jentic/arazzo-ui ./workflow.arazzo.yaml
+
+# don't report documents declaring an unsupported Arazzo version (e.g. 1.1.0)
+npx @jentic/arazzo-ui --ignore-unsupported-version ./workflow.arazzo.yaml
 ```
 
 This opens `https://arazzo-ui.jentic.com` with the document pre-loaded.
 Local files are passed via the URL fragment (`#document=`), so the document content is never sent to the server.
 The resulting URL is also shareable if the workflow size is not too large.
+
+`--ignore-unsupported-version` adds `ignoreUnsupportedVersion=true` to that URL, which suppresses the validation error for an unsupported Arazzo version (the document is still validated against the latest supported version). The parameter works with any `ArazzoUIStandalone` page, and the same flag is accepted by the dev server: `npm run dev -- --ignore-unsupported-version`.
 
 ## Components
 
@@ -183,6 +188,7 @@ In split view, clicking a step node in the diagram expands the workflow and scro
 | `onEdgeSelect` | `(edgeId, edge) => void` | — | Called when a diagram edge is clicked |
 | `onWorkflowSelect` | `(workflowId) => void` | — | Called when a workflow tab is selected |
 | `onViewChange` | `(view) => void` | — | Called when the view mode changes |
+| `ignoreUnsupportedVersion` | `boolean` | `false` | Don't report the validation error for an unsupported Arazzo version; the document is still validated against the latest supported version |
 
 ### ArazzoUIStandaloneProps
 
