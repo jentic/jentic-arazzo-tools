@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.34](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2026-11-18)
+
+### Bug Fixes
+
+- keep the viewer usable when an Arazzo document is invalid ([78309b2](https://github.com/jentic/jentic-arazzo-tools/commit/78309b2c30af26f210ddf75c25ad5f8e696c3882))
+- **ui:** align arazzo detection adapters with ApiDOM 7 ([425ba1d](https://github.com/jentic/jentic-arazzo-tools/commit/425ba1db14ec5c96b98652e3136564292aabae25))
+- **ui:** detect inline validation input the same way as parseArazzo ([dbf45d3](https://github.com/jentic/jentic-arazzo-tools/commit/dbf45d3db8855e462277eac03832a5f09d4df7ad))
+- **ui:** fetch a document once for parsing and validation ([ea7dc48](https://github.com/jentic/jentic-arazzo-tools/commit/ea7dc482dfd2448b5d43432373ed5f132ee4a0b7))
+- **ui:** forward Vite options from npm run dev ([744762a](https://github.com/jentic/jentic-arazzo-tools/commit/744762ad7db32b3c4067a3d1b09009635201d413))
+- **ui:** keep inline notes on the right step after normalization ([a93abfc](https://github.com/jentic/jentic-arazzo-tools/commit/a93abfc6ee0736bb7d55381349b3d87b249a9e74))
+- **ui:** place validation notes correctly and harden invalid input ([cc2e62c](https://github.com/jentic/jentic-arazzo-tools/commit/cc2e62ce1d9f647374f99fe07083d36bfc4da53d))
+- **ui:** skip non-array step lists when collecting inline notes ([f36f371](https://github.com/jentic/jentic-arazzo-tools/commit/f36f3712aafe7621be001b8bf27af698f3499f88))
+- **ui:** time out document fetches and validate only for docs view ([04e5330](https://github.com/jentic/jentic-arazzo-tools/commit/04e533084f2ad0e4818430dd2de46499128e4f90))
+
+### Features
+
+- **ui:** add option to ignore unsupported Arazzo versions ([30f1c21](https://github.com/jentic/jentic-arazzo-tools/commit/30f1c21f45972739dbb7fd188594983e81d40a71))
+- **ui:** add switch to toggle inline validation notes ([015dee6](https://github.com/jentic/jentic-arazzo-tools/commit/015dee64f05d51aef73d6d58fe243f7fa450ade4))
+- **ui:** add validation section to docs view ([5c023b9](https://github.com/jentic/jentic-arazzo-tools/commit/5c023b9577b99b8f9d7aa8c44460af24caef3f80))
+- **ui:** show validation diagnostics inline in docs view ([96340d6](https://github.com/jentic/jentic-arazzo-tools/commit/96340d670a1122b7ec40ffd1c956c06c649d0417))
+
 # [1.0.0-alpha.33](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2026-11-09)
 
 ### Bug Fixes

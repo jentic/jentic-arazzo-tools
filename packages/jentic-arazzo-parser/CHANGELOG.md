@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.0.0-alpha.34](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.33...v1.0.0-alpha.34) (2026-11-18)
+
+### Bug Fixes
+
+- keep the viewer usable when an Arazzo document is invalid ([78309b2](https://github.com/jentic/jentic-arazzo-tools/commit/78309b2c30af26f210ddf75c25ad5f8e696c3882))
+- **ui:** time out document fetches and validate only for docs view ([04e5330](https://github.com/jentic/jentic-arazzo-tools/commit/04e533084f2ad0e4818430dd2de46499128e4f90))
+- **validator:** validate Arazzo documents on fresh installs ([c00553f](https://github.com/jentic/jentic-arazzo-tools/commit/c00553f3be201f7c8d222789141df49566ae65e0)), closes [#351](https://github.com/jentic/jentic-arazzo-tools/issues/351)
+
+### BREAKING CHANGES
+
+- **validator:** public types now come from ApiDOM 7 and
+  @speclynx/api-languageservice 3. The validator's re-exported Diagnostic
+  is from vscode-languageserver-types 3.18.5, where `message` is
+  `string | MarkupContent`. LanguageServiceContext is the
+  api-languageservice 3 type, whose JSON Schema validation providers no
+  longer accept a schema of their own. Elements returned by the parser,
+  resolver and runner are ApiDOM 7 elements, subject to its breaking
+  changes. Documents declaring Arazzo 1.1 used to pass without being
+  checked. They are now validated and rejected, as rule 9020102 only
+  allows 1.0.x.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+
 # [1.0.0-alpha.33](https://github.com/jentic/jentic-arazzo-tools/compare/v1.0.0-alpha.32...v1.0.0-alpha.33) (2026-11-09)
 
 ### Bug Fixes
