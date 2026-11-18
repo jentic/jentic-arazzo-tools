@@ -264,7 +264,7 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          color: '#6b7280',
+          color: 'var(--arazzo-muted-fg)',
           fontSize: '14px',
           ...style,
         }}
@@ -293,9 +293,9 @@ export const ArazzoUI = forwardRef<ArazzoUIRef, ArazzoUIProps>(function ArazzoUI
             maxWidth: '480px',
             padding: '16px 24px',
             borderRadius: '8px',
-            border: '1px solid #fca5a5',
-            background: '#fef2f2',
-            color: '#991b1b',
+            border: '1px solid var(--arazzo-danger-border)',
+            background: 'var(--arazzo-danger-bg)',
+            color: 'var(--arazzo-danger)',
             fontSize: '14px',
             lineHeight: '1.5',
           }}

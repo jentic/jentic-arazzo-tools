@@ -104,13 +104,13 @@ export const FailureEdge: React.FC<EdgeProps<FailureEdgeData>> = ({
   // Match edge color to action type: amber for retry, red for end/goto
   const isRetry = data?.action.type === 'retry';
   const isEnd = data?.action.type === 'end';
-  const baseColor = isRetry ? '#f59e0b' : '#ef4444';
+  const baseColor = isRetry ? 'var(--arazzo-warning)' : 'var(--arazzo-danger)';
   const strokeColor = selected
-    ? '#3b82f6'
+    ? 'var(--arazzo-ring)'
     : isHovered
       ? isRetry
-        ? '#fbbf24'
-        : '#f87171'
+        ? 'var(--arazzo-warning-hover)'
+        : 'var(--arazzo-danger-hover)'
       : baseColor;
   const strokeWidth = selected ? 3 : isHovered ? 2.5 : 2;
 
@@ -161,10 +161,9 @@ export const FailureEdge: React.FC<EdgeProps<FailureEdgeData>> = ({
         <path
           d={edgePath}
           fill="none"
-          stroke="#3b82f6"
           strokeWidth={8}
           strokeOpacity={0.2}
-          style={{ pointerEvents: 'none' }}
+          style={{ stroke: 'var(--arazzo-ring)', pointerEvents: 'none' }}
         />
       )}
       <EdgeLabelRenderer>
@@ -174,13 +173,13 @@ export const FailureEdge: React.FC<EdgeProps<FailureEdgeData>> = ({
             transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
             fontSize: 10,
             fontWeight: 600,
-            background: selected ? '#3b82f6' : baseColor,
-            color: '#fff',
+            background: selected ? 'var(--arazzo-ring)' : baseColor,
+            color: 'var(--arazzo-on-accent)',
             padding: '2px 6px',
             borderRadius: 4,
             pointerEvents: 'all',
             cursor: 'pointer',
-            boxShadow: isHovered || selected ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
+            boxShadow: isHovered || selected ? 'var(--arazzo-shadow-label)' : 'none',
             transition: 'background 0.15s ease, box-shadow 0.15s ease',
           }}
           className="nodrag nopan"

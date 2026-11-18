@@ -223,11 +223,11 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
             position: 'relative',
             height: '60px',
             padding: '0 16px',
-            borderBottom: '1px solid #333',
+            borderBottom: '1px solid var(--arazzo-border)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            background: '#1B1B1B',
+            background: 'var(--arazzo-card)',
           }}
         >
           <a
@@ -235,7 +235,7 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
             target="_blank"
             rel="noopener noreferrer"
             title="Supported by Jentic"
-            style={{ position: 'absolute', left: '16px' }}
+            style={{ position: 'absolute', left: '16px', color: 'var(--arazzo-fg)' }}
           >
             <JenticLogo style={{ height: '36px' }} />
           </a>
@@ -253,15 +253,13 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
               onChange={(e) => setUrlInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Enter Arazzo document URL..."
+              className="arazzo-ui-url-input"
               style={{
                 flex: 1,
                 padding: '6px 12px',
-                border: '1px solid #444',
                 borderRadius: '6px',
                 fontSize: '13px',
-                outline: 'none',
-                background: '#2a2a2a',
-                color: '#fff',
+                color: 'var(--arazzo-fg)',
               }}
             />
             <button
@@ -270,8 +268,8 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
                 padding: '6px 16px',
                 border: 'none',
                 borderRadius: '6px',
-                background: '#94C83D',
-                color: '#fff',
+                background: 'var(--arazzo-primary)',
+                color: 'var(--arazzo-on-accent)',
                 fontSize: '13px',
                 cursor: 'pointer',
                 fontWeight: 500,
@@ -286,10 +284,10 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
               title="Upload Arazzo document"
               style={{
                 padding: '6px',
-                border: '1px solid #444',
+                border: '1px solid var(--arazzo-border)',
                 borderRadius: '6px',
-                background: '#2a2a2a',
-                color: '#fff',
+                background: 'var(--arazzo-bg-secondary)',
+                color: 'var(--arazzo-fg)',
                 fontSize: '13px',
                 cursor: 'pointer',
                 display: 'flex',
@@ -325,8 +323,8 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(148, 200, 61, 0.1)',
-              border: '2px dashed #94C83D',
+              background: 'var(--arazzo-primary-bg)',
+              border: '2px dashed var(--arazzo-primary)',
               borderRadius: '8px',
               display: 'flex',
               alignItems: 'center',
@@ -337,8 +335,9 @@ export const ArazzoUIStandalone = forwardRef<ArazzoUIRef, ArazzoUIStandaloneProp
           >
             <div
               style={{
-                background: '#1B1B1B',
-                color: '#94C83D',
+                background: 'var(--arazzo-bg)',
+                color: 'var(--arazzo-primary)',
+                fontFamily: 'var(--arazzo-font-heading)',
                 padding: '16px 32px',
                 borderRadius: '8px',
                 fontSize: '16px',
