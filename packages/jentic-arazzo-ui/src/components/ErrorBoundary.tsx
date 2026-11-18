@@ -63,10 +63,10 @@ export const RenderErrorNotice: React.FC<{ label?: string; message: string }> = 
     style={{
       margin: '8px 0',
       padding: '10px 14px',
-      border: '1px solid #fca5a5',
+      border: '1px solid var(--arazzo-danger-border)',
       borderRadius: 6,
-      background: '#fef2f2',
-      color: '#991b1b',
+      background: 'var(--arazzo-danger-bg)',
+      color: 'var(--arazzo-danger)',
       fontSize: 13,
       lineHeight: 1.5,
     }}

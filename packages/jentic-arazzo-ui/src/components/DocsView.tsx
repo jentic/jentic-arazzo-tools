@@ -816,18 +816,18 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
           }
 
           .step-detail-issues-error {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--arazzo-danger-bg);
+            color: var(--arazzo-danger);
           }
 
           .step-detail-issues-warning {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--arazzo-warning-bg);
+            color: var(--arazzo-warning);
           }
 
           .step-detail-issues-info, .step-detail-issues-hint {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--arazzo-bg-secondary);
+            color: var(--arazzo-fg-lighter);
           }
 
           .workflow-issues {
@@ -867,21 +867,21 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
           }
 
           .step-diagnostic-error {
-            background: #fef2f2;
-            border-color: #f87171;
-            color: #991b1b;
+            background: var(--arazzo-danger-bg);
+            border-color: var(--arazzo-danger);
+            color: var(--arazzo-danger);
           }
 
           .step-diagnostic-warning {
-            background: #fffbeb;
-            border-color: #fbbf24;
-            color: #92400e;
+            background: var(--arazzo-warning-bg);
+            border-color: var(--arazzo-accent-orange);
+            color: var(--arazzo-warning);
           }
 
           .step-diagnostic-info, .step-diagnostic-hint {
-            background: #eff6ff;
-            border-color: #60a5fa;
-            color: #1e40af;
+            background: var(--arazzo-bg-secondary);
+            border-color: var(--arazzo-border-hover);
+            color: var(--arazzo-fg-lighter);
           }
 
           .step-diagnostic-severity {
@@ -1169,7 +1169,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             gap: 6px;
             font-size: 12px;
             font-weight: 500;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
             background: none;
             border: none;
             padding: 0;
@@ -1177,11 +1177,11 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
           }
 
           .validation-inline-switch:hover {
-            color: #374151;
+            color: var(--arazzo-fg-lighter);
           }
 
           .validation-inline-switch:focus-visible {
-            outline: 2px solid #93c5fd;
+            outline: 3px solid var(--arazzo-primary);
             outline-offset: 2px;
             border-radius: 4px;
           }
@@ -1191,7 +1191,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             width: 28px;
             height: 16px;
             border-radius: 8px;
-            background: #d1d5db;
+            background: var(--arazzo-input-border);
             transition: background 0.15s;
           }
 
@@ -1202,13 +1202,13 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             width: 12px;
             height: 12px;
             border-radius: 50%;
-            background: #fff;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            background: var(--arazzo-card);
+            box-shadow: var(--arazzo-shadow);
             transition: transform 0.15s;
           }
 
           .validation-inline-switch[aria-checked='true'] .validation-inline-switch-track {
-            background: #6BA543;
+            background: var(--arazzo-primary);
           }
 
           .validation-inline-switch[aria-checked='true'] .validation-inline-switch-thumb {
@@ -1223,34 +1223,34 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
           }
 
           .validation-card {
-            background: #fff;
-            border: 1px solid #e5e7eb;
+            background: var(--arazzo-card);
+            border: 1px solid var(--arazzo-border);
             border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: var(--arazzo-shadow);
             overflow: hidden;
           }
 
           .validation-empty {
             padding: 14px 20px;
             font-size: 13px;
-            color: #6b7280;
+            color: var(--arazzo-muted-fg);
           }
 
           .validation-ok {
-            color: #6BA543;
+            color: var(--arazzo-success);
             font-weight: 600;
           }
 
           .validation-failed {
-            color: #991b1b;
+            color: var(--arazzo-danger);
           }
 
           .validation-notice {
             padding: 10px 20px;
             font-size: 12px;
-            color: #92400e;
-            background: #fffbeb;
-            border-bottom: 1px solid #fde68a;
+            color: var(--arazzo-warning);
+            background: var(--arazzo-warning-bg);
+            border-bottom: 1px solid var(--arazzo-warning-border);
           }
 
           .arazzo-docs-view ul.validation-list {
@@ -1265,7 +1265,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             gap: 10px;
             margin: 0;
             padding: 10px 20px;
-            border-bottom: 1px solid #f3f4f6;
+            border-bottom: 1px solid var(--arazzo-border);
             font-size: 13px;
             line-height: 1.5;
           }
@@ -1288,40 +1288,40 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
           }
 
           .validation-severity-error, .validation-count-error {
-            background: #fee2e2;
-            color: #991b1b;
+            background: var(--arazzo-danger-bg);
+            color: var(--arazzo-danger);
           }
 
           .validation-severity-warning, .validation-count-warning {
-            background: #fef3c7;
-            color: #92400e;
+            background: var(--arazzo-warning-bg);
+            color: var(--arazzo-warning);
           }
 
           .validation-severity-info, .validation-count-info,
           .validation-severity-hint, .validation-count-hint {
-            background: #dbeafe;
-            color: #1e40af;
+            background: var(--arazzo-bg-secondary);
+            color: var(--arazzo-fg-lighter);
           }
 
           .validation-location {
             flex-shrink: 0;
             min-width: 48px;
             font-size: 12px;
-            color: #9ca3af;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            color: var(--arazzo-muted-fg);
+            font-family: var(--arazzo-font-mono);
           }
 
           .validation-message {
             flex: 1;
-            color: #374151;
+            color: var(--arazzo-fg-lighter);
             word-break: break-word;
           }
 
           .validation-code {
             flex-shrink: 0;
             font-size: 11px;
-            color: #9ca3af;
-            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            color: var(--arazzo-muted-fg);
+            font-family: var(--arazzo-font-mono);
           }
 
         `}</style>
