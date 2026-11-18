@@ -719,7 +719,6 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             padding: 1px 5px;
             border-radius: 3px;
             font-size: 12px;
-            color: var(--arazzo-info);
           }
 
           .step-grid-3 {
@@ -739,12 +738,6 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             padding: 1px 5px;
             border-radius: 3px;
             font-size: 12px;
-            color: var(--arazzo-info);
-          }
-
-          /* parameter and output names in the step grid's first column */
-          .step-grid-row > span:first-child code {
-            color: var(--arazzo-fg);
           }
 
           .step-arrow {
@@ -793,7 +786,6 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             padding: 1px 5px;
             border-radius: 3px;
             font-size: 11px;
-            color: var(--arazzo-info);
           }
 
           .arazzo-docs-view table {
@@ -822,11 +814,15 @@ export const DocsView: React.FC<DocsViewProps> = () => {
             padding: 2px 6px;
             border-radius: 3px;
             font-size: 0.9em;
-            color: var(--arazzo-info);
+            color: var(--arazzo-fg);
           }
 
-          .arazzo-docs-view table code {
-            color: var(--arazzo-fg);
+          /* names (parameters, outputs, actions, steps) use the base color above;
+             values and runtime expressions use teal. Second-column table cells
+             hold values: workflow outputs and request body fields */
+          .arazzo-docs-view code.expr,
+          .arazzo-docs-view td + td > code {
+            color: var(--arazzo-expression-fg);
           }
 
           .arazzo-docs-view code.content-type {

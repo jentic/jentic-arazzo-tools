@@ -208,10 +208,12 @@ export function formatWorkflowAsMarkdown(
       sections.push(`<div class="step-detail-body step-grid-3">`);
       step.parameters.forEach((param) => {
         if ('$ref' in param) {
-          sections.push(`<div class="step-row">Reference: <code>${param.$ref}</code></div>`);
+          sections.push(
+            `<div class="step-row">Reference: <code class="expr">${param.$ref}</code></div>`,
+          );
         } else if ('reference' in param) {
           sections.push(
-            `<div class="step-row">Reference: <code>${(param as { reference: string }).reference}</code></div>`,
+            `<div class="step-row">Reference: <code class="expr">${(param as { reference: string }).reference}</code></div>`,
           );
         } else if ('name' in param) {
           // `in` is optional: parameters of steps invoking a workflow have no location
@@ -219,7 +221,7 @@ export function formatWorkflowAsMarkdown(
           const value = typeof param.value === 'string' ? param.value : JSON.stringify(param.value);
           const arrow = typeof value === 'string' && value.startsWith('$') ? '←' : '=';
           sections.push(
-            `<div class="step-grid-row"><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
+            `<div class="step-grid-row"><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code class="expr">${value}</code></span></div>`,
           );
         }
       });
@@ -271,7 +273,7 @@ export function formatWorkflowAsMarkdown(
       );
       sections.push(`<div class="step-detail-body">`);
       step.successCriteria.forEach((c) => {
-        sections.push(`<div class="step-row"><code>${c.condition}</code></div>`);
+        sections.push(`<div class="step-row"><code class="expr">${c.condition}</code></div>`);
       });
       sections.push(`</div></details>`);
     }
@@ -285,7 +287,7 @@ export function formatWorkflowAsMarkdown(
       sections.push(`<div class="step-detail-body step-grid-3">`);
       Object.entries(step.outputs).forEach(([key, value]) => {
         sections.push(
-          `<div class="step-grid-row"><span><code>${key}</code></span><span class="step-arrow">←</span><span><code>${value}</code></span></div>`,
+          `<div class="step-grid-row"><span><code>${key}</code></span><span class="step-arrow">←</span><span><code class="expr">${value}</code></span></div>`,
         );
       });
       sections.push(`</div></details>`);
@@ -303,7 +305,7 @@ export function formatWorkflowAsMarkdown(
       allSuccessActions.forEach((action) => {
         if ('$ref' in action) {
           sections.push(
-            `<div class="step-grid-row"><span><code>${action.$ref}</code></span><span></span><span></span></div>`,
+            `<div class="step-grid-row"><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
           );
         } else if ('type' in action) {
           const an = action.name ? `<strong>${action.name}</strong>` : '';
@@ -322,7 +324,7 @@ export function formatWorkflowAsMarkdown(
       allFailureActions.forEach((action) => {
         if ('$ref' in action) {
           sections.push(
-            `<div class="step-grid-row"><span><code>${action.$ref}</code></span><span></span><span></span></div>`,
+            `<div class="step-grid-row"><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
           );
         } else if ('type' in action) {
           const an = action.name ? `<strong>${action.name}</strong>` : '';
