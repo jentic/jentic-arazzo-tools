@@ -1,4 +1,7 @@
 import { Workflow, ArazzoDocument } from '../../types/arazzo';
+import { ViewerStep } from '../../types/viewer';
+import { describeStepOperation } from '../stepOperationLabel';
+import { escapeMermaidText } from './escapeMermaidText';
 
 /**
  * Generates Mermaid sequence diagram showing client-API interactions
@@ -37,52 +40,20 @@ export function generateMermaidSequence(workflow: Workflow, document: ArazzoDocu
 
   // Generate sequence for each step
   workflow.steps.forEach((step, idx) => {
-    if (step.operationId || step.operationPath) {
-      const operation = step.operationId || step.operationPath || 'operation';
-
-      // Determine target API by parsing operationId
-      // Supports two formats:
-      // 1. Runtime expression: $sourceDescriptions.{sourceName}.{operationName}
-      // 2. Direct reference: {sourceName}.{operationName}
+    const op = describeStepOperation(step, {
+      operation: (step as ViewerStep)._operation,
+      sourceNames: apiParticipants.keys(),
+    });
+    if (op) {
+      // target the API the step names, falling back to the first source
       let target = defaultApi;
-      let sourceName: string | undefined;
-
-      if (typeof operation === 'string') {
-        if (operation.startsWith('$sourceDescriptions.')) {
-          // Runtime expression format
-          const parts = operation.split('.');
-          if (parts.length >= 3) {
-            sourceName = parts[1];
-          }
-        } else if (operation.includes('.')) {
-          // Direct reference format - check if first part matches a source name
-          const parts = operation.split('.');
-          const potentialSource = parts[0];
-          if (apiParticipants.has(potentialSource)) {
-            sourceName = potentialSource;
-          }
-        }
-
-        // Map source name to participant
-        if (sourceName) {
-          target = apiParticipants.get(sourceName) || defaultApi;
-        } else if (sources.length > 0) {
-          // Fallback to first source if no match found
-          target = apiParticipants.get(sources[0].name) || defaultApi;
-        }
+      if (op.sourceName && apiParticipants.has(op.sourceName)) {
+        target = apiParticipants.get(op.sourceName)!;
+      } else if (sources.length > 0) {
+        target = apiParticipants.get(sources[0].name) || defaultApi;
       }
 
-      // Extract clean operation name for display
-      let displayOperation = operation;
-      if (typeof operation === 'string') {
-        if (operation.startsWith('$sourceDescriptions.')) {
-          // Runtime expression: extract from third part onwards
-          displayOperation = operation.split('.').slice(2).join('.');
-        } else if (sourceName && operation.includes('.')) {
-          // Direct reference: extract from second part onwards
-          displayOperation = operation.split('.').slice(1).join('.');
-        }
-      }
+      const displayOperation = escapeMermaidText(op.label);
       const stepLabel = `${idx + 1}. ${displayOperation}`;
 
       // Show parameters as note if present

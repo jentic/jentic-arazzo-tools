@@ -6,6 +6,7 @@ import { RequestBodyDialog } from '../components/RequestBodyDialog';
 import { getRequestBodyView } from '../utils/documentation/requestBodyView';
 import { renderMethodBadgeStyle } from '../utils/operationMethods';
 import { arazzoLogoSvg } from '../utils/arazzoLogo';
+import { describeStepOperation } from '../utils/stepOperationLabel';
 
 // Type guard for SuccessAction
 const isSuccessAction = (action: unknown): action is SuccessAction => {
@@ -59,7 +60,9 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
 
   const getOperationDisplay = () => {
     if (step.operationId) return step.operationId;
-    if (step.operationPath) return step.operationPath.split('/').pop() || 'operation';
+    if (step.operationPath) {
+      return describeStepOperation(step, { operation: step._operation })?.label ?? 'operation';
+    }
     if (step.workflowId) return step.workflowId;
     return 'No operation';
   };

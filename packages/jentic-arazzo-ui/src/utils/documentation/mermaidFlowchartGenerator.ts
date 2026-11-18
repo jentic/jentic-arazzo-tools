@@ -1,5 +1,8 @@
 import { Workflow } from '../../types/arazzo';
+import { ViewerStep } from '../../types/viewer';
 import { palette } from '../../styles/palette';
+import { describeStepOperation } from '../stepOperationLabel';
+import { escapeMermaidText } from './escapeMermaidText';
 
 /**
  * Generates Mermaid flowchart diagram showing workflow control flow
@@ -14,10 +17,15 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
     const stepNum = idx + 1;
     const nextStepNum = stepNum + 1;
     const stepId = `Step${stepNum}`;
-    const operation = step.operationId || step.operationPath || step.workflowId || step.stepId;
+    const operation =
+      describeStepOperation(step, { operation: (step as ViewerStep)._operation })?.label ??
+      step.workflowId ??
+      step.stepId;
 
     // Truncate long operation names
-    const displayOperation = operation.length > 30 ? operation.substring(0, 27) + '...' : operation;
+    const displayOperation = escapeMermaidText(
+      operation.length > 30 ? operation.substring(0, 27) + '...' : operation,
+    );
 
     // Step node
     lines.push(`    ${stepId}["${stepNum}. ${displayOperation}"]`);

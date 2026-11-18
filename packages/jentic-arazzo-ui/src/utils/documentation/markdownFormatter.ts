@@ -3,6 +3,7 @@ import { getRequestBodyView, KeyValueRowView } from './requestBodyView';
 import { escapeHtml } from '../escapeHtml';
 import { renderMethodBadgeStyle } from '../operationMethods';
 import { arazzoLogoSvg } from '../arazzoLogo';
+import { describeStepOperation } from '../stepOperationLabel';
 
 export interface FormatOptions {
   includeMetadata?: boolean;
@@ -173,18 +174,15 @@ export function formatWorkflowAsMarkdown(
     let opHtml = '';
     let opKind = 'Operation';
     const refColor = 'var(--arazzo-primary)';
-    if (step.operationId) {
-      const dotIdx = step.operationId.indexOf('.');
-      if (dotIdx > 0) {
-        const source = step.operationId.substring(0, dotIdx);
-        const operation = step.operationId.substring(dotIdx + 1);
-        const type = sourceTypes.get(source) || 'arazzo';
-        opHtml = `<span class="timeline-operation-group">${sourceIcon(type)}<span class="timeline-source">${source}</span><span class="timeline-op-name">${operation}</span></span>`;
-      } else {
-        opHtml = `<span class="step-op-ref" style="color: ${refColor}">${step.operationId}</span>`;
-      }
-    } else if (step.operationPath) {
-      opHtml = `<code>${step.operationPath}</code>`;
+    const op = describeStepOperation(step, {
+      operation: step.operation,
+      sourceNames: sourceTypes.keys(),
+    });
+    if (op?.sourceName) {
+      const type = sourceTypes.get(op.sourceName) || 'arazzo';
+      opHtml = `<span class="timeline-operation-group">${sourceIcon(type)}<span class="timeline-source">${escapeHtml(op.sourceName)}</span><span class="timeline-op-name">${escapeHtml(op.label)}</span></span>`;
+    } else if (op) {
+      opHtml = `<span class="step-op-ref" style="color: ${refColor}">${escapeHtml(op.label)}</span>`;
     } else if (step.workflowId) {
       opHtml = `<span class="step-op-ref" style="color: ${refColor}">${step.workflowId}</span>`;
       opKind = 'Workflow';
