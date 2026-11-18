@@ -818,16 +818,19 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
           .step-detail-issues-error {
             background: var(--arazzo-danger-bg);
             color: var(--arazzo-danger);
+            border: 1px solid var(--arazzo-danger-border);
           }
 
           .step-detail-issues-warning {
             background: var(--arazzo-warning-bg);
             color: var(--arazzo-warning);
+            border: 1px solid var(--arazzo-warning-border);
           }
 
           .step-detail-issues-info, .step-detail-issues-hint {
             background: var(--arazzo-bg-secondary);
-            color: var(--arazzo-fg-lighter);
+            color: var(--arazzo-muted-fg);
+            border: 1px solid var(--arazzo-border);
           }
 
           .workflow-issues {
@@ -868,20 +871,20 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
 
           .step-diagnostic-error {
             background: var(--arazzo-danger-bg);
-            border-color: var(--arazzo-danger);
+            border-color: var(--arazzo-danger-border);
             color: var(--arazzo-danger);
           }
 
           .step-diagnostic-warning {
             background: var(--arazzo-warning-bg);
-            border-color: var(--arazzo-accent-orange);
+            border-color: var(--arazzo-warning-border);
             color: var(--arazzo-warning);
           }
 
           .step-diagnostic-info, .step-diagnostic-hint {
             background: var(--arazzo-bg-secondary);
-            border-color: var(--arazzo-border-hover);
-            color: var(--arazzo-fg-lighter);
+            border-color: var(--arazzo-border);
+            color: var(--arazzo-muted-fg);
           }
 
           .step-diagnostic-severity {
@@ -1290,17 +1293,20 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
           .validation-severity-error, .validation-count-error {
             background: var(--arazzo-danger-bg);
             color: var(--arazzo-danger);
+            border: 1px solid var(--arazzo-danger-border);
           }
 
           .validation-severity-warning, .validation-count-warning {
             background: var(--arazzo-warning-bg);
             color: var(--arazzo-warning);
+            border: 1px solid var(--arazzo-warning-border);
           }
 
           .validation-severity-info, .validation-count-info,
           .validation-severity-hint, .validation-count-hint {
             background: var(--arazzo-bg-secondary);
-            color: var(--arazzo-fg-lighter);
+            color: var(--arazzo-muted-fg);
+            border: 1px solid var(--arazzo-border);
           }
 
           .validation-location {
