@@ -400,17 +400,21 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                         fontSize: '10px',
                         padding: '2px 6px',
                         borderRadius: '3px',
+                        border:
+                          action.type === 'goto'
+                            ? '1px solid var(--arazzo-border)'
+                            : '1px solid transparent',
                         background:
                           action.type === 'end'
                             ? 'var(--arazzo-danger)'
                             : action.type === 'goto'
-                              ? 'var(--arazzo-info-bg)'
+                              ? 'var(--arazzo-card)'
                               : 'var(--arazzo-bg-secondary)',
                         color:
                           action.type === 'end'
                             ? 'var(--arazzo-on-accent)'
                             : action.type === 'goto'
-                              ? 'var(--arazzo-info)'
+                              ? 'var(--arazzo-primary)'
                               : 'var(--arazzo-fg-lighter)',
                         fontWeight: action.type === 'end' ? 600 : 400,
                         display: 'flex',
@@ -529,14 +533,18 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               fontSize: '10px',
                               padding: '2px 6px',
                               borderRadius: '3px',
+                              border:
+                                action.type === 'goto'
+                                  ? '1px solid var(--arazzo-border)'
+                                  : '1px solid transparent',
                               background:
                                 action.type === 'end'
                                   ? 'var(--arazzo-danger)'
-                                  : 'var(--arazzo-info-bg)',
+                                  : 'var(--arazzo-card)',
                               color:
                                 action.type === 'end'
                                   ? 'var(--arazzo-on-accent)'
-                                  : 'var(--arazzo-info)',
+                                  : 'var(--arazzo-primary)',
                               fontWeight: action.type === 'end' ? 600 : 400,
                             }}
                           >
@@ -621,11 +629,15 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                         fontSize: '10px',
                         padding: '2px 6px',
                         borderRadius: '3px',
+                        border:
+                          action.type === 'goto'
+                            ? '1px solid var(--arazzo-border)'
+                            : '1px solid transparent',
                         background:
                           action.type === 'end'
                             ? 'var(--arazzo-danger)'
                             : action.type === 'goto'
-                              ? 'var(--arazzo-info-bg)'
+                              ? 'var(--arazzo-card)'
                               : action.type === 'retry'
                                 ? 'var(--arazzo-warning-bg)'
                                 : 'var(--arazzo-bg-secondary)',
@@ -633,7 +645,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                           action.type === 'end'
                             ? 'var(--arazzo-on-accent)'
                             : action.type === 'goto'
-                              ? 'var(--arazzo-info)'
+                              ? 'var(--arazzo-primary)'
                               : action.type === 'retry'
                                 ? 'var(--arazzo-warning)'
                                 : 'var(--arazzo-fg-lighter)',
@@ -749,17 +761,21 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                               fontSize: '10px',
                               padding: '2px 6px',
                               borderRadius: '3px',
+                              border:
+                                action.type === 'goto'
+                                  ? '1px solid var(--arazzo-border)'
+                                  : '1px solid transparent',
                               background:
                                 action.type === 'end'
                                   ? 'var(--arazzo-danger)'
                                   : action.type === 'goto'
-                                    ? 'var(--arazzo-info-bg)'
+                                    ? 'var(--arazzo-card)'
                                     : 'var(--arazzo-warning-bg)',
                               color:
                                 action.type === 'end'
                                   ? 'var(--arazzo-on-accent)'
                                   : action.type === 'goto'
-                                    ? 'var(--arazzo-info)'
+                                    ? 'var(--arazzo-primary)'
                                     : 'var(--arazzo-warning)',
                               fontWeight: action.type === 'end' ? 600 : 400,
                             }}
