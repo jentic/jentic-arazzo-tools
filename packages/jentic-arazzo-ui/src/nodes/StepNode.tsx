@@ -7,6 +7,7 @@ import { getRequestBodyView } from '../utils/documentation/requestBodyView';
 import { renderMethodBadgeStyle } from '../utils/operationMethods';
 import { arazzoLogoSvg } from '../utils/arazzoLogo';
 import { describeStepOperation } from '../utils/stepOperationLabel';
+import { sourceIcon } from '../utils/sourceIcon';
 
 // Type guard for SuccessAction
 const isSuccessAction = (action: unknown): action is SuccessAction => {
@@ -31,7 +32,7 @@ const isFailureAction = (action: unknown): action is FailureAction => {
 export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) => {
   const { step, isValid, workflowId, workflowSuccessActions, workflowFailureActions } = data;
   const reactFlow = useReactFlow();
-  const { nodes, setSelectedNode } = useArazzoViewer();
+  const { nodes, setSelectedNode, document: arazzoDocument } = useArazzoViewer();
   const [showRequestBody, setShowRequestBody] = useState(false);
 
   // Navigate to target node when clicking on a goto action
@@ -58,11 +59,17 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
     return 'UNKNOWN';
   };
 
+  // same source + operation labelling as the docs step cards
+  const sourceTypes = new Map(
+    (arazzoDocument?.sourceDescriptions ?? []).map((sd) => [sd.name, sd.type || 'arazzo']),
+  );
+  const operationLabel = describeStepOperation(step, {
+    operation: step._operation,
+    sourceNames: sourceTypes.keys(),
+  });
+
   const getOperationDisplay = () => {
-    if (step.operationId) return step.operationId;
-    if (step.operationPath) {
-      return describeStepOperation(step, { operation: step._operation })?.label ?? 'operation';
-    }
+    if (operationLabel) return operationLabel.label;
     if (step.workflowId) return step.workflowId;
     return 'No operation';
   };
@@ -141,10 +148,25 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
         {/* Operation */}
         <div style={{ padding: '12px', borderBottom: '1px solid var(--arazzo-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-            <span style={{ fontSize: '12px' }}>🔗</span>
-            <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--arazzo-primary)' }}>
-              {getOperationDisplay()}
-            </span>
+            {operationLabel?.sourceName ? (
+              <span className="timeline-operation-group">
+                <span
+                  style={{ display: 'inline-flex' }}
+                  dangerouslySetInnerHTML={{
+                    __html: sourceIcon(sourceTypes.get(operationLabel.sourceName) ?? 'arazzo'),
+                  }}
+                />
+                <span className="timeline-source">{operationLabel.sourceName}</span>
+                <span className="timeline-op-name">{operationLabel.label}</span>
+              </span>
+            ) : (
+              <>
+                <span style={{ fontSize: '12px' }}>🔗</span>
+                <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--arazzo-primary)' }}>
+                  {getOperationDisplay()}
+                </span>
+              </>
+            )}
             {httpMethod && (
               <span
                 className={`http-method http-method--${httpMethod.toLowerCase()}`}

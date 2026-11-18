@@ -281,6 +281,39 @@
   color: var(--arazzo-muted-fg);
 }
 
+/* source + operation pill group, shared by the docs step cards and diagram step nodes */
+.source-icon {
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.timeline-operation-group {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--arazzo-font-mono);
+  line-height: 1;
+}
+
+.timeline-operation-group .source-icon {
+  margin: 0 -1px 0 4px;
+}
+
+.timeline-source {
+  padding: 3px 6px 3px 2px;
+  background: var(--arazzo-bg-secondary);
+  color: var(--arazzo-muted-fg);
+}
+
+.timeline-op-name {
+  padding: 3px 6px;
+  background: var(--arazzo-primary-bg);
+  color: var(--arazzo-primary);
+}
+
 /* ==========================================================================
    Brand typography
    ========================================================================== */
