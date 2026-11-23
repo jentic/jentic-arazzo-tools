@@ -10,12 +10,14 @@ import {
   ReactFlow,
   Background,
   Controls,
+  MiniMap,
   applyNodeChanges,
   applyEdgeChanges,
   NodeChange,
   EdgeChange,
   useReactFlow,
-  ReactFlowInstance,
+  useNodesInitialized,
+  useStore,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useArazzoViewer } from '../context/ArazzoViewerContext';
@@ -93,10 +95,10 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
   // the diagram recovers from a render error when another workflow or document is shown
   const diagramResetKey = useMemo(() => [document, activeWorkflowId], [document, activeWorkflowId]);
 
-  // Track which workflow we've set the view for
-  const viewSetForWorkflow = useRef<string | null>(null);
-  // Track if React Flow has initialized on this mount
-  const reactFlowInitialized = useRef<boolean>(false);
+  const measured = useNodesInitialized();
+  const paneWidth = useStore((state) => state.width);
+  const paneHeight = useStore((state) => state.height);
+  const initialView = useRef<string | null>(null);
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
@@ -108,52 +110,55 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
     },
   }));
 
-  // Called when React Flow is initialized and ready
-  const onInit = useCallback(
-    (instance: ReactFlowInstance) => {
-      reactFlowInitialized.current = true;
-      // Center view when React Flow initializes
-      setTimeout(() => {
-        const startNode = nodes.find((n) => n.type === 'start') || nodes[0];
-        if (startNode && startNode.position) {
-          const zoom = 0.8;
-          const targetX = startNode.position.x + 150;
-          const targetY = startNode.position.y + 100;
-          const yOffset = 250;
-
-          instance.setCenter(targetX, targetY + yOffset / zoom, { zoom, duration: 300 });
-        }
-      }, 50);
-    },
-    [nodes],
+  const left = Math.min(0, ...nodes.map((node) => node.position.x));
+  const bundleMargin = edges.reduce(
+    (max, edge) =>
+      edge.data?.type === 'bundled-success' ? Math.max(max, 120 + edge.data.actionIdx * 40) : max,
+    0,
   );
+  const right =
+    Math.max(0, ...nodes.map((node) => node.position.x + (node.width ?? 420))) + bundleMargin;
+  const fitWidthZoom = paneWidth / (right - left + 80);
+  const start = nodes.find((node) => node.type === 'start') ?? nodes[0];
+  const branched =
+    start?.type === 'start' && nodes.some((node) => node.position.x !== start.position.x);
 
-  // Set view when workflow changes (while already in diagram view)
+  const showOverview = branched && fitWidthZoom < 0.6;
+
   useEffect(() => {
-    const currentView = activeWorkflowId ?? 'document';
-    const workflowChanged = viewSetForWorkflow.current !== currentView;
+    if (!start || !measured || !reactFlow.viewportInitialized || !paneWidth || !paneHeight) return;
+    if (start.data.type === 'start' && start.data.workflowId !== activeWorkflowId) return;
+    const key = start.id;
+    if (initialView.current === key) return;
+    initialView.current = key;
 
-    if (nodes.length === 0 || !reactFlowInitialized.current) {
-      return;
+    if (branched) {
+      const zoom = showOverview ? 0.8 : Math.min(0.8, fitWidthZoom);
+      const center = showOverview
+        ? start.position.x + (start.width ?? 420) / 2
+        : (right + left) / 2;
+      reactFlow.setViewport({
+        x: paneWidth / 2 - center * zoom,
+        y: 24 - start.position.y * zoom,
+        zoom,
+      });
+    } else {
+      const zoom = 0.8;
+      reactFlow.setCenter(start.position.x + 150, start.position.y + 100 + 250 / zoom, { zoom });
     }
-
-    if (workflowChanged) {
-      viewSetForWorkflow.current = currentView;
-
-      // When switching workflows, position start node near top
-      const startNode = nodes.find((n) => n.type === 'start') || nodes[0];
-      if (startNode && startNode.position) {
-        setTimeout(() => {
-          const zoom = 0.8;
-          const targetX = startNode.position.x + 150;
-          const targetY = startNode.position.y + 100;
-          const yOffset = 250;
-
-          reactFlow.setCenter(targetX, targetY + yOffset / zoom, { zoom, duration: 0 });
-        }, 50);
-      }
-    }
-  }, [nodes, reactFlow, activeWorkflowId]);
+  }, [
+    start,
+    branched,
+    showOverview,
+    measured,
+    paneWidth,
+    paneHeight,
+    fitWidthZoom,
+    left,
+    right,
+    reactFlow,
+    activeWorkflowId,
+  ]);
 
   // Store current nodes/edges in refs for stable callbacks
   const nodesRef = useRef(nodes);
@@ -282,14 +287,13 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
             edges={edges}
             nodeTypes={nodeTypes}
             edgeTypes={edgeTypes}
-            onInit={onInit}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onNodeClick={onNodeClick}
             onNodeDoubleClick={onNodeDoubleClick}
             onEdgeClick={onEdgeClick}
             onPaneClick={onPaneClick}
-            minZoom={0.1}
+            minZoom={branched && fitWidthZoom > 0 ? Math.min(0.1, fitWidthZoom) : 0.1}
             maxZoom={2}
             nodesDraggable={true}
             nodesConnectable={false}
@@ -305,6 +309,7 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
           >
             <Background />
             <Controls />
+            {showOverview && <MiniMap pannable zoomable ariaLabel="Workflow overview" />}
           </ReactFlow>
         </ErrorBoundary>
       </div>

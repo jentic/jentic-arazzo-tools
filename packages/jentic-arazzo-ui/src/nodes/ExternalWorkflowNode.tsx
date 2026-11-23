@@ -45,6 +45,8 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
         style={{ background: '#6b7280' }}
       />
 
+      <Handle type="target" position={Position.Top} id="branch" style={{ opacity: 0 }} />
+
       {/* Header */}
       <div
         style={{

@@ -1,32 +1,13 @@
 import { ArazzoNode, ArazzoEdge } from '../types/viewer';
 import { getRequestBodyView } from './documentation/requestBodyView';
 import { REQUEST_BODY_SECTION_HEIGHT } from './nodeLayout';
+import { workflowRows } from './workflowRows';
 
 export interface SequentialLayoutOptions {
   direction?: 'RIGHT' | 'DOWN' | 'LEFT' | 'UP';
   nodeSpacing?: number;
 }
 
-/**
- * Apply sequential layout to nodes.
- *
- * Arazzo workflows have inherent sequential ordering - the step order in the
- * Arazzo document is semantically meaningful and should be preserved visually.
- * This is fundamentally different from typical DAGs where layout algorithms
- * determine node positions based on graph structure.
- *
- * This layout algorithm:
- * - Positions nodes in document order with consistent spacing
- * - Keeps spacing constant regardless of edge configuration
- * - Uses estimated heights based on node content
- * - Lets edge components handle their own routing (via getLeftRoutedPath)
- *
- * Why not use a graph layout library like ELK?
- * - ELK's layered algorithm optimizes for edge routing, not document order
- * - It creates "dummy nodes" for long edges that push layers apart
- * - Spacing varies based on edge configuration, which is confusing
- * - Arazzo's sequential semantics mean we want predictable, stable positions
- */
 export function applySequentialLayout(
   nodes: ArazzoNode[],
   edges: ArazzoEdge[],
@@ -48,58 +29,81 @@ export function applySequentialLayout(
   const mainNodes: ArazzoNode[] = [];
   const externalNodes: ArazzoNode[] = [];
 
+  const successTargets = new Map<string, Set<string>>();
+  for (const edge of edges) {
+    if (edge.type !== 'success' && edge.type !== 'sequential' && edge.type !== 'bundled-success')
+      continue;
+    const sources =
+      edge.data?.type === 'bundled-success'
+        ? edge.data.sources.map((s) => s.nodeId)
+        : [edge.source];
+    for (const source of sources) {
+      if (!successTargets.has(source)) successTargets.set(source, new Set());
+      successTargets.get(source)!.add(edge.target);
+    }
+  }
+  const branchTargets = new Set(
+    [...successTargets.values()].filter((set) => set.size > 1).flatMap((set) => [...set]),
+  );
+  const externalBranches = new Set(
+    nodes
+      .filter((node) => node.type === 'externalWorkflow' && branchTargets.has(node.id))
+      .map((node) => node.id),
+  );
   nodes.forEach((node) => {
-    if (node.type === 'externalWorkflow') {
+    if (!externalBranches.has(node.id) && node.type === 'externalWorkflow') {
       externalNodes.push(node);
     } else {
       mainNodes.push(node);
     }
   });
 
-  // Position main nodes sequentially
-  // For DOWN direction: stack vertically, all at same X
-  // For RIGHT direction: stack horizontally, all at same Y
   const isVertical = direction === 'DOWN' || direction === 'UP';
-
-  let currentPosition = 0;
   const nodePositions = new Map<string, { x: number; y: number }>();
+  let currentPosition = 0;
+  let minX = 0;
+  let maxX = 0;
 
-  const layoutedMainNodes = mainNodes.map((node) => {
-    const height = nodeHeights.get(node.id) || 120;
-
-    let position: { x: number; y: number };
-
-    if (isVertical) {
-      // Vertical layout: nodes stacked top to bottom
-      // X is fixed at 0, Y increases
-      position = {
-        x: 0,
-        y: currentPosition,
-      };
-      currentPosition += height + nodeGap;
-    } else {
-      // Horizontal layout: nodes stacked left to right
-      // Y is fixed at 0, X increases
-      position = {
-        x: currentPosition,
-        y: 0,
-      };
-      currentPosition += fixedWidth + nodeGap;
+  const rows = workflowRows(mainNodes, edges);
+  const placements = rows.flat();
+  const lanePitch = (isVertical ? fixedWidth : Math.max(0, ...nodeHeights.values())) + nodeGap;
+  const firstMainLane = Math.min(0, ...placements.filter((p) => !p.recovery).map((p) => p.lane));
+  const lastRecoveryLane = Math.max(0, ...placements.filter((p) => p.recovery).map((p) => p.lane));
+  const successes = new Map<string, ArazzoEdge[]>();
+  for (const edge of edges) {
+    if (edge.type !== 'success') continue;
+    if (!successes.has(edge.target)) successes.set(edge.target, []);
+    successes.get(edge.target)!.push(edge);
+  }
+  const tracks = new Map<string, number>();
+  for (const row of rows) {
+    // give edges entering the same row separate label heights, including edges to different siblings.
+    const approaches = row.flatMap(({ node }) => successes.get(node.id) ?? []);
+    approaches.forEach((edge, track) => tracks.set(edge.id, track));
+    currentPosition += Math.max(0, approaches.length - 1) * 24;
+    for (const { node, lane, recovery } of row) {
+      const offset = lanePitch * (lane + (recovery ? firstMainLane - lastRecoveryLane - 1 : 0));
+      const position = isVertical
+        ? { x: offset, y: currentPosition }
+        : { x: currentPosition, y: offset };
+      nodePositions.set(node.id, position);
+      minX = Math.min(minX, position.x);
+      maxX = Math.max(maxX, position.x);
     }
-
-    nodePositions.set(node.id, position);
-
-    return {
-      ...node,
-      position,
-    };
-  });
+    currentPosition +=
+      (isVertical ? Math.max(...row.map(({ node }) => nodeHeights.get(node.id)!)) : fixedWidth) +
+      nodeGap;
+  }
+  const layoutedMainNodes = mainNodes.map((node) => ({
+    ...node,
+    position: nodePositions.get(node.id)!,
+  }));
 
   // Position external workflow nodes based on edges pointing to them
   // Success edges → position to the right of the source step
   // Failure/retry edges → position to the left of the source step
-  const rightOffsets = new Map<string, number>();
-  const leftOffsets = new Map<string, number>();
+  const rightOffsets = new Map<number, number>();
+  const leftOffsets = new Map<number, number>();
 
   const layoutedExternalNodes = externalNodes.map((node) => {
     // Find edge(s) pointing to this external workflow
@@ -120,32 +124,39 @@ export function applySequentialLayout(
 
     if (isFailure) {
       // Position to the left
-      const offset = leftOffsets.get(edge.source) || 0;
-      leftOffsets.set(edge.source, offset + 1);
+      const offset = leftOffsets.get(sourcePos.y) || 0;
+      leftOffsets.set(sourcePos.y, offset + 1);
 
       return {
         ...node,
         position: {
-          x: -(fixedWidth + 60 + offset * (fixedWidth + 40)),
+          x: minX - (fixedWidth + 60 + offset * (fixedWidth + 40)),
           y: sourcePos.y,
         },
       };
     } else {
       // Position to the right
-      const offset = rightOffsets.get(edge.source) || 0;
-      rightOffsets.set(edge.source, offset + 1);
+      const offset = rightOffsets.get(sourcePos.y) || 0;
+      rightOffsets.set(sourcePos.y, offset + 1);
 
       return {
         ...node,
         position: {
-          x: fixedWidth + 60 + offset * (fixedWidth + 40),
+          x: maxX + fixedWidth + 60 + offset * (fixedWidth + 40),
           y: sourcePos.y,
         },
       };
     }
   });
 
-  return { nodes: [...layoutedMainNodes, ...layoutedExternalNodes], edges };
+  const routedEdges = edges.map((edge) => {
+    const track = tracks.get(edge.id);
+    const targetHandle = externalBranches.has(edge.target) ? 'branch' : edge.targetHandle;
+    if (track === undefined || edge.data?.type !== 'success')
+      return targetHandle === edge.targetHandle ? edge : { ...edge, targetHandle };
+    return { ...edge, targetHandle, data: { ...edge.data, labelTrack: track } };
+  });
+  return { nodes: [...layoutedMainNodes, ...layoutedExternalNodes], edges: routedEdges };
 }
 
 /**
