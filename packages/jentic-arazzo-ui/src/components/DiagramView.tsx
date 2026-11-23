@@ -15,6 +15,8 @@ import {
   NodeChange,
   EdgeChange,
   useReactFlow,
+  useStore,
+  useStoreApi,
   ReactFlowInstance,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
@@ -90,6 +92,38 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
     diagramError,
   } = useArazzoViewer();
   const reactFlow = useReactFlow();
+  const flowStore = useStoreApi();
+  const zoomPane = useStore((state) => state.d3Selection?.node());
+
+  const isMac = typeof navigator !== 'undefined' && navigator.userAgent.includes('Mac');
+
+  useEffect(() => {
+    if (!zoomPane || !isMac) return undefined;
+
+    // an unfocused frame receives wheel modifiers even when it misses the keydown
+    const onWheel = (event: Event) => {
+      if (!(event instanceof WheelEvent) || !event.metaKey || event.ctrlKey) return;
+      if (event.target instanceof Element && event.target.closest('.nowheel')) return;
+
+      const { d3Zoom, d3Selection, userSelectionActive } = flowStore.getState();
+      if (!d3Zoom || !d3Selection || userSelectionActive) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const bounds = zoomPane.getBoundingClientRect();
+      const point: [number, number] = [
+        event.clientX - bounds.left - zoomPane.clientLeft,
+        event.clientY - bounds.top - zoomPane.clientTop,
+      ];
+      // d3's getter uses the legacy selection callback type for this wheel event callback
+      const wheelDelta = d3Zoom.wheelDelta() as (event: WheelEvent) => number;
+      d3Zoom.scaleBy(d3Selection, 2 ** wheelDelta(event), point);
+    };
+
+    zoomPane.addEventListener('wheel', onWheel, { capture: true, passive: false });
+    return () => zoomPane.removeEventListener('wheel', onWheel, true);
+  }, [flowStore, isMac, zoomPane]);
+
   // the diagram recovers from a render error when another workflow or document is shown
   const diagramResetKey = useMemo(() => [document, activeWorkflowId], [document, activeWorkflowId]);
 
@@ -298,6 +332,7 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
               style: { strokeWidth: 2 },
             }}
             panOnScroll={true}
+            zoomActivationKeyCode={isMac ? null : undefined}
             selectionOnDrag={false}
             panActivationKeyCode={null}
             selectionKeyCode={null}
