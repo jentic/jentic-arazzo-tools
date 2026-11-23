@@ -1,0 +1,56 @@
+.arazzo-navigation-help {
+  margin: auto;
+  box-sizing: border-box;
+  width: min(24rem, calc(100% - 2rem));
+  max-height: calc(100% - 2rem);
+  padding: 1.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: white;
+  color: #1e293b;
+  font:
+    0.875rem/1.5 system-ui,
+    sans-serif;
+  text-align: left;
+  cursor: default;
+  box-shadow: 0 12px 36px rgb(15 23 42 / 18%);
+}
+
+.arazzo-navigation-help::backdrop {
+  background: rgb(15 23 42 / 36%);
+}
+
+.arazzo-navigation-help h2 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+.arazzo-navigation-help dt {
+  margin-top: 0.75rem;
+  font-weight: 600;
+}
+
+.arazzo-navigation-help dd {
+  margin: 0.2rem 0 0;
+}
+
+.arazzo-navigation-help kbd {
+  padding: 0.05em 0.3em;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.25em;
+  background: #f8fafc;
+}
+
+.arazzo-navigation-help form {
+  text-align: right;
+}
+
+.arazzo-navigation-help button {
+  padding: 0.4rem 0.85rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.375rem;
+  background: #f8fafc;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}

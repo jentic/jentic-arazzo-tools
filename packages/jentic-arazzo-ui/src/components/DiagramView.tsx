@@ -38,6 +38,7 @@ import {
   BundledFailureEdge,
   BundledRetryEdge,
 } from '../edges/index';
+import { DiagramNavigationHelp } from './DiagramNavigationHelp';
 import { WorkflowTabs } from './WorkflowTabs';
 import { ArazzoNode, ArazzoEdge } from '../types/index';
 import { ErrorBoundary, RenderErrorNotice } from './ErrorBoundary';
@@ -166,7 +167,7 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
       if (!(target instanceof Element)) return;
       if (
         (target instanceof HTMLElement && target.isContentEditable) ||
-        target.closest('input, textarea, select, [role="textbox"]')
+        target.closest('dialog[open], input, textarea, select, [role="textbox"]')
       ) {
         return;
       }
@@ -410,7 +411,9 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
             deleteKeyCode={null}
           >
             <Background />
-            <Controls onFitView={stopWheelMomentum} />
+            <Controls onFitView={stopWheelMomentum}>
+              <DiagramNavigationHelp isMac={isMac} />
+            </Controls>
           </ReactFlow>
         </ErrorBoundary>
       </div>
