@@ -396,6 +396,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
               // ignore animations of descendants, which bubble up
               if (e.target !== el) return;
               el.classList.remove('doc-path-highlight', 'doc-path-highlight-cell');
+              delete el.dataset.highlightSeverity;
               el.removeEventListener('animationend', clear);
             };
             el.addEventListener('animationend', clear);
