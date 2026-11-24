@@ -342,17 +342,27 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
     setLinkableDiagnostics(linkable);
   }, [documentation, validation]);
 
+  const pendingJumpCleanup = useRef(new Set<() => void>());
+  const cancelDiagnosticJump = useCallback(() => {
+    for (const cleanup of pendingJumpCleanup.current) cleanup();
+    pendingJumpCleanup.current.clear();
+  }, []);
+  useLayoutEffect(() => cancelDiagnosticJump, [documentation, cancelDiagnosticJump]);
+
   // scrolls to where a diagnostic's location is shown and flashes it
   const showDiagnostic = useCallback(
     (diagnostic: DocumentDiagnostic) => {
       const { path } = diagnostic;
       if (!path) return;
+      cancelDiagnosticJump();
+      const pending = pendingJumpCleanup.current;
       // a workflow showing a diagram has its docs hidden
       if (path[0] === 'workflows' && typeof path[1] === 'number') {
         setWorkflowView(path[1], 'docs');
       }
       // wait for the view switch to render
-      requestAnimationFrame(() => {
+      const frame = requestAnimationFrame(() => {
+        pending.delete(cancelFrame);
         const container = docsContainerRef.current;
         const target = container && findDocPathElement(container, path);
         if (!container || !target) return;
@@ -387,19 +397,22 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
 
         const highlight = () =>
           highlighted.forEach((el) => {
-            el.classList.remove('doc-path-highlight', 'doc-path-highlight-cell');
-            // restart the animation when the same element is shown again
+            const animation = isGridRow ? 'doc-path-highlight-cell' : 'doc-path-highlight';
+            const clear = () => {
+              el.removeEventListener('animationend', onEnd);
+              el.classList.remove(animation);
+              delete el.dataset.highlightSeverity;
+              pending.delete(clear);
+            };
+            const onEnd = (event: AnimationEvent) => {
+              if (event.target === el && event.animationName === animation) clear();
+            };
+            // ensure a repeated jump starts a fresh animation
             void el.offsetWidth;
             el.dataset.highlightSeverity = diagnostic.severity;
-            el.classList.add(isGridRow ? 'doc-path-highlight-cell' : 'doc-path-highlight');
-            const clear = (e: AnimationEvent) => {
-              // ignore animations of descendants, which bubble up
-              if (e.target !== el) return;
-              el.classList.remove('doc-path-highlight', 'doc-path-highlight-cell');
-              delete el.dataset.highlightSeverity;
-              el.removeEventListener('animationend', clear);
-            };
-            el.addEventListener('animationend', clear);
+            el.classList.add(animation);
+            el.addEventListener('animationend', onEnd);
+            pending.add(clear);
           });
 
         // already in view: no need to scroll
@@ -412,19 +425,24 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
 
         // flash once scrolling stops, so a long scroll doesn't hide the highlight; the timeout
         // covers browsers without `scrollend`
-        let didHighlight = false;
-        const highlightOnce = () => {
-          if (didHighlight) return;
-          didHighlight = true;
-          container.removeEventListener('scrollend', highlightOnce);
+        const stopWaiting = () => {
+          clearTimeout(timer);
+          container.removeEventListener('scrollend', onScrollEnd);
+          pending.delete(stopWaiting);
+        };
+        const onScrollEnd = () => {
+          stopWaiting();
           highlight();
         };
-        container.addEventListener('scrollend', highlightOnce);
-        setTimeout(highlightOnce, 1500);
+        const timer = setTimeout(onScrollEnd, 1500);
+        container.addEventListener('scrollend', onScrollEnd);
+        pending.add(stopWaiting);
         anchor.scrollIntoView({ behavior: 'smooth', block: tall ? 'start' : 'center' });
       });
+      const cancelFrame = () => cancelAnimationFrame(frame);
+      pending.add(cancelFrame);
     },
-    [setWorkflowView],
+    [setWorkflowView, cancelDiagnosticJump],
   );
 
   // Pre-generate all diagrams (memoized)
