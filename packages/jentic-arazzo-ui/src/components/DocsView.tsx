@@ -378,6 +378,11 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
         if (highlighted.length === 0) return;
 
         const anchor = highlighted[0];
+        anchor.focus({ preventScroll: true });
+        if (anchor.ownerDocument.activeElement !== anchor) {
+          anchor.tabIndex = -1;
+          anchor.focus({ preventScroll: true });
+        }
         const tall = anchor.getBoundingClientRect().height > container.clientHeight * 0.6;
 
         const highlight = () =>
