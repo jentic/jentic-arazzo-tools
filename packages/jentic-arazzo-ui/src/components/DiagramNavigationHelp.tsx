@@ -40,8 +40,7 @@ export function DiagramNavigationHelp({ isMac }: { isMac: boolean }) {
           </dd>
           <dt>Fit to view</dt>
           <dd>
-            Press <kbd>F</kbd> while pointing at the diagram or when it has keyboard focus. You can
-            also use the Fit View button.
+            Tab into the diagram and press <kbd>F</kbd>, or use the Fit View button.
           </dd>
         </dl>
         <form method="dialog">

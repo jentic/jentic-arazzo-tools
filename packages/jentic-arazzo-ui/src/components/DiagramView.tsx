@@ -101,7 +101,6 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
 
   const isMac = typeof navigator !== 'undefined' && navigator.userAgent.includes('Mac');
 
-  const pointerOverDiagram = useRef(false);
   const lastWheelAt = useRef(-Infinity);
   const suppressWheel = useRef(false);
   const stopWheelMomentum = () => {
@@ -115,7 +114,6 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
       if (!(event instanceof WheelEvent)) return;
       if (event.target instanceof Element && event.target.closest('.nowheel')) return;
 
-      pointerOverDiagram.current = true;
       const now = performance.now();
       if (now - lastWheelAt.current >= wheelIdleMs) suppressWheel.current = false;
       lastWheelAt.current = now;
@@ -147,7 +145,7 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
   }, [flowStore, isMac, zoomPane]);
 
   useEffect(() => {
-    const diagram = zoomPane?.closest('.react-flow');
+    const diagram = zoomPane?.closest<HTMLDivElement>('.react-flow');
     if (!diagram) return undefined;
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -172,18 +170,15 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
         return;
       }
 
-      // keyboard focus takes precedence when another diagram is under the pointer
-      const focusedDiagram = target.closest('.react-flow');
-      if (focusedDiagram ? focusedDiagram !== diagram : !pointerOverDiagram.current) return;
+      if (target.closest('.react-flow') !== diagram) return;
 
       event.preventDefault();
       stopWheelMomentum();
       reactFlow.fitView();
     };
 
-    const ownerDocument = diagram.ownerDocument;
-    ownerDocument.addEventListener('keydown', onKeyDown);
-    return () => ownerDocument.removeEventListener('keydown', onKeyDown);
+    diagram.addEventListener('keydown', onKeyDown);
+    return () => diagram.removeEventListener('keydown', onKeyDown);
   }, [reactFlow, zoomPane]);
 
   // the diagram recovers from a render error when another workflow or document is shown
@@ -375,12 +370,6 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
       <div style={{ flex: 1, minHeight: 0 }}>
         <ErrorBoundary label="The diagram" resetKey={diagramResetKey}>
           <ReactFlow
-            onPointerEnter={() => {
-              pointerOverDiagram.current = true;
-            }}
-            onPointerLeave={() => {
-              pointerOverDiagram.current = false;
-            }}
             tabIndex={0}
             aria-label="Workflow diagram"
             aria-keyshortcuts="F"
