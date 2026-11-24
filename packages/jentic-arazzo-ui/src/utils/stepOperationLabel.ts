@@ -46,7 +46,7 @@ export function describeStepOperation(
 ): StepOperationLabel | undefined {
   const { operation, sourceNames } = options;
 
-  if (step.operationId) {
+  if (typeof step.operationId === 'string' && step.operationId) {
     const id = step.operationId;
     const expression = SOURCE_EXPRESSION.exec(id);
     if (expression) return { sourceName: expression[1], label: expression[2] };
@@ -61,7 +61,7 @@ export function describeStepOperation(
     return { label: id };
   }
 
-  if (step.operationPath) {
+  if (typeof step.operationPath === 'string' && step.operationPath) {
     const sourceName = SOURCE_URL_EXPRESSION.exec(step.operationPath)?.[1];
     const label = operation?.path ?? pathFromPointer(step.operationPath) ?? step.operationPath;
     return { sourceName, label };
