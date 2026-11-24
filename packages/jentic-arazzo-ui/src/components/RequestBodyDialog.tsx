@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { KeyValueRowView, RequestBodyView } from '../utils/documentation/requestBodyView';
 
 interface RequestBodyDialogProps {
+  portalHost: Element;
   stepId: string;
   requestBody: RequestBodyView;
   onClose: () => void;
@@ -52,6 +53,7 @@ const KeyValueTable: React.FC<{ keyHeader: string; rows: KeyValueRowView[] }> = 
 );
 
 export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
+  portalHost,
   stepId,
   requestBody,
   onClose,
@@ -67,11 +69,11 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
     return () => opener?.focus?.();
   }, []);
 
-  // portal to body so the dialog escapes the react-flow viewport transform
+  // mount inside the owning viewer for theme inheritance, outside the transformed flow viewport
   return createPortal(
     <dialog
       ref={dialogRef}
-      className="arazzo-ui nodrag nopan nowheel"
+      className="nodrag nopan nowheel"
       aria-label={`Request body for ${stepId}`}
       onClose={onClose}
       onClick={(e) => {
@@ -199,6 +201,6 @@ export const RequestBodyDialog: React.FC<RequestBodyDialogProps> = ({
         </div>
       </div>
     </dialog>,
-    document.body,
+    portalHost,
   );
 };

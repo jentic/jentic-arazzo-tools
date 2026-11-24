@@ -33,7 +33,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
   const { step, isValid, workflowId, workflowSuccessActions, workflowFailureActions } = data;
   const reactFlow = useReactFlow();
   const { nodes, setSelectedNode, document: arazzoDocument } = useArazzoViewer();
-  const [showRequestBody, setShowRequestBody] = useState(false);
+  const [dialogHost, setDialogHost] = useState<Element | null>(null);
 
   // Navigate to target node when clicking on a goto action
   const handleActionClick = (action: SuccessAction | FailureAction, e: React.MouseEvent) => {
@@ -283,7 +283,7 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
                 className="nodrag nopan"
                 onClick={(e) => {
                   e.stopPropagation();
-                  setShowRequestBody(true);
+                  setDialogHost(e.currentTarget.closest('.arazzo-ui'));
                 }}
                 style={{
                   fontSize: '10px',
@@ -300,11 +300,12 @@ export const StepNode: React.FC<NodeProps<StepNodeData>> = ({ data, selected }) 
             </div>
           </div>
         )}
-        {showRequestBody && requestBody && (
+        {dialogHost && requestBody && (
           <RequestBodyDialog
+            portalHost={dialogHost}
             stepId={step.stepId}
             requestBody={requestBody}
-            onClose={() => setShowRequestBody(false)}
+            onClose={() => setDialogHost(null)}
           />
         )}
 
