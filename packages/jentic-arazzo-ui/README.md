@@ -220,7 +220,7 @@ ref.current.getSelectedStepId();
 
 ## Theming
 
-Every color in the viewer is defined in [`src/styles/palette.ts`](src/styles/palette.ts), including the flowchart and sequence diagram colors (mermaid) and the diagram arrow colors. The palette is exposed as `--arazzo-*` CSS custom properties, so a host app can re-theme the viewer by overriding them on `.arazzo-ui` / `.arazzo-ui-standalone`:
+Every color in the viewer is defined in [`src/styles/palette.ts`](src/styles/palette.ts). The palette is exposed as `--arazzo-*` CSS custom properties, so a host app can re-theme the viewer by overriding them on `.arazzo-ui` / `.arazzo-ui-standalone`:
 
 ```css
 .arazzo-ui,
