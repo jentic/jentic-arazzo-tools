@@ -6,7 +6,8 @@ import type { DiagnosticPath } from '../validation';
  * quotes and an element can list several paths separated by spaces.
  */
 export function encodeDocPath(path: DiagnosticPath): string {
-  return path.map((segment) => encodeURIComponent(String(segment))).join('/');
+  // serializing to JSON escapes lone surrogates and distinguishes string keys from numeric indices.
+  return path.map((segment) => encodeURIComponent(JSON.stringify(segment))).join('/');
 }
 
 /**
