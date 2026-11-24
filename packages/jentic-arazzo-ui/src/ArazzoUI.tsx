@@ -77,6 +77,9 @@ import {
 import { normalizeDocumentShape, type NormalizedDocument } from './utils/documentShape';
 
 import './styles/index.css';
+import { injectTheme } from './styles/theme';
+
+injectTheme();
 
 function detectUrl(value: ArazzoDocument | string): string | null {
   return typeof value === 'string' && /^https?:\/\//i.test(value.trim()) ? value.trim() : null;

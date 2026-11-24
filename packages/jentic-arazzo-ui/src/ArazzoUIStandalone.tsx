@@ -8,6 +8,9 @@ import type { ArazzoUIProps, ArazzoUIRef, ViewerMode } from './types/index';
 import type { ArazzoDocument } from './types/arazzo';
 
 import './styles/index.css';
+import { injectTheme } from './styles/theme';
+
+injectTheme();
 
 export type {
   ArazzoUIProps,
