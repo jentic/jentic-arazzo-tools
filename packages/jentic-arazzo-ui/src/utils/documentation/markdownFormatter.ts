@@ -13,6 +13,7 @@ import {
   renderNotes,
   type ListNotes,
 } from './inlineDiagnostics';
+import { docPathAttr } from './docPath';
 
 export interface FormatOptions {
   includeMetadata?: boolean;
@@ -43,7 +44,7 @@ export function formatHeaderAsMarkdown(
 
   // Document header with title and inline version pills
   sections.push(
-    `<div style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: ${metadata.documentURL ? '8px' : '20px'}; flex-wrap: wrap;">`,
+    `<div${docPathAttr(['info'], ['arazzo'])} style="display: flex; align-items: flex-start; gap: 10px; margin-bottom: ${metadata.documentURL ? '8px' : '20px'}; flex-wrap: wrap;">`,
   );
   sections.push(arazzoLogoSvg('width: 2.25rem; height: 2.25rem; flex-shrink: 0;'));
   sections.push(
@@ -73,13 +74,13 @@ export function formatHeaderAsMarkdown(
 
   // Metadata section - source cards
   if (includeMetadata && metadata.sourceDescriptions.length > 0) {
-    sections.push('\n<div class="sources-section">\n');
+    sections.push(`\n<div class="sources-section"${docPathAttr(['sourceDescriptions'])}>\n`);
     sections.push(`<div class="sources-header">Source Descriptions</div>`);
     sections.push(`<div class="sources-grid">`);
-    metadata.sourceDescriptions.forEach((sd) => {
+    metadata.sourceDescriptions.forEach((sd, sdIdx) => {
       const typeLabel = (sd.type || 'api').toUpperCase();
       const typeClass = sd.type === 'openapi' ? 'source-type-openapi' : 'source-type-arazzo';
-      sections.push(`<div class="source-card">`);
+      sections.push(`<div class="source-card"${docPathAttr(['sourceDescriptions', sdIdx])}>`);
       sections.push(`<div class="source-card-top">`);
       sections.push(`${sourceIcon(sd.type || 'arazzo')}`);
       sections.push(`<span class="source-type-badge ${typeClass}">${typeLabel}</span>`);
@@ -145,7 +146,7 @@ export function formatWorkflowWithNotes(
       'properties' in workflow.inputs ? (workflow.inputs.properties as Record<string, any>) : null;
 
     if (properties && Object.keys(properties).length > 0) {
-      sections.push('\n<div class="doc-section">\n');
+      sections.push(`\n<div class="doc-section"${docPathAttr([...workflowPath, 'inputs'])}>\n`);
       sections.push('\n### ↓ Inputs\n');
       sections.push(
         '\nBefore starting this workflow, you need to provide the following inputs:\n\n',
@@ -202,10 +203,12 @@ export function formatWorkflowWithNotes(
       `<div class="timeline-marker"><div class="timeline-dot">${idx + 1}</div><div class="timeline-line"></div></div>`,
     );
     sections.push(`<div class="timeline-content">`);
-    sections.push(`<div class="step-card">`);
+    sections.push(`<div class="step-card"${docPathAttr(stepPath)}>`);
 
     // Step header
-    sections.push(`<div class="timeline-step-header">`);
+    sections.push(
+      `<div class="timeline-step-header"${docPathAttr([...stepPath, 'stepId'], [...stepPath, 'operationId'], [...stepPath, 'operationPath'], [...stepPath, 'workflowId'])}>`,
+    );
     sections.push(`<span class="timeline-step-name">${step.stepId}</span>`);
     if (step.operation) {
       const { method, path } = step.operation;
@@ -256,18 +259,19 @@ export function formatWorkflowWithNotes(
     // Parameters
     if (step.parameters && step.parameters.length > 0) {
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Parameters <span class="step-detail-count">${step.parameters.length}</span>${renderIssuesBadge(parameterNotes.all)}</summary>`,
+        `<details class="step-detail"${docPathAttr([...stepPath, 'parameters'])}><summary class="step-detail-summary">Parameters <span class="step-detail-count">${step.parameters.length}</span>${renderIssuesBadge(parameterNotes.all)}</summary>`,
       );
       sections.push(`<div class="step-detail-body step-grid-3">`);
       sections.push(renderNotes(parameterNotes.list));
       step.parameters.forEach((param, paramIdx) => {
+        const rowPath = docPathAttr([...stepPath, 'parameters', paramIdx]);
         if ('$ref' in param) {
           sections.push(
-            `<div class="step-row">Reference: <code class="expr">${param.$ref}</code></div>`,
+            `<div class="step-row"${rowPath}>Reference: <code class="expr">${param.$ref}</code></div>`,
           );
         } else if ('reference' in param) {
           sections.push(
-            `<div class="step-row">Reference: <code class="expr">${(param as { reference: string }).reference}</code></div>`,
+            `<div class="step-row"${rowPath}>Reference: <code class="expr">${(param as { reference: string }).reference}</code></div>`,
           );
         } else if ('name' in param) {
           // `in` is optional: parameters of steps invoking a workflow have no location
@@ -275,7 +279,7 @@ export function formatWorkflowWithNotes(
           const value = typeof param.value === 'string' ? param.value : JSON.stringify(param.value);
           const arrow = typeof value === 'string' && value.startsWith('$') ? '←' : '=';
           sections.push(
-            `<div class="step-grid-row"><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code class="expr">${value}</code></span></div>`,
+            `<div class="step-grid-row"${rowPath}><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code class="expr">${value}</code></span></div>`,
           );
         }
         sections.push(renderNotes(parameterNotes.items.get(paramIdx)));
@@ -292,7 +296,7 @@ export function formatWorkflowWithNotes(
           ? ` <span class="step-detail-count">${replacements.length} replacement${replacements.length === 1 ? '' : 's'}</span>`
           : '';
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Request Body${countHtml}${renderIssuesBadge(requestBodyNotes)}</summary>`,
+        `<details class="step-detail"${docPathAttr([...stepPath, 'requestBody'])}><summary class="step-detail-summary">Request Body${countHtml}${renderIssuesBadge(requestBodyNotes)}</summary>`,
       );
       sections.push(`<div class="step-detail-body">`);
       sections.push(renderNotes(requestBodyNotes));
@@ -325,12 +329,14 @@ export function formatWorkflowWithNotes(
     // Success criteria
     if (step.successCriteria && step.successCriteria.length > 0) {
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Success Criteria <span class="step-detail-count">${step.successCriteria.length}</span>${renderIssuesBadge(criteriaNotes.all)}</summary>`,
+        `<details class="step-detail"${docPathAttr([...stepPath, 'successCriteria'])}><summary class="step-detail-summary">Success Criteria <span class="step-detail-count">${step.successCriteria.length}</span>${renderIssuesBadge(criteriaNotes.all)}</summary>`,
       );
       sections.push(`<div class="step-detail-body">`);
       sections.push(renderNotes(criteriaNotes.list));
       step.successCriteria.forEach((c, criterionIdx) => {
-        sections.push(`<div class="step-row"><code class="expr">${c.condition}</code></div>`);
+        sections.push(
+          `<div class="step-row"${docPathAttr([...stepPath, 'successCriteria', criterionIdx])}><code class="expr">${c.condition}</code></div>`,
+        );
         sections.push(renderNotes(criteriaNotes.items.get(criterionIdx)));
       });
       sections.push(`</div></details>`);
@@ -340,13 +346,13 @@ export function formatWorkflowWithNotes(
     if (step.outputs && Object.keys(step.outputs).length > 0) {
       const outputCount = Object.keys(step.outputs).length;
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Outputs <span class="step-detail-count">${outputCount}</span>${renderIssuesBadge(outputNotes.all)}</summary>`,
+        `<details class="step-detail"${docPathAttr([...stepPath, 'outputs'])}><summary class="step-detail-summary">Outputs <span class="step-detail-count">${outputCount}</span>${renderIssuesBadge(outputNotes.all)}</summary>`,
       );
       sections.push(`<div class="step-detail-body step-grid-3">`);
       sections.push(renderNotes(outputNotes.list));
       Object.entries(step.outputs).forEach(([key, value]) => {
         sections.push(
-          `<div class="step-grid-row"><span><code>${key}</code></span><span class="step-arrow">←</span><span><code class="expr">${value}</code></span></div>`,
+          `<div class="step-grid-row"${docPathAttr([...stepPath, 'outputs', key])}><span><code>${key}</code></span><span class="step-arrow">←</span><span><code class="expr">${value}</code></span></div>`,
         );
         sections.push(renderNotes(outputNotes.items.get(key)));
       });
@@ -359,52 +365,68 @@ export function formatWorkflowWithNotes(
     if (allSuccessActions.length > 0 || allFailureActions.length > 0) {
       const actionCount = allSuccessActions.length + allFailureActions.length;
       sections.push(
-        `<details class="step-detail"><summary class="step-detail-summary">Actions <span class="step-detail-count">${actionCount}</span>${renderIssuesBadge([...onSuccessNotes.all, ...onFailureNotes.all])}</summary>`,
+        `<details class="step-detail"${docPathAttr([...stepPath, 'onSuccess'], [...stepPath, 'onFailure'], [...workflowPath, 'successActions'], [...workflowPath, 'failureActions'])}><summary class="step-detail-summary">Actions <span class="step-detail-count">${actionCount}</span>${renderIssuesBadge([...onSuccessNotes.all, ...onFailureNotes.all])}</summary>`,
       );
       sections.push(`<div class="step-detail-body step-grid-3">`);
       sections.push(renderNotes([...onSuccessNotes.list, ...onFailureNotes.list]));
       // workflow-level actions come after the step's own, so only the first ones get step notes
+      const actionPath = (stepKey: string, workflowKey: string, own: number, idx: number) =>
+        docPathAttr(
+          idx < own ? [...stepPath, stepKey, idx] : [...workflowPath, workflowKey, idx - own],
+        );
       allSuccessActions.forEach((action, actionIdx) => {
+        const rowPath = actionPath(
+          'onSuccess',
+          'successActions',
+          step.onSuccess?.length ?? 0,
+          actionIdx,
+        );
         if ('$ref' in action) {
           sections.push(
-            `<div class="step-grid-row"><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
+            `<div class="step-grid-row"${rowPath}><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
           );
         } else if ('type' in action) {
           const an = action.name ? `<strong>${action.name}</strong>` : '';
           if (action.type === 'goto') {
             const target = action.stepId || action.workflowId || 'end';
             sections.push(
-              `<div class="step-grid-row"><span>${an}</span><span class="step-arrow">→</span><span>Continue to <code>${target}</code> <span class="badge badge-success">GOTO</span></span></div>`,
+              `<div class="step-grid-row"${rowPath}><span>${an}</span><span class="step-arrow">→</span><span>Continue to <code>${target}</code> <span class="badge badge-success">GOTO</span></span></div>`,
             );
           } else if (action.type === 'end') {
             sections.push(
-              `<div class="step-grid-row"><span>${an}</span><span class="step-arrow">→</span><span>Workflow completes <span class="badge badge-success">END</span></span></div>`,
+              `<div class="step-grid-row"${rowPath}><span>${an}</span><span class="step-arrow">→</span><span>Workflow completes <span class="badge badge-success">END</span></span></div>`,
             );
           }
         }
         sections.push(renderNotes(onSuccessNotes.items.get(actionIdx)));
       });
       allFailureActions.forEach((action, actionIdx) => {
+        const rowPath = actionPath(
+          'onFailure',
+          'failureActions',
+          step.onFailure?.length ?? 0,
+          actionIdx,
+        );
         if ('$ref' in action) {
           sections.push(
-            `<div class="step-grid-row"><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
+            `<div class="step-grid-row"${rowPath}><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
           );
         } else if ('type' in action) {
           const an = action.name ? `<strong>${action.name}</strong>` : '';
           if (action.type === 'goto') {
             const target = action.stepId || action.workflowId || 'end';
             sections.push(
-              `<div class="step-grid-row"><span>${an}</span><span class="step-arrow">→</span><span>Jump to <code>${target}</code> <span class="badge badge-error">GOTO</span></span></div>`,
+              `<div class="step-grid-row"${rowPath}><span>${an}</span><span class="step-arrow">→</span><span>Jump to <code>${target}</code> <span class="badge badge-error">GOTO</span></span></div>`,
             );
           } else if (action.type === 'retry') {
             const limit = action.retryLimit ? `${action.retryLimit} times` : 'unlimited';
             const delay = action.retryAfter ? ` (wait ${action.retryAfter}s)` : '';
             sections.push(
-              `<div class="step-grid-row"><span>${an}</span><span class="step-arrow">→</span><span>Retry ${limit}${delay} <span class="badge badge-warning">RETRY</span></span></div>`,
+              `<div class="step-grid-row"${rowPath}><span>${an}</span><span class="step-arrow">→</span><span>Retry ${limit}${delay} <span class="badge badge-warning">RETRY</span></span></div>`,
             );
           } else if (action.type === 'end') {
             sections.push(
-              `<div class="step-grid-row"><span>${an}</span><span class="step-arrow">→</span><span>Workflow terminates <span class="badge badge-error">END</span></span></div>`,
+              `<div class="step-grid-row"${rowPath}><span>${an}</span><span class="step-arrow">→</span><span>Workflow terminates <span class="badge badge-error">END</span></span></div>`,
             );
           }
         }
@@ -427,7 +449,7 @@ export function formatWorkflowWithNotes(
 
   // Outputs
   if (workflow.outputs && Object.keys(workflow.outputs).length > 0) {
-    sections.push('\n<div class="doc-section">\n');
+    sections.push(`\n<div class="doc-section"${docPathAttr([...workflowPath, 'outputs'])}>\n`);
     sections.push('\n### ↓ Outputs\n');
     sections.push('\nWhen this workflow completes successfully, it returns:\n\n');
     sections.push('| Output | Source |');

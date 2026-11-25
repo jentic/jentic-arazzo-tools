@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
+import React, { useMemo, useEffect, useLayoutEffect, useRef, useState, useCallback } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
@@ -12,8 +12,13 @@ import {
   generateMermaidFlowchart,
 } from '../utils/documentation/index';
 import { worstSeverity } from '../utils/documentation/inlineDiagnostics';
+import { encodeDocPath, findDocPathElement } from '../utils/documentation/docPath';
 import { ErrorBoundary, RenderErrorNotice } from './ErrorBoundary';
-import type { DiagnosticSeverityName, ValidationState } from '../utils/validation';
+import type {
+  DiagnosticSeverityName,
+  DocumentDiagnostic,
+  ValidationState,
+} from '../utils/validation';
 
 export interface DocsViewProps {
   diagramType?: string;
@@ -32,12 +37,17 @@ interface ValidationSectionProps {
   validation: ValidationState;
   showInlineNotes: boolean;
   onShowInlineNotesChange: (show: boolean) => void;
+  // diagnostics whose location is shown in the docs, by index in the diagnostics list
+  linkable: ReadonlySet<number>;
+  onSelect: (diagnostic: DocumentDiagnostic) => void;
 }
 
 const ValidationSection: React.FC<ValidationSectionProps> = ({
   validation,
   showInlineNotes,
   onShowInlineNotesChange,
+  linkable,
+  onSelect,
 }) => {
   // only errors and warnings are shown inline, so the switch is pointless without them
   const hasInlineNotes =
@@ -75,7 +85,22 @@ const ValidationSection: React.FC<ValidationSectionProps> = ({
     body = (
       <ul className="validation-list">
         {validation.diagnostics.map((d, i) => (
-          <li key={i} className="validation-item">
+          <li
+            key={i}
+            className={`validation-item${linkable.has(i) ? ' validation-item-linkable' : ''}`}
+            {...(linkable.has(i) && {
+              role: 'button',
+              tabIndex: 0,
+              title: 'Show in document',
+              onClick: () => onSelect(d),
+              onKeyDown: (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelect(d);
+                }
+              },
+            })}
+          >
             <span className={`validation-severity validation-severity-${d.severity}`}>
               {d.severity}
             </span>
@@ -336,6 +361,122 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
       diagnostics,
     });
   }, [document, documentURL, diagnostics]);
+
+  // which diagnostics point at something rendered in the docs, checked once the docs are in the DOM
+  const [linkableDiagnostics, setLinkableDiagnostics] = useState<ReadonlySet<number>>(new Set());
+  useLayoutEffect(() => {
+    const container = docsContainerRef.current;
+    const linkable = new Set<number>();
+    if (container && validation?.status === 'done') {
+      validation.diagnostics.forEach((d, i) => {
+        if (d.path && findDocPathElement(container, d.path)) linkable.add(i);
+      });
+    }
+    setLinkableDiagnostics(linkable);
+  }, [documentation, validation]);
+
+  const pendingJumpCleanup = useRef(new Set<() => void>());
+  const cancelDiagnosticJump = useCallback(() => {
+    for (const cleanup of pendingJumpCleanup.current) cleanup();
+    pendingJumpCleanup.current.clear();
+  }, []);
+  useLayoutEffect(() => cancelDiagnosticJump, [documentation, cancelDiagnosticJump]);
+
+  // scrolls to where a diagnostic's location is shown and flashes it
+  const showDiagnostic = useCallback(
+    (diagnostic: DocumentDiagnostic) => {
+      const { path } = diagnostic;
+      if (!path) return;
+      cancelDiagnosticJump();
+      const pending = pendingJumpCleanup.current;
+      // a workflow showing a diagram has its docs hidden
+      if (path[0] === 'workflows' && typeof path[1] === 'number') {
+        setWorkflowView(path[1], 'docs');
+      }
+      // wait for the view switch to render
+      const frame = requestAnimationFrame(() => {
+        pending.delete(cancelFrame);
+        const container = docsContainerRef.current;
+        const target = container && findDocPathElement(container, path);
+        if (!container || !target) return;
+
+        // open the enclosing workflow and step sections; the workflow's onToggle tracks it
+        for (
+          let details = target.closest('details');
+          details;
+          details = details.parentElement?.closest('details') ?? null
+        ) {
+          details.open = true;
+        }
+
+        // a section is shown by its summary; grid rows have no box of their own, only their cells
+        const summary =
+          target instanceof HTMLDetailsElement ? target.querySelector('summary') : null;
+        const isGridRow = getComputedStyle(target).display === 'contents';
+        const highlighted = summary
+          ? [summary]
+          : isGridRow
+            ? (Array.from(target.children) as HTMLElement[])
+            : [target];
+        if (highlighted.length === 0) return;
+
+        const anchor = highlighted[0];
+        anchor.focus({ preventScroll: true });
+        if (anchor.ownerDocument.activeElement !== anchor) {
+          anchor.tabIndex = -1;
+          anchor.focus({ preventScroll: true });
+        }
+        const tall = anchor.getBoundingClientRect().height > container.clientHeight * 0.6;
+
+        const highlight = () =>
+          highlighted.forEach((el) => {
+            const animation = isGridRow ? 'doc-path-highlight-cell' : 'doc-path-highlight';
+            const clear = () => {
+              el.removeEventListener('animationend', onEnd);
+              el.classList.remove(animation);
+              delete el.dataset.highlightSeverity;
+              pending.delete(clear);
+            };
+            const onEnd = (event: AnimationEvent) => {
+              if (event.target === el && event.animationName === animation) clear();
+            };
+            // ensure a repeated jump starts a fresh animation
+            void el.offsetWidth;
+            el.dataset.highlightSeverity = diagnostic.severity;
+            el.classList.add(animation);
+            el.addEventListener('animationend', onEnd);
+            pending.add(clear);
+          });
+
+        // already in view: no need to scroll
+        const bounds = container.getBoundingClientRect();
+        const rect = anchor.getBoundingClientRect();
+        if (rect.top >= bounds.top && rect.bottom <= bounds.bottom) {
+          highlight();
+          return;
+        }
+
+        // flash once scrolling stops, so a long scroll doesn't hide the highlight; the timeout
+        // covers browsers without `scrollend`
+        const stopWaiting = () => {
+          clearTimeout(timer);
+          container.removeEventListener('scrollend', onScrollEnd);
+          pending.delete(stopWaiting);
+        };
+        const onScrollEnd = () => {
+          stopWaiting();
+          highlight();
+        };
+        const timer = setTimeout(onScrollEnd, 1500);
+        container.addEventListener('scrollend', onScrollEnd);
+        pending.add(stopWaiting);
+        anchor.scrollIntoView({ behavior: 'smooth', block: tall ? 'start' : 'center' });
+      });
+      const cancelFrame = () => cancelAnimationFrame(frame);
+      pending.add(cancelFrame);
+    },
+    [setWorkflowView, cancelDiagnosticJump],
+  );
 
   // Pre-generate all diagrams (memoized)
   // by workflow index, like the generated documentation
@@ -1323,6 +1464,65 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
             word-break: break-word;
           }
 
+          .arazzo-docs-view li.validation-item-linkable {
+            cursor: pointer;
+            transition: background 0.15s;
+          }
+
+          .arazzo-docs-view li.validation-item-linkable:hover {
+            background: #f9fafb;
+          }
+
+          .arazzo-docs-view li.validation-item-linkable:focus-visible {
+            outline: 2px solid #94C83D;
+            outline-offset: -2px;
+          }
+
+          .arazzo-docs-view li.validation-item-linkable:hover .validation-message {
+            text-decoration: underline;
+            text-decoration-color: #d1d5db;
+            text-underline-offset: 2px;
+          }
+
+          /* location of a diagnostic picked in the Validation section */
+          [data-highlight-severity] {
+            --doc-highlight-bg: #dbeafe;
+            --doc-highlight-ring: #60a5fa;
+          }
+
+          [data-highlight-severity="error"] {
+            --doc-highlight-bg: #fee2e2;
+            --doc-highlight-ring: #f87171;
+          }
+
+          [data-highlight-severity="warning"] {
+            --doc-highlight-bg: #fef3c7;
+            --doc-highlight-ring: #f59e0b;
+          }
+
+          .doc-path-highlight {
+            animation: doc-path-highlight 3s ease-in;
+          }
+
+          @keyframes doc-path-highlight {
+            0%, 60% {
+              background-color: var(--doc-highlight-bg);
+              box-shadow: inset 0 0 0 2px var(--doc-highlight-ring);
+            }
+          }
+
+          /* grid cells are tinted edge to edge, covering the column gap between them */
+          .doc-path-highlight-cell {
+            animation: doc-path-highlight-cell 3s ease-in;
+          }
+
+          @keyframes doc-path-highlight-cell {
+            0%, 60% {
+              background-color: var(--doc-highlight-bg);
+              box-shadow: 6px 0 0 0 var(--doc-highlight-bg), -6px 0 0 0 var(--doc-highlight-bg);
+            }
+          }
+
           .validation-code {
             flex-shrink: 0;
             font-size: 11px;
@@ -1373,6 +1573,7 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
                 <details
                   className="workflow-details"
                   data-workflow-id={workflow.workflowId}
+                  data-doc-path={encodeDocPath(['workflows', workflowIndex])}
                   onToggle={(e) => handleToggle(workflow.workflowId, e)}
                 >
                   <summary className="workflow-summary-bar">
@@ -1439,6 +1640,8 @@ export const DocsView: React.FC<DocsViewProps> = ({ validation }) => {
                 validation={validation}
                 showInlineNotes={showInlineNotes}
                 onShowInlineNotesChange={setShowInlineNotes}
+                linkable={linkableDiagnostics}
+                onSelect={showDiagnostic}
               />
             </ErrorBoundary>
           )}
