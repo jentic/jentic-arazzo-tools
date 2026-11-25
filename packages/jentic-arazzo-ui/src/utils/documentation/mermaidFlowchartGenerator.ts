@@ -1,4 +1,8 @@
 import { Workflow } from '../../types/arazzo';
+import { ViewerStep } from '../../types/viewer';
+import { palette } from '../../styles/palette';
+import { describeStepOperation } from '../stepOperationLabel';
+import { escapeMermaidText } from './escapeMermaidText';
 
 /**
  * Generates Mermaid flowchart diagram showing workflow control flow
@@ -13,10 +17,15 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
     const stepNum = idx + 1;
     const nextStepNum = stepNum + 1;
     const stepId = `Step${stepNum}`;
-    const operation = step.operationId || step.operationPath || step.workflowId || step.stepId;
+    const operation =
+      describeStepOperation(step, { operation: (step as ViewerStep)._operation })?.label ??
+      step.workflowId ??
+      step.stepId;
 
     // Truncate long operation names
-    const displayOperation = operation.length > 30 ? operation.substring(0, 27) + '...' : operation;
+    const displayOperation = escapeMermaidText(
+      operation.length > 30 ? operation.substring(0, 27) + '...' : operation,
+    );
 
     // Step node
     lines.push(`    ${stepId}["${stepNum}. ${displayOperation}"]`);
@@ -26,7 +35,9 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
       const shortDesc =
         step.description.length > 40 ? step.description.substring(0, 37) + '...' : step.description;
       lines.push(`    ${stepId} -.-> Note${stepNum}[/"${shortDesc}"/]`);
-      lines.push(`    style Note${stepNum} fill:#f0f9ff,stroke:#3b82f6,stroke-width:1px`);
+      lines.push(
+        `    style Note${stepNum} fill:${palette.bgSecondary},stroke:${palette.fg},color:${palette.fgLighter},stroke-width:1px`,
+      );
     }
 
     // Handle success criteria and branching
@@ -89,7 +100,9 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
               `    ${decisionId} -->|No| Retry${stepNum}["Retry ${retryLimit}${retryDelay}"]`,
             );
             lines.push(`    Retry${stepNum} --> ${stepId}`);
-            lines.push(`    style Retry${stepNum} fill:#fef3c7,stroke:#f59e0b,stroke-width:2px`);
+            lines.push(
+              `    style Retry${stepNum} fill:${palette.card},stroke:${palette.warning},color:${palette.warning},stroke-width:2px`,
+            );
           } else if (action.type === 'goto' && action.stepId) {
             const targetIdx = workflow.steps.findIndex((s) => s.stepId === action.stepId);
             if (targetIdx !== -1) {
@@ -97,7 +110,9 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
             } else {
               lines.push(`    ${decisionId} -->|No| Error${stepNum}["Error"]`);
               lines.push(`    Error${stepNum} --> End`);
-              lines.push(`    style Error${stepNum} fill:#fee2e2,stroke:#dc2626,stroke-width:2px`);
+              lines.push(
+                `    style Error${stepNum} fill:${palette.card},stroke:${palette.danger},color:${palette.danger},stroke-width:2px`,
+              );
             }
           } else if (action.type === 'goto' && action.workflowId) {
             lines.push(
@@ -111,14 +126,18 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
           } else if (action.type === 'end') {
             lines.push(`    ${decisionId} -->|No| Error${stepNum}["Workflow Failed"]`);
             lines.push(`    Error${stepNum} --> End`);
-            lines.push(`    style Error${stepNum} fill:#fee2e2,stroke:#dc2626,stroke-width:2px`);
+            lines.push(
+              `    style Error${stepNum} fill:${palette.card},stroke:${palette.danger},color:${palette.danger},stroke-width:2px`,
+            );
           }
         }
       } else {
         // No failure action, end with error
         lines.push(`    ${decisionId} -->|No| Error${stepNum}["Error"]`);
         lines.push(`    Error${stepNum} --> End`);
-        lines.push(`    style Error${stepNum} fill:#fee2e2,stroke:#dc2626,stroke-width:2px`);
+        lines.push(
+          `    style Error${stepNum} fill:${palette.card},stroke:${palette.danger},color:${palette.danger},stroke-width:2px`,
+        );
       }
     } else {
       // No branching, just continue to next step
@@ -130,13 +149,19 @@ export function generateMermaidFlowchart(workflow: Workflow): string {
     }
 
     // Style the step node
-    lines.push(`    style ${stepId} fill:#dbeafe,stroke:#3b82f6,stroke-width:2px`);
+    lines.push(
+      `    style ${stepId} fill:${palette.card},stroke:${palette.primary},color:${palette.fg},stroke-width:2px`,
+    );
   });
 
   // End node
   lines.push('    End([End])');
-  lines.push('    style End fill:#d1fae5,stroke:#10b981,stroke-width:2px');
-  lines.push('    style Start fill:#e0e7ff,stroke:#6366f1,stroke-width:2px');
+  lines.push(
+    `    style End fill:${palette.bgSecondary},stroke:${palette.borderHover},color:${palette.fg},stroke-width:2px`,
+  );
+  lines.push(
+    `    style Start fill:${palette.primary},stroke:${palette.primary},color:${palette.onAccent},stroke-width:2px`,
+  );
 
   return lines.join('\n');
 }
