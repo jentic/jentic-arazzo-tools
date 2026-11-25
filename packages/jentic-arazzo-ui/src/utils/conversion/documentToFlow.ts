@@ -68,7 +68,7 @@ export function convertDocumentToFlow(
                 type: 'sequential',
                 data: { type: 'sequential' },
                 animated: true,
-                style: { stroke: '#94a3b8', strokeDasharray: '5,5' },
+                style: { stroke: 'var(--arazzo-subtle-fg)', strokeDasharray: '5,5' },
               });
             }
           }
