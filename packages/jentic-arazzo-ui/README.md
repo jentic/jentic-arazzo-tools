@@ -218,6 +218,21 @@ ref.current.getActiveWorkflowId();
 ref.current.getSelectedStepId();
 ```
 
+## Theming
+
+Every color in the viewer is defined in [`src/styles/palette.ts`](src/styles/palette.ts). The palette is exposed as `--arazzo-*` CSS custom properties, so a host app can re-theme the viewer by overriding them on `.arazzo-ui` / `.arazzo-ui-standalone`:
+
+```css
+.arazzo-ui,
+.arazzo-ui-standalone {
+  --arazzo-primary: #5b21b6;
+  --arazzo-bg: #ffffff;
+  --arazzo-font-sans: 'Inter', sans-serif;
+}
+```
+
+The mermaid diagrams and diagram arrows take their colors from the `palette` object directly rather than from CSS variables, so overriding CSS tokens does not recolor them. To change those, edit `palette.ts` and rebuild.
+
 ## Limitations
 
 ### HTTP method badges

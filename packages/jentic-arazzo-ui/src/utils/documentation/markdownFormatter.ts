@@ -3,6 +3,8 @@ import { getRequestBodyView, KeyValueRowView } from './requestBodyView';
 import { escapeHtml } from '../escapeHtml';
 import { renderMethodBadgeStyle } from '../operationMethods';
 import { arazzoLogoSvg } from '../arazzoLogo';
+import { describeStepOperation } from '../stepOperationLabel';
+import { sourceIcon } from '../sourceIcon';
 import type { DiagnosticPath, DocumentDiagnostic } from '../validation';
 import {
   DiagnosticNotes,
@@ -31,14 +33,6 @@ export interface FormattedWorkflow {
 }
 
 /**
- * Formats documentation data as markdown string
- */
-function sourceIcon(type: string): string {
-  const color = type === 'openapi' ? '#6BA543' : '#94C83D';
-  return `<svg class="source-icon" width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="1" y="1" width="12" height="12" rx="3" fill="${color}" opacity="0.15" stroke="${color}" stroke-width="1"/><circle cx="7" cy="7" r="2" fill="${color}"/></svg>`;
-}
-
-/**
  * Formats the document header (title, version, summary, sources) as markdown.
  */
 export function formatHeaderAsMarkdown(
@@ -54,7 +48,7 @@ export function formatHeaderAsMarkdown(
   );
   sections.push(arazzoLogoSvg('width: 2.25rem; height: 2.25rem; flex-shrink: 0;'));
   sections.push(
-    `<h1 style="margin: 0; font-size: 2.25rem; font-weight: 700; color: #111827; line-height: 1;">${metadata.title}</h1>`,
+    `<h1 style="margin: 0; font-size: 2.25rem; font-weight: 700; color: var(--arazzo-fg); line-height: 1;">${metadata.title}</h1>`,
   );
   sections.push(
     `<span class="version-badge doc-version" title="Document version">${metadata.version}</span>`,
@@ -235,19 +229,16 @@ export function formatWorkflowWithNotes(
     // Description + (Operation|Workflow) combined
     let opHtml = '';
     let opKind = 'Operation';
-    const refColor = '#6BA543';
-    if (step.operationId) {
-      const dotIdx = step.operationId.indexOf('.');
-      if (dotIdx > 0) {
-        const source = step.operationId.substring(0, dotIdx);
-        const operation = step.operationId.substring(dotIdx + 1);
-        const type = sourceTypes.get(source) || 'arazzo';
-        opHtml = `<span class="timeline-operation-group">${sourceIcon(type)}<span class="timeline-source">${source}</span><span class="timeline-op-name">${operation}</span></span>`;
-      } else {
-        opHtml = `<span class="step-op-ref" style="color: ${refColor}">${step.operationId}</span>`;
-      }
-    } else if (step.operationPath) {
-      opHtml = `<code>${step.operationPath}</code>`;
+    const refColor = 'var(--arazzo-primary)';
+    const op = describeStepOperation(step, {
+      operation: step.operation,
+      sourceNames: sourceTypes.keys(),
+    });
+    if (op?.sourceName) {
+      const type = sourceTypes.get(op.sourceName) || 'arazzo';
+      opHtml = `<span class="timeline-operation-group">${sourceIcon(type)}<span class="timeline-source">${escapeHtml(op.sourceName)}</span><span class="timeline-op-name">${escapeHtml(op.label)}</span></span>`;
+    } else if (op) {
+      opHtml = `<span class="step-op-ref" style="color: ${refColor}">${escapeHtml(op.label)}</span>`;
     } else if (step.workflowId) {
       opHtml = `<span class="step-op-ref" style="color: ${refColor}">${step.workflowId}</span>`;
       opKind = 'Workflow';
@@ -276,11 +267,11 @@ export function formatWorkflowWithNotes(
         const rowPath = docPathAttr([...stepPath, 'parameters', paramIdx]);
         if ('$ref' in param) {
           sections.push(
-            `<div class="step-row"${rowPath}>Reference: <code>${param.$ref}</code></div>`,
+            `<div class="step-row"${rowPath}>Reference: <code class="expr">${param.$ref}</code></div>`,
           );
         } else if ('reference' in param) {
           sections.push(
-            `<div class="step-row"${rowPath}>Reference: <code>${(param as { reference: string }).reference}</code></div>`,
+            `<div class="step-row"${rowPath}>Reference: <code class="expr">${(param as { reference: string }).reference}</code></div>`,
           );
         } else if ('name' in param) {
           // `in` is optional: parameters of steps invoking a workflow have no location
@@ -288,7 +279,7 @@ export function formatWorkflowWithNotes(
           const value = typeof param.value === 'string' ? param.value : JSON.stringify(param.value);
           const arrow = typeof value === 'string' && value.startsWith('$') ? '←' : '=';
           sections.push(
-            `<div class="step-grid-row"${rowPath}><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code>${value}</code></span></div>`,
+            `<div class="step-grid-row"${rowPath}><span><code>${param.name}</code>${locationBadge}</span><span class="step-arrow">${arrow}</span><span><code class="expr">${value}</code></span></div>`,
           );
         }
         sections.push(renderNotes(parameterNotes.items.get(paramIdx)));
@@ -311,7 +302,7 @@ export function formatWorkflowWithNotes(
       sections.push(renderNotes(requestBodyNotes));
       if (requestBody.contentType) {
         sections.push(
-          `<div class="step-row">Content-Type: <code>${escapeHtml(requestBody.contentType)}</code></div>`,
+          `<div class="step-row">Content-Type: <code class="content-type">${escapeHtml(requestBody.contentType)}</code></div>`,
         );
       }
       const keyValueTable = (keyHeader: string, rows: KeyValueRowView[]) =>
@@ -344,7 +335,7 @@ export function formatWorkflowWithNotes(
       sections.push(renderNotes(criteriaNotes.list));
       step.successCriteria.forEach((c, criterionIdx) => {
         sections.push(
-          `<div class="step-row"${docPathAttr([...stepPath, 'successCriteria', criterionIdx])}><code>${c.condition}</code></div>`,
+          `<div class="step-row"${docPathAttr([...stepPath, 'successCriteria', criterionIdx])}><code class="expr">${c.condition}</code></div>`,
         );
         sections.push(renderNotes(criteriaNotes.items.get(criterionIdx)));
       });
@@ -361,7 +352,7 @@ export function formatWorkflowWithNotes(
       sections.push(renderNotes(outputNotes.list));
       Object.entries(step.outputs).forEach(([key, value]) => {
         sections.push(
-          `<div class="step-grid-row"${docPathAttr([...stepPath, 'outputs', key])}><span><code>${key}</code></span><span class="step-arrow">←</span><span><code>${value}</code></span></div>`,
+          `<div class="step-grid-row"${docPathAttr([...stepPath, 'outputs', key])}><span><code>${key}</code></span><span class="step-arrow">←</span><span><code class="expr">${value}</code></span></div>`,
         );
         sections.push(renderNotes(outputNotes.items.get(key)));
       });
@@ -392,7 +383,7 @@ export function formatWorkflowWithNotes(
         );
         if ('$ref' in action) {
           sections.push(
-            `<div class="step-grid-row"${rowPath}><span><code>${action.$ref}</code></span><span></span><span></span></div>`,
+            `<div class="step-grid-row"${rowPath}><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
           );
         } else if ('type' in action) {
           const an = action.name ? `<strong>${action.name}</strong>` : '';
@@ -418,7 +409,7 @@ export function formatWorkflowWithNotes(
         );
         if ('$ref' in action) {
           sections.push(
-            `<div class="step-grid-row"${rowPath}><span><code>${action.$ref}</code></span><span></span><span></span></div>`,
+            `<div class="step-grid-row"${rowPath}><span><code class="expr">${action.$ref}</code></span><span></span><span></span></div>`,
           );
         } else if ('type' in action) {
           const an = action.name ? `<strong>${action.name}</strong>` : '';

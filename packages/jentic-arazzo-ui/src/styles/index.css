@@ -4,13 +4,38 @@
    Note: .arazzo-ui class is applied by the ArazzoUI component
    ========================================================================== */
 
+/* ==========================================================================
+   Theme tokens - every color is defined in src/styles/palette.ts and injected
+   as --arazzo-* custom properties by src/styles/theme.ts (zero specificity, so
+   a host app can re-theme by overriding them on .arazzo-ui /
+   .arazzo-ui-standalone). Only non-color tokens live here.
+   ========================================================================== */
+.arazzo-ui,
+.arazzo-ui-standalone {
+  /* typography - Jentic website brand fonts: Sora for headings, labels and
+     buttons; Nunito Sans for body text; Geist Mono for code. Each stack starts
+     with the brand font and ends with its generic safety net. The fonts
+     themselves are loaded by the host page (see public/app.html). */
+  --arazzo-font-sans: 'Nunito Sans', sans-serif;
+  --arazzo-font-heading: 'Sora', sans-serif;
+  --arazzo-font-mono: 'Geist Mono', ui-monospace, monospace;
+
+  /* layout - override to fit longer workflow ids in the diagram tab bar */
+  --arazzo-tab-max-width: 320px;
+}
+
 /* Base container */
 .arazzo-ui {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--arazzo-font-sans);
   font-size: 14px;
   line-height: 1.5;
-  color: #1f2937;
+  color: var(--arazzo-fg-lighter);
+  background: var(--arazzo-bg);
   box-sizing: border-box;
+}
+
+.arazzo-ui-standalone {
+  background: var(--arazzo-bg);
 }
 
 .arazzo-ui *,
@@ -35,7 +60,7 @@
   margin-top: 0;
   margin-bottom: 0.8em;
   line-height: 1.2;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose h2 {
@@ -44,7 +69,7 @@
   margin-top: 1.6em;
   margin-bottom: 0.6em;
   line-height: 1.3;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose h3 {
@@ -53,7 +78,7 @@
   margin-top: 1.4em;
   margin-bottom: 0.4em;
   line-height: 1.4;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose h4 {
@@ -61,7 +86,7 @@
   font-weight: 600;
   margin-top: 1.2em;
   margin-bottom: 0.4em;
-  color: #111827;
+  color: var(--arazzo-fg);
 }
 
 .arazzo-docs-prose p {
@@ -70,31 +95,32 @@
 }
 
 .arazzo-docs-prose a {
-  color: #2563eb;
+  color: var(--arazzo-primary);
   text-decoration: underline;
 }
 
 .arazzo-docs-prose a:hover {
-  color: #1d4ed8;
+  color: var(--arazzo-primary-hover);
 }
 
 .arazzo-docs-prose blockquote {
-  border-left: 3px solid #e5e7eb;
+  border-left: 3px solid var(--arazzo-border);
   padding-left: 1em;
   margin-left: 0;
-  color: #6b7280;
+  color: var(--arazzo-muted-fg);
   font-style: italic;
 }
 
 .arazzo-docs-prose hr {
   border: none;
-  border-top: 1px solid #e5e7eb;
+  border-top: 1px solid var(--arazzo-border);
   margin: 2em 0;
 }
 
 .arazzo-docs-prose pre {
-  background: #1f2937;
-  color: #f3f4f6;
+  background: var(--arazzo-bg);
+  border: 1px solid var(--arazzo-border);
+  color: var(--arazzo-fg-lighter);
   padding: 1em;
   border-radius: 6px;
   overflow-x: auto;
@@ -129,5 +155,102 @@
 }
 
 .arazzo-ui .react-flow__controls {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--arazzo-shadow);
+}
+
+.arazzo-ui .react-flow {
+  background: var(--arazzo-bg);
+}
+
+.arazzo-ui .react-flow__controls-button {
+  background: var(--arazzo-card);
+  border-bottom: 1px solid var(--arazzo-border);
+  fill: var(--arazzo-fg-lighter);
+}
+
+.arazzo-ui .react-flow__controls-button:hover {
+  background: var(--arazzo-bg-secondary);
+}
+
+.arazzo-ui .react-flow__controls-button svg {
+  fill: var(--arazzo-fg-lighter);
+}
+
+.arazzo-ui .react-flow__attribution {
+  background: transparent;
+}
+
+.arazzo-ui .react-flow__attribution a {
+  color: var(--arazzo-muted-fg);
+}
+
+/* source + operation pill group, shared by the docs step cards and diagram step nodes */
+.source-icon {
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.timeline-operation-group {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 4px;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--arazzo-font-mono);
+  line-height: 1;
+}
+
+.timeline-operation-group .source-icon {
+  margin: 0 -1px 0 4px;
+}
+
+.timeline-source {
+  padding: 3px 6px 3px 2px;
+  background: var(--arazzo-bg-secondary);
+  color: var(--arazzo-muted-fg);
+}
+
+.timeline-op-name {
+  padding: 3px 6px;
+  background: var(--arazzo-primary-bg);
+  color: var(--arazzo-primary);
+}
+
+/* ==========================================================================
+   Brand typography
+   ========================================================================== */
+
+.arazzo-ui h1,
+.arazzo-ui h2,
+.arazzo-ui h3,
+.arazzo-ui h4,
+.arazzo-ui h5,
+.arazzo-ui h6,
+.arazzo-ui button,
+.arazzo-ui-standalone button {
+  font-family: var(--arazzo-font-heading);
+}
+
+.arazzo-ui-standalone input {
+  font-family: var(--arazzo-font-sans);
+}
+
+/* url field: white with a visible border, and the website's green focus ring */
+.arazzo-ui-standalone .arazzo-ui-url-input {
+  background: var(--arazzo-card);
+  border: 1px solid var(--arazzo-input-border);
+  outline: none;
+}
+
+.arazzo-ui-standalone .arazzo-ui-url-input:focus-visible {
+  outline: 3px solid var(--arazzo-primary);
+  outline-offset: 2px;
+}
+
+.arazzo-ui code,
+.arazzo-ui pre,
+.arazzo-ui kbd,
+.arazzo-ui samp {
+  font-family: var(--arazzo-font-mono);
 }
