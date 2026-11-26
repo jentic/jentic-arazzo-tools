@@ -18,6 +18,7 @@ import {
   useReactFlow,
   useNodesInitialized,
   useStore,
+  useStoreApi,
 } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { useArazzoViewer } from '../context/ArazzoViewerContext';
@@ -39,10 +40,14 @@ import {
   BundledFailureEdge,
   BundledRetryEdge,
 } from '../edges/index';
+import { DiagramNavigationHelp } from './DiagramNavigationHelp';
 import { WorkflowTabs } from './WorkflowTabs';
 import { ArazzoNode, ArazzoEdge } from '../types/index';
 import { ErrorBoundary, RenderErrorNotice } from './ErrorBoundary';
 import './WorkflowTabs.css';
+
+// match React Flow’s wheel-pan idle interval
+const wheelIdleMs = 150;
 
 const nodeTypes = {
   step: StepNode,
@@ -93,6 +98,91 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
     diagramError,
   } = useArazzoViewer();
   const reactFlow = useReactFlow();
+  const flowStore = useStoreApi();
+  const zoomPane = useStore((state) => state.d3Selection?.node());
+
+  const isMac = typeof navigator !== 'undefined' && navigator.userAgent.includes('Mac');
+
+  const lastWheelAt = useRef(-Infinity);
+  const suppressWheel = useRef(false);
+  const stopWheelMomentum = () => {
+    suppressWheel.current = performance.now() - lastWheelAt.current < wheelIdleMs;
+  };
+
+  useEffect(() => {
+    if (!zoomPane) return undefined;
+
+    const onWheel = (event: Event) => {
+      if (!(event instanceof WheelEvent)) return;
+      if (event.target instanceof Element && event.target.closest('.nowheel')) return;
+
+      const now = performance.now();
+      if (now - lastWheelAt.current >= wheelIdleMs) suppressWheel.current = false;
+      lastWheelAt.current = now;
+      if (suppressWheel.current) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        return;
+      }
+
+      // an unfocused frame receives wheel modifiers even when it misses the keydown
+      if (!isMac || !event.metaKey || event.ctrlKey) return;
+      const { d3Zoom, d3Selection, userSelectionActive } = flowStore.getState();
+      if (!d3Zoom || !d3Selection || userSelectionActive) return;
+
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      const bounds = zoomPane.getBoundingClientRect();
+      const point: [number, number] = [
+        event.clientX - bounds.left - zoomPane.clientLeft,
+        event.clientY - bounds.top - zoomPane.clientTop,
+      ];
+      // d3's getter uses the legacy selection callback type for this wheel event callback
+      const wheelDelta = d3Zoom.wheelDelta() as (event: WheelEvent) => number;
+      d3Zoom.scaleBy(d3Selection, 2 ** wheelDelta(event), point);
+    };
+
+    zoomPane.addEventListener('wheel', onWheel, { capture: true, passive: false });
+    return () => zoomPane.removeEventListener('wheel', onWheel, true);
+  }, [flowStore, isMac, zoomPane]);
+
+  useEffect(() => {
+    const diagram = zoomPane?.closest<HTMLDivElement>('.react-flow');
+    if (!diagram) return undefined;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        event.key.toLowerCase() !== 'f' ||
+        event.altKey ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.shiftKey ||
+        event.defaultPrevented ||
+        event.isComposing
+      ) {
+        return;
+      }
+
+      const target = event.composedPath()[0];
+      if (!(target instanceof Element)) return;
+      if (
+        (target instanceof HTMLElement && target.isContentEditable) ||
+        target.closest('dialog[open], input, textarea, select, [role="textbox"]')
+      ) {
+        return;
+      }
+
+      if (target.closest('.react-flow') !== diagram) return;
+
+      event.preventDefault();
+      stopWheelMomentum();
+      reactFlow.fitView();
+    };
+
+    diagram.addEventListener('keydown', onKeyDown);
+    return () => diagram.removeEventListener('keydown', onKeyDown);
+  }, [reactFlow, zoomPane]);
+
   // the diagram recovers from a render error when another workflow or document is shown
   const diagramResetKey = useMemo(() => [document, activeWorkflowId], [document, activeWorkflowId]);
 
@@ -104,6 +194,7 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
     fitView: () => {
+      stopWheelMomentum();
       reactFlow.fitView({ padding: 0.2 });
     },
     setZoom: (level: number) => {
@@ -284,6 +375,9 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
       <div style={{ flex: 1, minHeight: 0 }}>
         <ErrorBoundary label="The diagram" resetKey={diagramResetKey}>
           <ReactFlow
+            tabIndex={0}
+            aria-label="Workflow diagram"
+            aria-keyshortcuts="F"
             nodes={nodesWithSelection}
             edges={edges}
             nodeTypes={nodeTypes}
@@ -303,13 +397,16 @@ export const DiagramView = forwardRef<DiagramViewRef, DiagramViewProps>(function
               style: { strokeWidth: 2 },
             }}
             panOnScroll={true}
+            zoomActivationKeyCode={isMac ? null : undefined}
             selectionOnDrag={false}
             panActivationKeyCode={null}
             selectionKeyCode={null}
             deleteKeyCode={null}
           >
             <Background color={palette.border} />
-            <Controls />
+            <Controls onFitView={stopWheelMomentum}>
+              <DiagramNavigationHelp isMac={isMac} />
+            </Controls>
             {showOverview && <MiniMap pannable zoomable ariaLabel="Workflow overview" />}
           </ReactFlow>
         </ErrorBoundary>
