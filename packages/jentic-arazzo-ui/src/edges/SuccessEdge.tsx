@@ -39,7 +39,7 @@ function getRightRoutedPath(
   }
 }
 
-export const SuccessEdge: React.FC<EdgeProps<SuccessEdgeData>> = ({
+export const SuccessEdge: React.FC<EdgeProps<SuccessEdgeData & { labelTrack?: number }>> = ({
   id,
   sourceX,
   sourceY,
@@ -51,11 +51,12 @@ export const SuccessEdge: React.FC<EdgeProps<SuccessEdgeData>> = ({
   markerEnd,
   data,
   selected,
+  source,
   target,
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const reactFlow = useReactFlow();
-  const { nodes, setSelectedNode } = useArazzoViewer();
+  const { nodes, edges, setSelectedNode } = useArazzoViewer();
 
   // Determine if this is a non-sequential jump (goto to non-adjacent node)
   const isBackward = targetY < sourceY;
@@ -67,8 +68,38 @@ export const SuccessEdge: React.FC<EdgeProps<SuccessEdgeData>> = ({
   let labelX: number;
   let labelY: number;
 
-  if (isHorizontal) {
-    // Simple straight line for horizontal edges to external workflows
+  const incoming = edges.filter((edge) => edge.target === target && edge.type === 'success');
+  const track = incoming.findIndex((edge) => edge.id === id);
+  if (targetPosition === 'top' && (incoming.length > 1 || !isBackward)) {
+    const gutterX = sourceX + 12 + (12 * (track + 1)) / (incoming.length + 1);
+    const gutterY = targetY - 15 - 24 * (data?.labelTrack ?? Math.max(0, track));
+    // separate labels vertically and approach the shared handle from distinct points.
+    const approachX = targetX + 80 * ((track + 1) / (incoming.length + 1) - 0.5);
+    const blockingCards = nodes.filter(
+      (node) =>
+        node.id !== source &&
+        node.id !== target &&
+        node.position.y < Math.max(sourceY, gutterY) &&
+        node.position.y + (node.height ?? 0) > Math.min(sourceY, gutterY) &&
+        node.position.x < gutterX + 4 &&
+        node.position.x + (node.width ?? 420) > gutterX - 4,
+    );
+    let routeX = gutterX;
+    let departure = `M ${sourceX} ${sourceY} H ${gutterX}`;
+    const sourceNode = reactFlow.getNode(source);
+    if (sourceNode && blockingCards.length) {
+      // cross outside the source row before passing intervening cards.
+      const row = nodes.filter((node) => node.position.y === sourceNode.position.y);
+      const exitY = isBackward
+        ? sourceNode.position.y - 8
+        : Math.max(...row.map((node) => node.position.y + (node.height ?? 0))) + 8;
+      routeX = Math.max(...nodes.map((node) => node.position.x + (node.width ?? 420))) + 20;
+      departure += ` V ${exitY} H ${routeX}`;
+    }
+    edgePath = `${departure} V ${gutterY} H ${approachX} V ${targetY - 8} L ${targetX} ${targetY}`;
+    labelX = (routeX + approachX) / 2;
+    labelY = gutterY;
+  } else if (isHorizontal) {
     edgePath = `M ${sourceX} ${sourceY} L ${targetX} ${targetY}`;
     labelX = (sourceX + targetX) / 2;
     labelY = sourceY - 10;

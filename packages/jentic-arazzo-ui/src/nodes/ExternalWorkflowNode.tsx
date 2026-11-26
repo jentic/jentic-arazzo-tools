@@ -45,6 +45,8 @@ export const ExternalWorkflowNode: React.FC<NodeProps<ExternalWorkflowNodeData>>
         style={{ background: 'var(--arazzo-border-hover)' }}
       />
 
+      <Handle type="target" position={Position.Top} id="branch" style={{ opacity: 0 }} />
+
       {/* Header */}
       <div
         style={{
